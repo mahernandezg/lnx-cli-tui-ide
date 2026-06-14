@@ -1,6 +1,6 @@
 # Helix languages.toml — lnx-cli-tui-ide
 #
-# TypeScript -> vtsls   (the ARAYA monorepo)
+# TypeScript -> vtsls   (works for any TypeScript / JavaScript project)
 # Python     -> ruff    (lint + format, light on RAM)
 #               basedpyright is DEFINED but DISABLED by default to save RAM.
 #               Enable per session when you need types (see README), e.g. by

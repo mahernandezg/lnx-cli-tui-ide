@@ -2,7 +2,7 @@
 # modules/40-helix.sh — Helix editor + config + language servers.
 #
 # Debian ships Helix only recently; declare apt -> official release binary -> cargo.
-# LSPs: vtsls (TypeScript, the ARAYA monorepo) and ruff (Python). basedpyright is
+# LSPs: vtsls (TypeScript) and ruff (Python). basedpyright is
 # installed but DISABLED by default in languages.toml to save RAM; enable per
 # session when types are needed (see README).
 
@@ -66,7 +66,7 @@ _install_lsps() {
   elif have npm; then
     run npm install -g @vtsls/language-server || log_warn "lsp: vtsls npm install failed"
   else
-    log_warn "lsp: npm/node not found — install Node to get vtsls for the ARAYA monorepo (see README)"
+    log_warn "lsp: npm/node not found — install Node to get vtsls for TypeScript projects (see README)"
   fi
   export PATH="$HOME/.local/bin:$PATH"
 }

@@ -73,6 +73,13 @@ It will ask for your `sudo` password (needed for the `apt`-based steps). Each to
 via its best available method; a failing step **logs and continues** instead of aborting.
 Cautious? Install in stages: `./install.sh --only viewers`, then `--only terminal`, etc.
 
+> **Trust note:** as *fallbacks*, a few tools may install via their official one-line
+> installers — uv (`astral.sh`), kitty (`sw.kovidgoyal.net`), starship (`starship.rs`) —
+> which pipe a script from the tool's own HTTPS source into a shell. That runs remote code
+> from those upstreams; if you'd rather not, install those tools yourself first (they'll be
+> detected and skipped) or use `apt` where available. All other downloads are release
+> binaries fetched over HTTPS from each project's official GitHub org.
+
 **Step 5 — Open a new terminal**
 Reload your shell so the new prompt and `PATH` take effect:
 ```bash
@@ -327,7 +334,7 @@ A **two-line** prompt: information on line 1, a clean caret on line 2 so your co
 always start at the same place.
 
 ```
-~/code/araya  main !2 ?1   v20.11.0   3.12.2
+~/code/web-app  main !2 ?1   v20.11.0   3.12.2
 ❯ 
 ```
 
@@ -340,7 +347,7 @@ Line 1 segments (each appears only when relevant):
 
 Line 2 is just the caret `❯` (green on success, red after a failed command). It's tuned for
 speed (`command_timeout`, an explicit module list) so it stays responsive in large repos
-like the ARAYA monorepo. Activation is added to `~/.bashrc` **once**, guarded so it never
+like a big TypeScript monorepo. Activation is added to `~/.bashrc` **once**, guarded so it never
 errors if `starship` isn't installed and never duplicates on re-runs.
 
 ---

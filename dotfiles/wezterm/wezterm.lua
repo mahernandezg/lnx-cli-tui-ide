@@ -23,6 +23,7 @@ config.font = wezterm.font_with_fallback {
 config.font_size = 12.0
 
 -- ---- Calm dark theme tuned for long sessions -------------------------------
+-- Based on the "Tomorrow Night" scheme by Chris Kempson (MIT); mirrors kitty.conf.
 config.colors = {
   foreground = '#c5c8c6',
   background = '#1d1f21',

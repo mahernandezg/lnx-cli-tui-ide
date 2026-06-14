@@ -1,7 +1,7 @@
 # starship.toml — lnx-cli-tui-ide
 # Two-line prompt: info on line 1, a clean input caret on line 2.
 #
-# Tuned for speed on old machines and large git repos (e.g. the ARAYA monorepo):
+# Tuned for speed on old machines and large git repos (e.g. a big TypeScript monorepo):
 # conservative timeouts and ONLY the modules actually used (the explicit `format`
 # below means no other module renders, so the prompt stays fast and quiet).
 # Glyphs come from JetBrainsMono Nerd Font, which the installer provides.
