@@ -157,7 +157,11 @@ if [[ ${#FAILED_MODULES[@]} -gt 0 ]]; then
 else
   log_ok "All selected modules completed without fatal errors."
 fi
-[[ -n "${LOG_FILE:-}" ]] && log_info "Full log: $LOG_FILE"
+# if-block (not a bare '[[…]] && …'): keeps this off the bug class even if a future
+# edit moves it to a function's tail position. See tests/test_sete.sh.
+if [[ -n "${LOG_FILE:-}" ]]; then
+  log_info "Full log: $LOG_FILE"
+fi
 
 # Exit non-zero only if a module hard-failed or validation failed, so CI can see
 # it — but the run itself always reaches this point (non-fatal step contract).

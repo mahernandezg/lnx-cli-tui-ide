@@ -25,7 +25,8 @@ is only a fallback.
 8. [Idempotency, dotfiles & backups](#8-idempotency-dotfiles--backups)
 9. [Validation](#9-validation)
 10. [Troubleshooting](#10-troubleshooting)
-11. [Repository layout](#11-repository-layout)
+11. [Development / tests](#11-development--tests)
+12. [Repository layout](#12-repository-layout)
 
 ---
 
@@ -474,7 +475,30 @@ timeout-guarded, so it can never hang an unattended run.
 
 ---
 
-## 11. Repository layout
+## 11. Development / tests
+
+Run the test suite locally:
+
+```bash
+./tests/run.sh
+```
+
+It runs:
+- **shellcheck** (hard gate when installed) — static analysis of every script.
+- **`tests/test_sete.sh`** (hard gate) — a hermetic regression suite for the `set -e`
+  abort bug class. It sources `lib/*.sh` with `DRY_RUN=0` under `set -euo pipefail` and
+  asserts `log_init`, `run_detection`, and the detection helpers return 0 / degrade safely
+  (offline, empty parses) instead of aborting — the failure mode `--dry-run` cannot catch.
+  It uses PATH shims (offline `curl`/`wget`, empty `glxinfo`, inert `apt`/`uv`/`npm`), so it
+  **downloads and installs nothing** and is fast.
+- **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
+  Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
+  it never gates the result.
+
+The same shellcheck + `test_sete.sh` run on every push via GitHub Actions
+(`.github/workflows/ci.yml`).
+
+## 12. Repository layout
 
 ```
 install.sh            entrypoint: flags, detection, module dispatch, validation
@@ -482,7 +506,8 @@ lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
 modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
                       50-git-docker-tui 60-ssh-alias 70-starship 90-vscodium (gated)
 dotfiles/             kitty/ helix/ wezterm/ starship/
-tests/                validate.sh + sample.md / sample.py / sample.ipynb
+tests/                run.sh · test_sete.sh · validate.sh + sample.md/py/ipynb
+.github/workflows/    ci.yml (shellcheck + test_sete on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 

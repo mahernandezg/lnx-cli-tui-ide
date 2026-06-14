@@ -53,9 +53,11 @@ github_latest_tag() {
     tag="$(printf '%s' "$body" | jq -r '.tag_name // empty' 2>/dev/null || true)"
   fi
   if [[ -z "$tag" ]]; then
+    # || true: best-effort parse. A no-match here must NOT abort under set -e +
+    # pipefail — the next block validates $tag and logs a precise WARN.
     tag="$(printf '%s' "$body" \
             | grep -m1 '"tag_name"' \
-            | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')"
+            | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/' || true)"
   fi
 
   if [[ -z "$tag" || "$tag" == "null" ]]; then

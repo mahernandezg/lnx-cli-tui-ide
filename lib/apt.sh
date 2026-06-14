@@ -37,7 +37,9 @@ apt_install() {
 # apt_pkg_candidate_version <pkg> — print apt's candidate version, or "" if none.
 apt_pkg_candidate_version() {
   apt_can_use || { echo ""; return 1; }
-  apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/ {print $2}' | head -n1
+  # || true: best-effort lookup; a non-zero pipe (odd apt state) must not abort
+  # under set -e + pipefail. The caller treats empty output as "no candidate".
+  apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/ {print $2}' | head -n1 || true
 }
 
 # apt_version_ge <pkg> <min> — true if apt candidate version >= min.
