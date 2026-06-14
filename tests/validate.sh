@@ -69,7 +69,9 @@ case_bat() {
 # passes straight through to the wrapped command.
 _to() {
   local secs="$1"; shift
-  if have timeout; then timeout "$secs" "$@"; else "$@"; fi
+  # -k 5: if the command ignores SIGTERM (e.g. a TUI in raw mode), force-kill it
+  # 5s later so the wrapper itself can never hang.
+  if have timeout; then timeout -k 5 "$secs" "$@"; else "$@"; fi
 }
 
 # ---- Case 3: euporie opens the notebook with inline plots ------------------
@@ -79,26 +81,25 @@ case_euporie() {
   # unattended run. Instead we (a) confirm euporie loads the notebook model, and
   # (b) confirm the plotting stack can produce an image, which is what euporie
   # would stream via the kitty graphics protocol.
-  local ok_load=0 ok_plot=0
-  # IMPORTANT: never invoke the interactive `euporie notebook` TUI here — it waits
-  # for input and hangs an unattended run. Use only the top-level `--version` and
-  # the non-interactive `preview`, and wrap every call in a timeout.
-  if _to 20 euporie --version >/dev/null 2>&1; then
-    # Notebook loads? Try euporie's non-interactive preview first; otherwise parse
-    # it with nbformat via uv. Both are timeout-guarded.
-    if _to 20 euporie preview "$FIX_NB" >/dev/null 2>&1; then
-      ok_load=1
-    elif have uv && _to 30 uv run --with nbformat python - "$FIX_NB" >/dev/null 2>&1 <<'PY'
+  local euporie_ok=0 ok_load=0 ok_plot=0
+  # HANG-PROOF: never invoke euporie's renderer (TUI or preview) — attached to a
+  # real terminal it can read stdin or hold the tty and block forever. Confirm
+  # euporie only via the top-level `--version`, with stdin from /dev/null (so any
+  # read returns EOF immediately) and a force-killable timeout.
+  _to 15 euporie --version </dev/null >/dev/null 2>&1 && euporie_ok=1
+
+  # Notebook loads? Parse it with nbformat via uv — reliable and non-interactive.
+  if have uv && _to 30 uv run --with nbformat python - "$FIX_NB" >/dev/null 2>&1 <<'PY'
 import sys, nbformat
 nbformat.read(sys.argv[1], as_version=4)
 PY
-    then
-      ok_load=1
-    fi
+  then
+    ok_load=1
   fi
-  # Confirm the inline-plot stack can produce an image. matplotlib is already
-  # cached by the euporie module, so this is normally fast; the longer timeout
-  # just covers a cold dependency resolve on a slow machine.
+
+  # Confirm the inline-plot stack can produce an image (what euporie streams via
+  # the kitty graphics protocol). matplotlib is already cached by the euporie
+  # module, so this is normally fast; the longer timeout covers a cold resolve.
   if have uv && _to 90 uv run --with matplotlib python - >/dev/null 2>&1 <<'PY'
 import matplotlib
 matplotlib.use("Agg")
@@ -110,12 +111,14 @@ PY
   then
     ok_plot=1
   fi
-  if [[ "$ok_load" -eq 1 && "$ok_plot" -eq 1 ]]; then
+  if [[ "$euporie_ok" -eq 1 && "$ok_load" -eq 1 && "$ok_plot" -eq 1 ]]; then
     _pass "3. Notebook opens in euporie; inline-plot stack verified"
-  elif [[ "$ok_load" -eq 1 ]]; then
-    _fail "3. Notebook opens in euporie but plot stack (matplotlib) failed"
+  elif [[ "$euporie_ok" -eq 0 ]]; then
+    _fail "3. euporie not callable (euporie --version failed)"
+  elif [[ "$ok_plot" -eq 0 ]]; then
+    _fail "3. euporie OK but inline-plot stack (matplotlib) failed"
   else
-    _fail "3. Notebook opens in euporie with inline plots (euporie could not load notebook)"
+    _fail "3. euporie OK but sample notebook did not parse (nbformat)"
   fi
 }
 
