@@ -71,6 +71,9 @@ _detect_network() {
   elif have wget; then
     wget -q --timeout=4 -O /dev/null https://github.com 2>/dev/null && DETECT_NETWORK=1
   fi
+  # Never let a failed reachability check (offline) bubble a non-zero return out
+  # of this helper — under `set -e` that would abort the installer.
+  return 0
 }
 
 _detect_ram() {
@@ -80,6 +83,7 @@ _detect_ram() {
     kb="$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)"
     [[ -n "$kb" ]] && DETECT_RAM_MB=$(( kb / 1024 ))
   fi
+  return 0  # keep set -e safe even if the meminfo parse yields nothing
 }
 
 # opengl_ge_33 — true if detected OpenGL >= 3.3 (kitty's hardware threshold).

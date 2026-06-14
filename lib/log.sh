@@ -35,7 +35,11 @@ log_init() {
   LOG_FILE="$LOG_DIR/install-$stamp.log"
   : >"$LOG_FILE"
   log_info "Logging to $LOG_FILE"
-  [[ "$DRY_RUN" == "1" ]] && log_info "DRY-RUN: no changes will be made."
+  # NOTE: must not end on a bare '[[ … ]] && …' — under `set -e` a false test
+  # makes this function return 1 and aborts the whole installer on a real run.
+  if [[ "$DRY_RUN" == "1" ]]; then
+    log_info "DRY-RUN: no changes will be made."
+  fi
 }
 
 # _emit <console-colored-line> <plain-line> — print to console and append plain to log.
