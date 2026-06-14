@@ -1,0 +1,87 @@
+# starship.toml — lnx-cli-tui-ide
+# Two-line prompt: info on line 1, a clean input caret on line 2.
+#
+# Tuned for speed on old machines and large git repos (e.g. the ARAYA monorepo):
+# conservative timeouts and ONLY the modules actually used (the explicit `format`
+# below means no other module renders, so the prompt stays fast and quiet).
+# Glyphs come from JetBrainsMono Nerd Font, which the installer provides.
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Performance guards — keep rendering fast even in big repos.
+command_timeout = 1000
+scan_timeout = 30
+add_newline = true
+
+# Line 1: directory + git + language/tooling versions for my stack.
+# Line 2: just the input caret.
+format = """
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$rust\
+$docker_context\
+$line_break\
+$character"""
+
+[directory]
+truncation_length = 4
+truncate_to_repo = true
+style = "bold cyan"
+read_only = " "
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "bold yellow"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "$"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+# Node/TypeScript: starship's nodejs module covers TS via project files/extensions.
+[nodejs]
+symbol = " "
+style = "bold green"
+detect_extensions = ["ts", "tsx", "js", "jsx", "mjs", "cjs"]
+detect_files = ["package.json", "tsconfig.json", ".nvmrc"]
+
+[python]
+symbol = " "
+style = "bold yellow"
+
+[rust]
+symbol = " "
+style = "bold red"
+
+[docker_context]
+symbol = " "
+style = "bold blue"
+only_with_files = true
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
+
+# Explicitly disable a few modules that are commonly auto-detected elsewhere, so
+# they never add latency even if referenced indirectly. (Modules not in `format`
+# above already do not render; these are belt-and-suspenders for cost.)
+[package]
+disabled = true
+[aws]
+disabled = true
+[gcloud]
+disabled = true
+[kubernetes]
+disabled = true

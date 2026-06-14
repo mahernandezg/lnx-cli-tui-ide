@@ -41,7 +41,7 @@ Options:
 
 Modules (run in this order):
   00-uv  10-terminal  20-viewers  30-euporie  40-helix
-  50-git-docker-tui  60-ssh-alias  90-vscodium (gated)
+  50-git-docker-tui  60-ssh-alias  70-starship  90-vscodium (gated)
 EOF
 }
 

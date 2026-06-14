@@ -71,6 +71,7 @@ laptops don't hoard memory.
 | **Helix** | Modal editor. LSP: **vtsls** (TypeScript, the ARAYA monorepo), **ruff** (Python). **basedpyright** is configured but **disabled by default** to save RAM. |
 | **lazygit** | Git TUI. |
 | **lazydocker** | Docker TUI. |
+| **Starship** | Two-line cross-shell prompt (info on line 1, input caret on line 2; git + node/python/rust + docker context). Activation (`eval "$(starship init bash)"`) is written to `~/.bashrc` **idempotently** via a managed marker, so re-runs never duplicate it. |
 | **VSCodium** | Heavy Electron fallback editor — only with `--with-vscodium`. |
 
 Daily multiplexing uses **kitty tabs, windows, and layouts**. **tmux is not installed by
@@ -141,8 +142,8 @@ Run it any time:
 install.sh            entrypoint: flags, detection, module dispatch, validation
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh
 modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
-                      50-git-docker-tui 60-ssh-alias 90-vscodium (gated)
-dotfiles/             kitty/ helix/ wezterm/
+                      50-git-docker-tui 60-ssh-alias 70-starship 90-vscodium (gated)
+dotfiles/             kitty/ helix/ wezterm/ starship/
 tests/                validate.sh + sample.md / sample.py / sample.ipynb
 ```
 
