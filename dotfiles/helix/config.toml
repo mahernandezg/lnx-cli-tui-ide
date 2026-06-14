@@ -1,0 +1,50 @@
+# Helix config.toml — lnx-cli-tui-ide
+# Legible, terminal-first defaults. Language servers are wired in languages.toml.
+
+theme = "base16_terminal"   # follow the kitty palette; calm for long sessions
+
+[editor]
+line-number = "relative"
+mouse = true
+bufferline = "multiple"
+color-modes = true
+cursorline = true
+true-color = true
+rulers = [100]
+text-width = 100
+# Show LSP status / diagnostics inline but not noisily.
+idle-timeout = 250
+completion-trigger-len = 2
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type"]
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false   # show dotfiles in the picker
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = false   # off by default to keep things light on old laptops
+
+[editor.indent-guides]
+render = true
+character = "┊"
+
+[editor.soft-wrap]
+enable = true
+
+# A couple of quality-of-life keymaps; keep close to defaults otherwise.
+[keys.normal]
+"C-s" = ":w"
+"C-q" = ":q"
+
+[keys.normal.space]
+# space-e toggles the file explorer-style picker
+e = "file_picker"

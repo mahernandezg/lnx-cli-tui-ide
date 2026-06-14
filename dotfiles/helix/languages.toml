@@ -1,0 +1,58 @@
+# Helix languages.toml — lnx-cli-tui-ide
+#
+# TypeScript -> vtsls   (the ARAYA monorepo)
+# Python     -> ruff    (lint + format, light on RAM)
+#               basedpyright is DEFINED but DISABLED by default to save RAM.
+#               Enable per session when you need types (see README), e.g. by
+#               adding "basedpyright" back into the python language-servers list
+#               in a project-local .helix/languages.toml.
+
+# ---- Language servers -------------------------------------------------------
+[language-server.vtsls]
+command = "vtsls"
+args = ["--stdio"]
+
+[language-server.ruff]
+command = "ruff"
+args = ["server"]
+
+# Defined but intentionally not attached by default (RAM-conscious).
+[language-server.basedpyright]
+command = "basedpyright-langserver"
+args = ["--stdio"]
+
+[language-server.basedpyright.config.basedpyright.analysis]
+# When enabled, keep it cheap.
+diagnosticMode = "openFilesOnly"
+typeCheckingMode = "basic"
+
+# ---- TypeScript / TSX -------------------------------------------------------
+[[language]]
+name = "typescript"
+language-servers = ["vtsls"]
+auto-format = true
+
+[[language]]
+name = "tsx"
+language-servers = ["vtsls"]
+auto-format = true
+
+[[language]]
+name = "javascript"
+language-servers = ["vtsls"]
+
+[[language]]
+name = "jsx"
+language-servers = ["vtsls"]
+
+# ---- Python -----------------------------------------------------------------
+# ruff only by default. basedpyright is configured above but NOT listed here, so
+# it does not load and consume RAM until you opt in per project/session.
+[[language]]
+name = "python"
+language-servers = ["ruff"]
+auto-format = true
+
+[language.formatter]
+command = "ruff"
+args = ["format", "-"]

@@ -1,0 +1,23 @@
+# Local connection config with REAL values. The .example is committed; this isn't.
+/config.env
+
+# Local state, logs, and runtime artifacts — never committed.
+logs/
+*.log
+state/
+*.bak.*
+.DS_Store
+
+# Key material must never be committed. Belt-and-suspenders: ignore common key
+# shapes anywhere in the tree even though the repo never writes them.
+id_*
+*_deploy
+*.pem
+*.key
+known_hosts
+
+# Editor / OS noise
+*.swp
+*~
+.idea/
+.vscode/
