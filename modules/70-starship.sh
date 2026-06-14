@@ -62,8 +62,9 @@ _starship_activate_bash() {
   local begin="# >>> lnx-cli-tui-ide: starship >>>"
   local end="# <<< lnx-cli-tui-ide: starship <<<"
   # Written verbatim into .bashrc; it must resolve at shell startup, not here.
+  # Guarded so a machine without starship on PATH doesn't error on shell startup.
   # shellcheck disable=SC2016
-  local init_line='eval "$(starship init bash)"'
+  local init_line='command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"'
 
   # Already activated? The unique marker is the single source of truth — never
   # append twice on a re-run.
