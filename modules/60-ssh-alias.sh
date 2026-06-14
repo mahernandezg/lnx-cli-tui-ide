@@ -17,26 +17,83 @@ if [[ ! -f "$CONFIG_ENV" ]]; then
 fi
 
 # config.env is a gitignored shell fragment defining SSH_ALIAS / SSH_HOSTNAME /
-# SSH_USER / SSH_IDENTITY. Sourcing it (rather than parsing) lets values like
-# "$HOME/.ssh/id_ed25519" expand naturally.
+# SSH_USER and (optionally) SSH_IDENTITY / SSH_IDENTITY_CANDIDATES. Sourcing it
+# (rather than parsing) lets values like "$HOME/.ssh/id_ed25519" expand naturally.
 # shellcheck source=/dev/null
 . "$CONFIG_ENV"
 
-: "${SSH_ALIAS:=}"; : "${SSH_HOSTNAME:=}"; : "${SSH_USER:=}"; : "${SSH_IDENTITY:=}"
-if [[ -z "$SSH_ALIAS" || -z "$SSH_HOSTNAME" || -z "$SSH_USER" || -z "$SSH_IDENTITY" ]]; then
-  log_warn "ssh: config.env present but incomplete (need SSH_ALIAS, SSH_HOSTNAME, SSH_USER, SSH_IDENTITY) — skipping"
-  return 0
-fi
+: "${SSH_ALIAS:=}"; : "${SSH_HOSTNAME:=}"; : "${SSH_USER:=}"
+: "${SSH_IDENTITY:=}"; : "${SSH_IDENTITY_CANDIDATES:=}"
 
-# Expand a leading "~/" to $HOME in case the user wrote a tilde instead of $HOME.
-# (Literal first-two-character comparison; no tilde expansion is intended here.)
-# shellcheck disable=SC2088  # comparing to the literal string "~/", not expanding it
-if [[ "${SSH_IDENTITY:0:2}" == "~/" ]]; then
-  SSH_IDENTITY="$HOME/${SSH_IDENTITY:2}"
+# SSH_IDENTITY is OPTIONAL: only the remote facts (alias/host/user) are required,
+# because the key can be auto-detected from ~/.ssh below.
+if [[ -z "$SSH_ALIAS" || -z "$SSH_HOSTNAME" || -z "$SSH_USER" ]]; then
+  log_warn "ssh: config.env present but incomplete (need SSH_ALIAS, SSH_HOSTNAME, SSH_USER) — skipping"
+  return 0
 fi
 
 SSH_DIR="$HOME/.ssh"
 SSH_CONFIG="$SSH_DIR/config"
+
+# _list_ssh_private_keys — print every private-key file in ~/.ssh (one per line),
+# identified by its PEM/OpenSSH "BEGIN ... PRIVATE KEY" header so non-standard
+# names (e.g. deploy keys without a .pub) are found too. Skips *.pub, config,
+# known_hosts, authorized_keys, and our timestamped backups.
+_list_ssh_private_keys() {
+  local f
+  [[ -d "$SSH_DIR" ]] || return 0
+  for f in "$SSH_DIR"/*; do
+    [[ -f "$f" ]] || continue
+    case "${f##*/}" in
+      *.pub|config|known_hosts|known_hosts.*|authorized_keys|*.bak.*) continue ;;
+    esac
+    if head -n1 "$f" 2>/dev/null | grep -q 'BEGIN .*PRIVATE KEY'; then
+      printf '%s\n' "$f"
+    fi
+  done
+}
+
+# _discover_ssh_key — choose the best private key, in order:
+#   1. names from SSH_IDENTITY_CANDIDATES (config.env), e.g. a deploy key name
+#   2. standard names: id_ed25519 > id_ecdsa > id_rsa
+#   3. any detected private key (first alphabetically)
+_discover_ssh_key() {
+  local name cand
+  # shellcheck disable=SC2086  # candidate names are space-separated by design
+  for name in $SSH_IDENTITY_CANDIDATES; do
+    [[ -f "$SSH_DIR/$name" ]] && { printf '%s\n' "$SSH_DIR/$name"; return 0; }
+  done
+  for name in id_ed25519 id_ecdsa id_rsa; do
+    [[ -f "$SSH_DIR/$name" ]] && { printf '%s\n' "$SSH_DIR/$name"; return 0; }
+  done
+  cand="$(_list_ssh_private_keys | head -n1)"
+  [[ -n "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+  return 1
+}
+
+# Report which private keys exist so you can see what was detected.
+_ssh_keys_found="$(_list_ssh_private_keys)"
+if [[ -n "$_ssh_keys_found" ]]; then
+  log_info "ssh: private keys detected in ~/.ssh:"
+  while IFS= read -r _ssh_k; do log_info "ssh:   - $_ssh_k"; done <<<"$_ssh_keys_found"
+else
+  log_info "ssh: no private keys detected in ~/.ssh yet"
+fi
+
+# Resolve SSH_IDENTITY: an explicit config value wins; otherwise auto-detect.
+if [[ -n "$SSH_IDENTITY" ]]; then
+  # Expand a leading "~/" to $HOME in case a tilde was used instead of $HOME.
+  # shellcheck disable=SC2088  # literal "~/" comparison, not tilde expansion
+  if [[ "${SSH_IDENTITY:0:2}" == "~/" ]]; then
+    SSH_IDENTITY="$HOME/${SSH_IDENTITY:2}"
+  fi
+  log_info "ssh: using SSH_IDENTITY from config.env: $SSH_IDENTITY"
+elif SSH_IDENTITY="$(_discover_ssh_key)"; then
+  log_ok "ssh: auto-detected key $SSH_IDENTITY (set SSH_IDENTITY in config.env to override)"
+else
+  SSH_IDENTITY="$HOME/.ssh/id_ed25519"
+  log_warn "ssh: no key set or found in ~/.ssh — alias will reference $SSH_IDENTITY (create it before connecting)"
+fi
 
 # Generic marker comments — they name neither a provider nor a host, so the
 # managed region is identifiable for idempotent rewrites without leaking anything.
