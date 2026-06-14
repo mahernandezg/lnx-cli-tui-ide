@@ -87,6 +87,10 @@ You should now see the two-line **Starship** prompt.
 This reports PASS/FAIL for the four things that motivate the whole setup (glow, bat,
 euporie, Helix+LSP). Re-running `./install.sh` any time is safe — it's idempotent.
 
+**Step 7 — Start using your tools.** Each app is launched by typing its command. See
+[§3](#3-daily-use--every-tool-explained) for the exact command, what you'll see, and how to
+quit each one — for example, open the editor with **`hx`** (not `helix`).
+
 ---
 
 ## 2. Command-line flags
@@ -108,10 +112,33 @@ Module names: `00-uv 10-terminal 20-viewers 30-euporie 40-helix 50-git-docker-tu
 
 ## 3. Daily use — every tool explained
 
-Each tool below: **what it is**, **why it's here (the advantage)**, and **how to use it**
-with the commands and keys you'll actually reach for.
+After the install finishes, you use each tool by **typing its command into the terminal and
+pressing Enter.** The command name is not always the tool's name — for example **Helix is
+launched with `hx`, not `helix`** (typing `helix` gives `command not found`).
 
-### uv — the Python toolchain
+### Quick cheat sheet — what to type, and how to quit
+
+| Tool | Type this and press Enter | What happens | How to quit it |
+|------|---------------------------|--------------|----------------|
+| **Helix** (editor) | `hx` *(not `helix`)* — or `hx file.py`, or `hx .` | opens the editor | press `Esc`, type `:q`, Enter |
+| **yazi** (files) | `yazi` | opens the file manager | press `q` |
+| **euporie** (notebooks) | `euporie notebook file.ipynb` | opens the notebook | press `Ctrl+q` |
+| **lazygit** (git) | `lazygit` *(inside a git repo)* | opens the Git UI | press `q` |
+| **lazydocker** (docker) | `lazydocker` | opens the Docker UI | press `q` |
+| **bat** (read code) | `bat file.py` | prints the file in color | `q` if it scrolls; else nothing |
+| **glow** (read Markdown) | `glow README.md` | prints rendered Markdown | `q` if you used `glow -p` |
+| **ripgrep** (search) | `rg "text"` | prints matches | (returns on its own) |
+| **fzf** (fuzzy pick) | `rg --files \| fzf` | interactive picker | `Esc` to cancel |
+| **uv** (Python) | `uv --version`, `uv tool list` | runs a command | (returns on its own) |
+| **starship** (prompt) | *(nothing — it's your prompt)* | shows the two-line prompt | — |
+
+> **Golden rule for any full-screen tool (TUI):** if you get stuck, try `q`, then `Esc`,
+> then `Ctrl+q`, and as a last resort `Ctrl+c`. One of those exits.
+
+Below, each tool in detail: **what it is**, **why it's here (the advantage)**, and **how to
+use it** — including the exact command to start it.
+
+### uv — the Python toolchain · [📖 Docs](https://docs.astral.sh/uv/)
 - **What:** an extremely fast Python package/tool manager (replaces `pip` + `venv` +
   `pipx`).
 - **Advantage:** isolated, reproducible, and fast. This repo uses **uv for all Python** —
@@ -126,7 +153,7 @@ with the commands and keys you'll actually reach for.
   uv self update                 # keep uv current
   ```
 
-### kitty / WezTerm — the terminal
+### kitty / WezTerm — the terminal · [📖 kitty](https://sw.kovidgoyal.net/kitty/) · [📖 WezTerm](https://wezterm.org/)
 - **What:** a GPU-accelerated terminal (kitty), or WezTerm in software-rendering mode on
   GPUs that can't do OpenGL 3.3.
 - **Advantage:** the **kitty graphics protocol** lets images and notebook plots render
@@ -139,7 +166,7 @@ with the commands and keys you'll actually reach for.
   kitten ssh myhost              # SSH carrying terminfo so remote TUIs render right
   ```
 
-### bat — a better `cat`
+### bat — a better `cat` · [📖 Docs](https://github.com/sharkdp/bat)
 - **What:** `cat` with syntax highlighting, line numbers, and a Git change gutter.
 - **Advantage:** read code in color without opening an editor; integrates with a pager.
 - **How:** (on Debian the binary is `batcat`; the installer adds a `bat` shim)
@@ -149,7 +176,7 @@ with the commands and keys you'll actually reach for.
   rg -l TODO | xargs bat         # view every file that matched
   ```
 
-### glow — rendered Markdown
+### glow — rendered Markdown · [📖 Docs](https://github.com/charmbracelet/glow)
 - **What:** a Markdown renderer for the terminal (headings, lists, code blocks, tables).
 - **Advantage:** read READMEs and docs *formatted*, without a browser.
 - **How:**
@@ -159,7 +186,7 @@ with the commands and keys you'll actually reach for.
   glow .                         # browse all Markdown in this directory
   ```
 
-### yazi — the file manager
+### yazi — the file manager · [📖 Docs](https://yazi-rs.github.io/docs/quick-start)
 - **What:** a fast (Rust) TUI file manager with image/preview support.
 - **Advantage:** navigate, preview (including images via the kitty protocol), and do bulk
   file ops far faster than `cd`/`ls`/`mv`.
@@ -172,7 +199,7 @@ with the commands and keys you'll actually reach for.
   | `/` | filter, `s` search | `.` | toggle hidden files |
   | `q` | quit | `~` | help |
 
-### ripgrep (`rg`) — search
+### ripgrep (`rg`) — search · [📖 Docs](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md)
 - **What:** a recursive code search tool.
 - **Advantage:** extremely fast and respects `.gitignore` by default (no noise from
   `node_modules`).
@@ -185,7 +212,7 @@ with the commands and keys you'll actually reach for.
   rg -A3 -B1 "throw new"         # show context lines
   ```
 
-### fzf — fuzzy finder
+### fzf — fuzzy finder · [📖 Docs](https://github.com/junegunn/fzf#usage)
 - **What:** an interactive fuzzy filter for any list.
 - **Advantage:** pick a file/branch/line interactively instead of typing exact names.
 - **How:**
@@ -196,7 +223,7 @@ with the commands and keys you'll actually reach for.
   To get the shell keybindings (`Ctrl-R` history, `Ctrl-T` files, `Alt-C` cd), add this to
   `~/.bashrc`: `eval "$(fzf --bash)"`.
 
-### euporie — Jupyter notebooks in the terminal
+### euporie — Jupyter notebooks in the terminal · [📖 Docs](https://euporie.readthedocs.io/)
 - **What:** a TUI for viewing and running `.ipynb` notebooks, with **inline plots** via the
   kitty graphics protocol.
 - **Advantage:** open notebooks (and see matplotlib figures) without a browser or Jupyter
@@ -207,14 +234,29 @@ with the commands and keys you'll actually reach for.
   euporie preview analysis.ipynb    # non-interactive dump to the terminal
   euporie console                   # a notebook-style REPL
   ```
+  Inside the notebook: `Shift+Enter` runs the selected cell; **quit with `Ctrl+q`.**
 
-### Helix (`hx`) — the editor
-- **What:** a modal editor with **built-in LSP** (no plugin setup). Pre-wired here with
-  **vtsls** (TypeScript) and **ruff** (Python). `basedpyright` is installed but **off by
-  default** to save RAM — enable it per project when you need types.
+### Helix (`hx`) — the editor · [📖 Docs](https://docs.helix-editor.com/) · [keymap](https://docs.helix-editor.com/keymap.html)
+- **What:** a modal text editor with **built-in LSP** (no plugin setup). Pre-wired here with
+  **[vtsls](https://github.com/yioneko/vtsls)** (TypeScript) and
+  **[ruff](https://docs.astral.sh/ruff/)** (Python).
+  [`basedpyright`](https://docs.basedpyright.com/) is installed but **off by default** to
+  save RAM — enable it per project when you need types.
 - **Advantage:** selection-first editing, multiple cursors, tree-sitter highlighting, and
   language servers that "just work" out of the box.
-- **How:** `hx file` or `hx .` (opens a file picker). Essential keys:
+- **Start it:** the command is **`hx`** (not `helix`):
+  ```bash
+  hx              # open an empty editor
+  hx app.ts       # open a file
+  hx .            # open a file picker for the current folder
+  ```
+- **First time — it's *modal*, so this trips everyone up:** when Helix opens you're in
+  **NORMAL** mode and typing letters runs commands, it does **not** insert text. To actually
+  type, press **`i`** (insert mode); press **`Esc`** to go back to NORMAL mode.
+  - **Save:** `Esc`, then `:w`, Enter.
+  - **Quit:** `Esc`, then `:q`, Enter. (`:q!` quits without saving; `:wq` saves and quits.)
+  - **Open another file:** `Space` then `f` (file picker).
+- **Essential keys** (press `Esc` first to be in NORMAL mode):
   | Key | Action | Key | Action |
   |-----|--------|-----|--------|
   | `Space` `f` | file picker | `gd` | go to definition |
@@ -230,28 +272,52 @@ with the commands and keys you'll actually reach for.
   **Enable types per project:** drop a `.helix/languages.toml` in the repo adding
   `"basedpyright"` to the Python `language-servers` list.
 
-### lazygit — Git TUI
+### lazygit — Git TUI · [📖 Docs](https://github.com/jesseduffield/lazygit)
 - **What:** a full-screen UI for Git.
 - **Advantage:** stage hunks, craft commits, manage branches, rebase, and resolve conflicts
   visually — far faster than raw `git` for everyday work.
 - **How:** run `lazygit` inside a repo. Common keys: `Space` stage/unstage · `c` commit ·
-  `P` push · `p` pull · `b` branch menu · `Enter` to drill into files/hunks · `?` help.
+  `P` push · `p` pull · `b` branch menu · `Enter` to drill into files/hunks · `?` help ·
+  **`q` to quit.**
 
-### lazydocker — Docker TUI
+### lazydocker — Docker TUI · [📖 Docs](https://github.com/jesseduffield/lazydocker)
 - **What:** a dashboard for Docker containers, images, volumes, and logs.
 - **Advantage:** watch logs, restart containers, prune, and inspect resources without
   memorizing `docker` flags.
-- **How:** run `lazydocker` (needs the Docker engine running to be useful).
+- **How:** run `lazydocker` (needs the Docker engine running to be useful). Navigate panels
+  with the arrow keys; **`q` to quit.**
 
-### Starship — the prompt
+### Starship — the prompt · [📖 Docs](https://starship.rs/config/)
 - **What:** a fast, informative two-line shell prompt. See [§4](#4-the-starship-prompt).
 - **Advantage:** shows directory, Git state, and language versions at a glance, while
   staying fast even in huge repos (tuned timeouts).
 
-### VSCodium — emergency GUI editor (opt-in)
+### VSCodium — emergency GUI editor (opt-in) · [📖 Docs](https://vscodium.com/)
 - **What:** a telemetry-free build of VS Code. **Not installed by default.**
 - **Advantage:** a fallback for the rare task that genuinely needs a GUI editor.
 - **How:** install with `./install.sh --with-vscodium`, then launch with `codium .`.
+
+### All official documentation, in one place
+
+| Tool | Command | Official documentation |
+|------|---------|------------------------|
+| uv | `uv` | https://docs.astral.sh/uv/ |
+| kitty | `kitty` / `kitten` | https://sw.kovidgoyal.net/kitty/ |
+| WezTerm | `wezterm` | https://wezterm.org/ |
+| bat | `bat` | https://github.com/sharkdp/bat |
+| glow | `glow` | https://github.com/charmbracelet/glow |
+| yazi | `yazi` | https://yazi-rs.github.io/docs/quick-start |
+| ripgrep | `rg` | https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md |
+| fzf | `fzf` | https://github.com/junegunn/fzf#usage |
+| euporie | `euporie` | https://euporie.readthedocs.io/ |
+| Helix | `hx` | https://docs.helix-editor.com/ · [keymap](https://docs.helix-editor.com/keymap.html) |
+| ↳ vtsls (TS LSP) | — | https://github.com/yioneko/vtsls |
+| ↳ ruff (Py LSP) | `ruff` | https://docs.astral.sh/ruff/ |
+| ↳ basedpyright | `basedpyright` | https://docs.basedpyright.com/ |
+| lazygit | `lazygit` | https://github.com/jesseduffield/lazygit |
+| lazydocker | `lazydocker` | https://github.com/jesseduffield/lazydocker |
+| Starship | *(your prompt)* | https://starship.rs/config/ |
+| VSCodium | `codium` | https://vscodium.com/ |
 
 ---
 
@@ -382,6 +448,10 @@ timeout-guarded, so it can never hang an unattended run.
 
 ## 10. Troubleshooting
 
+- **`command not found` for a tool you just installed.** Two usual causes: (1) the command
+  name differs from the tool name — most notably **Helix is `hx`, not `helix`** (see the
+  cheat sheet in [§3](#3-daily-use--every-tool-explained)); (2) the new install dir isn't on
+  your `PATH` yet in this shell — **open a new terminal** (or run `exec bash`) and try again.
 - **The prompt looks wrong / broken after install.** Your previous `~/.bashrc` is backed up.
   Restore it with `cp ~/.bashrc.bak.<timestamp> ~/.bashrc` and open a new shell.
 - **A tool didn't install.** It's non-fatal — check the log at `logs/install-<timestamp>.log`
