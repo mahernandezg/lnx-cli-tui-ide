@@ -64,6 +64,14 @@ case_bat() {
   fi
 }
 
+# _to <seconds> <cmd...> — run a command under a timeout when `timeout` exists,
+# so a misbehaving renderer can never hang an unattended install. stdin (heredocs)
+# passes straight through to the wrapped command.
+_to() {
+  local secs="$1"; shift
+  if have timeout; then timeout "$secs" "$@"; else "$@"; fi
+}
+
 # ---- Case 3: euporie opens the notebook with inline plots ------------------
 case_euporie() {
   if ! have euporie; then _fail "3. Notebook opens in euporie with inline plots (euporie not installed)"; return; fi
@@ -72,20 +80,26 @@ case_euporie() {
   # (b) confirm the plotting stack can produce an image, which is what euporie
   # would stream via the kitty graphics protocol.
   local ok_load=0 ok_plot=0
-  if euporie notebook --version >/dev/null 2>&1 || euporie --version >/dev/null 2>&1; then
-    # Dry preview render to confirm the notebook parses (timeout guards the TUI).
-    if have timeout; then
-      timeout 8 euporie notebook --dump "$FIX_NB" >/dev/null 2>&1 && ok_load=1
-    fi
-    # If --dump isn't supported by this euporie version, fall back to a parse check.
-    [[ "$ok_load" -eq 0 ]] && have uv && uv run --with nbformat python - "$FIX_NB" >/dev/null 2>&1 <<'PY' && ok_load=1
+  # IMPORTANT: never invoke the interactive `euporie notebook` TUI here — it waits
+  # for input and hangs an unattended run. Use only the top-level `--version` and
+  # the non-interactive `preview`, and wrap every call in a timeout.
+  if _to 20 euporie --version >/dev/null 2>&1; then
+    # Notebook loads? Try euporie's non-interactive preview first; otherwise parse
+    # it with nbformat via uv. Both are timeout-guarded.
+    if _to 20 euporie preview "$FIX_NB" >/dev/null 2>&1; then
+      ok_load=1
+    elif have uv && _to 30 uv run --with nbformat python - "$FIX_NB" >/dev/null 2>&1 <<'PY'
 import sys, nbformat
 nbformat.read(sys.argv[1], as_version=4)
 PY
+    then
+      ok_load=1
+    fi
   fi
-  # Confirm an inline plot image can actually be produced (matplotlib -> PNG).
-  if have uv; then
-    uv run --with matplotlib python - >/dev/null 2>&1 <<'PY' && ok_plot=1
+  # Confirm the inline-plot stack can produce an image. matplotlib is already
+  # cached by the euporie module, so this is normally fast; the longer timeout
+  # just covers a cold dependency resolve on a slow machine.
+  if have uv && _to 90 uv run --with matplotlib python - >/dev/null 2>&1 <<'PY'
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -93,6 +107,8 @@ fig, ax = plt.subplots()
 ax.plot([0, 1, 2], [0, 1, 0])
 fig.savefig("/tmp/lnx-validate-plot.png")
 PY
+  then
+    ok_plot=1
   fi
   if [[ "$ok_load" -eq 1 && "$ok_plot" -eq 1 ]]; then
     _pass "3. Notebook opens in euporie; inline-plot stack verified"
