@@ -7,30 +7,9 @@
 # glow and yazi often need a release binary.
 
 # ---- helpers ----------------------------------------------------------------
-# install a single static binary from a tarball release into ~/.local/bin.
-# _release_bin <name> <url> <path-inside-archive>
-_release_bin() {
-  local name="$1" url="$2" inner="$3" tmp
-  dry_skip "download and install '$name' from a release archive" && return 0
-  require_network "$name" || return 1
-  have curl || return 1
-  tmp="$(mktemp -d)"
-  run_quiet curl -L -o "$tmp/archive" "$url" || { rm -rf "$tmp"; return 1; }
-  if [[ "$url" == *.tar.gz || "$url" == *.tgz ]]; then
-    run_quiet tar -xzf "$tmp/archive" -C "$tmp" || { rm -rf "$tmp"; return 1; }
-  elif [[ "$url" == *.zip ]]; then
-    have unzip || apt_install unzip || true
-    run_quiet unzip -o "$tmp/archive" -d "$tmp" || { rm -rf "$tmp"; return 1; }
-  fi
-  local found
-  found="$(find "$tmp" -type f -name "$inner" | head -n1)"
-  [[ -z "$found" ]] && { log_warn "$name: binary '$inner' not found in archive"; rm -rf "$tmp"; return 1; }
-  run mkdir -p "$HOME/.local/bin"
-  run install -m 0755 "$found" "$HOME/.local/bin/$inner"
-  rm -rf "$tmp"
-  export PATH="$HOME/.local/bin:$PATH"
-  have "$inner"
-}
+# Release-binary installs go through release_install_bin() in lib/release.sh, so
+# the fetch/extract/install logic lives in one place and is shared with the ruff
+# GitHub fallback in modules/40-helix.sh.
 
 # ---- bat --------------------------------------------------------------------
 # bat: code with syntax colors + git gutter. On Debian the binary is 'batcat';
@@ -75,7 +54,7 @@ method_glow_release() {
     aarch64) arch="arm64" ;;
     *) log_warn "glow: unsupported arch $DETECT_ARCH"; return 1 ;;
   esac
-  _release_bin glow \
+  release_install_bin glow \
     "https://github.com/charmbracelet/glow/releases/download/v${v}/glow_${v}_Linux_${arch}.tar.gz" \
     "glow"
 }
@@ -98,7 +77,7 @@ method_yazi_release() {
     log_info "[DRY] would download and install yazi ${tag} (no fetch performed)"
     return 0
   fi
-  _release_bin yazi "$url" "yazi"
+  release_install_bin yazi "$url" "yazi"
 }
 method_yazi_cargo() {
   have cargo || return 1

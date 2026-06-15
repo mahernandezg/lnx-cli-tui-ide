@@ -83,3 +83,24 @@ require_network() {
   fi
   return 0
 }
+
+# pypi_reachable — FAST closed-path probe before any PyPI install. Returns 0 if
+# the package *file* host answers within a few seconds, else non-zero so callers
+# can skip a slow `uv` retry loop (which otherwise burns ~45-50s x3 before giving
+# up) and defer instead. This is the design point: detect the closed path in
+# seconds, not minutes.
+#
+#   - We probe files.pythonhosted.org because that is the host that actually
+#     serves wheels/sdists and the one a corporate proxy was observed to block;
+#     the index (pypi.org) can resolve while downloads still hang.
+#   - No `-f`: any HTTP response (even 404) means the host is reachable; only a
+#     connect/timeout failure (the block symptom) yields a non-zero curl exit.
+#   - Host overridable via PYPI_PROBE_URL for tests.
+PYPI_PROBE_URL="${PYPI_PROBE_URL:-https://files.pythonhosted.org/}"
+pypi_reachable() {
+  # No network at all -> definitely closed.
+  [[ "${DETECT_NETWORK:-0}" == "1" ]] || return 1
+  # Can't probe without curl: don't block the (rare) curl-less path; let uv try.
+  have curl || return 0
+  curl -sS -I --connect-timeout 3 --max-time 5 -o /dev/null "$PYPI_PROBE_URL" 2>/dev/null
+}

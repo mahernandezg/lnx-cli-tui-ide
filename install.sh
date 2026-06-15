@@ -72,8 +72,13 @@ export DRY_RUN VERBOSE WITH_VSCODIUM
 . "$REPO_ROOT/lib/apt.sh"
 # shellcheck source=lib/github.sh
 . "$REPO_ROOT/lib/github.sh"
+# shellcheck source=lib/release.sh
+. "$REPO_ROOT/lib/release.sh"
+# shellcheck source=lib/outcome.sh
+. "$REPO_ROOT/lib/outcome.sh"
 
 log_init
+outcome_init
 
 # ---- Run detection ----------------------------------------------------------
 run_detection
@@ -149,23 +154,77 @@ else
 fi
 
 # ---- Summary ----------------------------------------------------------------
+# Honest accounting. Read the per-tool ledger (lib/outcome.sh) that modules wrote
+# from their subshells, partition it, and tell the truth: never claim "without
+# fatal errors" when pieces are missing.
 printf '\n'
 log_step "===== Summary ====="
 log_info "Modules run: ${RAN_MODULES[*]:-none}"
+
+DEFERRED_ITEMS=()
+FAILED_ITEMS=()
+NOTE_ITEMS=()
+if [[ -n "${OUTCOME_FILE:-}" && -f "$OUTCOME_FILE" ]]; then
+  while IFS=$'\t' read -r o_status o_tool o_detail; do
+    [[ -z "$o_status" ]] && continue
+    case "$o_status" in
+      DEFERRED) DEFERRED_ITEMS+=("$o_tool — ${o_detail:-deferred}") ;;
+      FAILED)   FAILED_ITEMS+=("$o_tool — ${o_detail:-failed}") ;;
+      NOTE)     NOTE_ITEMS+=("$o_tool — ${o_detail:-note}") ;;
+    esac
+  done <"$OUTCOME_FILE"
+fi
+
+# A real failure is a hard-failed module, a tool with all paths exhausted (no
+# network excuse), or a failed validation. DEFERRED is NOT a failure.
+HARD_FAIL=0
 if [[ ${#FAILED_MODULES[@]} -gt 0 ]]; then
-  log_warn "Modules with failures: ${FAILED_MODULES[*]}"
+  log_error "Modules with failures: ${FAILED_MODULES[*]}"
+  HARD_FAIL=1
+fi
+if [[ ${#FAILED_ITEMS[@]} -gt 0 ]]; then
+  log_error "Tools FAILED (all paths exhausted):"
+  for it in "${FAILED_ITEMS[@]}"; do log_error "  - $it"; done
+  HARD_FAIL=1
+fi
+[[ "$VALIDATE_RC" -ne 0 ]] && HARD_FAIL=1
+
+PENDING=0
+if [[ ${#DEFERRED_ITEMS[@]} -gt 0 ]]; then
+  PENDING=1
+  log_warn "Tools DEFERRED (path closed; not installed, not failed):"
+  for it in "${DEFERRED_ITEMS[@]}"; do log_warn "  - $it"; done
+  log_warn "Re-run ./install.sh on an open network to complete the deferred items (idempotent)."
+fi
+
+# NOTE items are informational prerequisites a rerun cannot fix; never gate on them.
+if [[ ${#NOTE_ITEMS[@]} -gt 0 ]]; then
+  log_info "Notes (prerequisites a rerun will not fix):"
+  for it in "${NOTE_ITEMS[@]}"; do log_info "  - $it"; done
+fi
+
+if [[ "$HARD_FAIL" -eq 1 ]]; then
+  log_error "Status: completed WITH FAILURES — see the FAILED items above."
+elif [[ "$PENDING" -eq 1 ]]; then
+  log_warn "Status: completed WITH PENDING items — nothing failed, but some tools were deferred (rerun on open network)."
 else
   log_ok "All selected modules completed without fatal errors."
 fi
+
 # if-block (not a bare '[[…]] && …'): keeps this off the bug class even if a future
 # edit moves it to a function's tail position. See tests/test_sete.sh.
 if [[ -n "${LOG_FILE:-}" ]]; then
   log_info "Full log: $LOG_FILE"
 fi
 
-# Exit non-zero only if a module hard-failed or validation failed, so CI can see
-# it — but the run itself always reaches this point (non-fatal step contract).
-if [[ ${#FAILED_MODULES[@]} -gt 0 || "$VALIDATE_RC" -ne 0 ]]; then
+# Exit codes are CI-detectable and distinct:
+#   1  hard failure (module/tool failed, or validation failed)
+#   2  completed but some tools DEFERRED (a rerun on open network finishes them)
+#   0  clean — everything installed/present
+# The run itself always reaches this point (non-fatal step contract).
+if [[ "$HARD_FAIL" -eq 1 ]]; then
   exit 1
+elif [[ "$PENDING" -eq 1 ]]; then
+  exit 2
 fi
 exit 0

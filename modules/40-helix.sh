@@ -49,25 +49,83 @@ method_helix_cargo() {
 }
 
 # ---- Language servers -------------------------------------------------------
-# vtsls (TypeScript) via npm if available; ruff & basedpyright via uv tool.
+# vtsls (TypeScript) via npm; ruff & basedpyright via PyPI. ruff additionally has
+# a GitHub release-binary fallback so a blocked PyPI never leaves Python without a
+# linter/formatter. All three feed the per-tool outcome ledger (lib/outcome.sh)
+# so the final summary is honest about what installed, deferred, or failed.
+
+# ruff path 1: PyPI via uv. Fast-fails when PyPI is unreachable so we don't burn a
+# long uv retry loop; UV_HTTP_TIMEOUT caps any attempt that slips past the probe.
+method_ruff_uv() {
+  have uv || { log_warn "ruff: uv missing"; return 1; }
+  pypi_reachable || { log_warn "ruff: PyPI unreachable — skipping uv path (fast-fail)"; return 1; }
+  run env UV_HTTP_TIMEOUT="${UV_HTTP_TIMEOUT:-10}" uv tool install ruff || return 1
+  export PATH="$HOME/.local/bin:$PATH"
+  verify have ruff
+}
+
+# ruff path 2: prebuilt GitHub release binary (no PyPI, no Python install needed).
+# Uses the same latest-tag resolver + release_install_bin as the other binaries.
+method_ruff_github() {
+  local target tag url
+  case "$DETECT_ARCH" in
+    x86_64)  target="x86_64-unknown-linux-gnu" ;;
+    aarch64) target="aarch64-unknown-linux-gnu" ;;
+    *) log_warn "ruff: unsupported arch $DETECT_ARCH for github release"; return 1 ;;
+  esac
+  tag="$(github_latest_tag astral-sh/ruff)" || return 1   # fall through on failure
+  # ruff assets embed the tag dir but a bare target filename, e.g.
+  # ruff-x86_64-unknown-linux-gnu.tar.gz (tag has no leading 'v').
+  url="https://github.com/astral-sh/ruff/releases/download/${tag}/ruff-${target}.tar.gz"
+  log_info "ruff: latest release ${tag} -> ${url}"
+  if [[ "$DRY_RUN" == "1" ]]; then
+    log_info "[DRY] would download and install ruff ${tag} (no fetch performed)"
+    return 0
+  fi
+  release_install_bin ruff "$url" "ruff"
+}
+
 _install_lsps() {
-  # ruff: fast Python linter/formatter + LSP. Isolated uv tool install.
-  if have uv; then
-    have ruff || run uv tool install ruff || log_warn "lsp: ruff install failed"
-    # basedpyright present-but-disabled: install the binary, keep it off in config.
-    have basedpyright || run uv tool install basedpyright || log_warn "lsp: basedpyright install failed"
+  # ---- ruff: uv (PyPI) -> GitHub release binary -> defer/fail ----
+  if have ruff; then
+    record_outcome PRESENT ruff
+  elif try_methods "ruff" method_ruff_uv method_ruff_github; then
+    record_outcome INSTALLED ruff "$LAST_METHOD"
+  elif ! pypi_reachable; then
+    # PyPI was the closed path AND the github fallback also failed -> a rerun on an
+    # open network can still fix it, so this is a defer, not a hard failure.
+    record_outcome DEFERRED ruff "PyPI unreachable and GitHub release fallback failed; rerun on open network"
   else
-    log_warn "lsp: uv missing; skipping ruff/basedpyright"
+    record_outcome FAILED ruff "uv and GitHub release paths both failed with PyPI reachable"
   fi
 
-  # vtsls: TypeScript language server. Prefer npm global; warn if no node.
-  if have vtsls; then
-    log_info "lsp: vtsls already present"
-  elif have npm; then
-    run npm install -g @vtsls/language-server || log_warn "lsp: vtsls npm install failed"
+  # ---- basedpyright: pure-Python, PyPI-only (present-but-disabled in config) ----
+  # Its only second path is TIME: defer when PyPI is closed, never venv/pip.
+  if have basedpyright; then
+    record_outcome PRESENT basedpyright
+  elif ! have uv; then
+    record_outcome FAILED basedpyright "uv missing (module 00 failed?)"
+  elif ! pypi_reachable; then
+    record_outcome DEFERRED basedpyright "PyPI unreachable (files.pythonhosted.org); rerun on open network"
+  elif run env UV_HTTP_TIMEOUT="${UV_HTTP_TIMEOUT:-10}" uv tool install basedpyright; then
+    record_outcome INSTALLED basedpyright "uv tool"
   else
-    log_warn "lsp: npm/node not found — install Node to get vtsls for TypeScript projects (see README)"
+    record_outcome FAILED basedpyright "uv tool install failed while PyPI was reachable"
   fi
+
+  # ---- vtsls: TypeScript LSP via npm. Missing Node is a known prerequisite a
+  # rerun cannot fix (this installer does not install Node), so it is an
+  # informational NOTE, not a network-recoverable DEFERRED. ----
+  if have vtsls; then
+    record_outcome PRESENT vtsls
+  elif ! have npm; then
+    record_outcome NOTE vtsls "npm/node not found — install Node to get vtsls for TypeScript projects (see README)"
+  elif run npm install -g @vtsls/language-server; then
+    record_outcome INSTALLED vtsls "npm -g"
+  else
+    record_outcome FAILED vtsls "npm install failed"
+  fi
+
   export PATH="$HOME/.local/bin:$PATH"
 }
 
