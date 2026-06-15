@@ -491,11 +491,18 @@ It runs:
   (offline, empty parses) instead of aborting — the failure mode `--dry-run` cannot catch.
   It uses PATH shims (offline `curl`/`wget`, empty `glxinfo`, inert `apt`/`uv`/`npm`), so it
   **downloads and installs nothing** and is fast.
+- **`tests/test_pypi.sh`** (hard gate) — a hermetic resilience suite for a **blocked PyPI**
+  (the `files.pythonhosted.org` incident). Under a curated PATH and a `curl` shim that blocks
+  the PyPI file host while answering the GitHub API, it asserts the closed path is detected
+  **fast, before `uv` is ever invoked** (no multi-minute hang), **ruff falls back** to its
+  GitHub release binary, **euporie/basedpyright are DEFERRED** (not failed), and the final
+  summary is **honest** (exit 2, no false success line). Like `test_sete.sh`, it downloads
+  and installs nothing.
 - **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
   Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
   it never gates the result.
 
-The same shellcheck + `test_sete.sh` run on every push via GitHub Actions
+The same shellcheck + `test_sete.sh` + `test_pypi.sh` run on every push via GitHub Actions
 (`.github/workflows/ci.yml`).
 
 ## 12. Repository layout
@@ -503,11 +510,12 @@ The same shellcheck + `test_sete.sh` run on every push via GitHub Actions
 ```
 install.sh            entrypoint: flags, detection, module dispatch, validation
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
+                      release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
                       50-git-docker-tui 60-ssh-alias 70-starship 90-vscodium (gated)
-dotfiles/             kitty/ helix/ wezterm/ starship/
-tests/                run.sh · test_sete.sh · validate.sh + sample.md/py/ipynb
-.github/workflows/    ci.yml (shellcheck + test_sete on push)
+dotfiles/             kitty/ helix/ wezterm/ starship/ yazi/
+tests/                run.sh · test_sete.sh · test_pypi.sh · validate.sh + sample.md/py/ipynb
+.github/workflows/    ci.yml (shellcheck + test_sete + test_pypi on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 
