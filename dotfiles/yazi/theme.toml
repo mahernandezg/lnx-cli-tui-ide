@@ -1,0 +1,9 @@
+# theme.toml — lnx-cli-tui-ide
+# Make hidden files/folders easy to spot once shown (see yazi.toml).
+# Per https://github.com/sxyazi/yazi/discussions/2113 — a filetype rule
+# matching `is = "hidden"` at the top of the rules list so it wins.
+
+[filetype]
+rules = [
+  { name = "*", is = "hidden", fg = "cyan" },
+]

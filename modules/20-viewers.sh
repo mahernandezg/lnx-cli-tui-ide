@@ -115,4 +115,9 @@ try_methods "glow"    method_glow_present method_glow_apt method_glow_release
 # yazi: prefer the latest-resolved release binary; apt (when packaged) then cargo as fallbacks.
 try_methods "yazi"    method_yazi_present method_yazi_release method_yazi_apt method_yazi_cargo
 
+# yazi config: show hidden files/folders by default and tint them so they stand out
+# (backed up then symlinked by the shared helper).
+link_dotfile "$REPO_ROOT/dotfiles/yazi/yazi.toml"  "$HOME/.config/yazi/yazi.toml"
+link_dotfile "$REPO_ROOT/dotfiles/yazi/theme.toml" "$HOME/.config/yazi/theme.toml"
+
 log_ok "viewers module done"

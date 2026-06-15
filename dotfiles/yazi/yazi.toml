@@ -1,0 +1,6 @@
+# yazi.toml — lnx-cli-tui-ide
+# Show dotfiles and hidden folders by default. Toggle live in yazi with '.'.
+# (Section is [mgr] on recent yazi; older builds use [manager].)
+
+[mgr]
+show_hidden = true
