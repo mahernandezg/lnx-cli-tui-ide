@@ -5,5 +5,5 @@
 
 [filetype]
 rules = [
-  { name = "*", is = "hidden", fg = "cyan" },
+  { url = "*", is = "hidden", fg = "cyan" },
 ]
