@@ -31,6 +31,13 @@ else
   echo "  test_sete: FAIL"; rc=1
 fi
 
+echo "== tests/test_pypi.sh (HARD gate: PyPI-unreachable resilience) =="
+if bash "$HERE/test_pypi.sh"; then
+  echo "  test_pypi: PASS"
+else
+  echo "  test_pypi: FAIL"; rc=1
+fi
+
 echo "== tests/validate.sh (SOFT: tool checks, may skip on a bare box) =="
 if bash "$HERE/validate.sh"; then
   echo "  validate: all cases passed"

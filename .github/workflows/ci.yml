@@ -16,3 +16,6 @@ jobs:
 
       - name: set -e regression suite
         run: bash tests/test_sete.sh
+
+      - name: PyPI-unreachable resilience suite
+        run: bash tests/test_pypi.sh
