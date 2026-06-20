@@ -19,3 +19,6 @@ jobs:
 
       - name: PyPI-unreachable resilience suite
         run: bash tests/test_pypi.sh
+
+      - name: tab-title managed-block suite
+        run: bash tests/test_tab_title.sh

@@ -38,6 +38,13 @@ else
   echo "  test_pypi: FAIL"; rc=1
 fi
 
+echo "== tests/test_tab_title.sh (HARD gate: tab-title managed block) =="
+if bash "$HERE/test_tab_title.sh"; then
+  echo "  test_tab_title: PASS"
+else
+  echo "  test_tab_title: FAIL"; rc=1
+fi
+
 echo "== tests/validate.sh (SOFT: tool checks, may skip on a bare box) =="
 if bash "$HERE/validate.sh"; then
   echo "  validate: all cases passed"
