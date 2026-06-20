@@ -113,7 +113,7 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | `-h`, `--help` | Usage. |
 
 Module names: `00-uv 10-terminal 20-viewers 30-euporie 40-helix 50-git-docker-tui
-60-ssh-alias 70-starship 90-vscodium`. Every run writes a timestamped log to
+60-ssh-alias 70-starship 75-tab-title 90-vscodium`. Every run writes a timestamped log to
 `logs/install-<timestamp>.log`.
 
 ---
@@ -498,12 +498,22 @@ It runs:
   GitHub release binary, **euporie/basedpyright are DEFERRED** (not failed), and the final
   summary is **honest** (exit 2, no false success line). Like `test_sete.sh`, it downloads
   and installs nothing.
+- **`tests/test_tab_title.sh`** (hard gate) — a hermetic, mutation-verified suite for the
+  tab-title managed block (`modules/75-tab-title.sh`). The module writes a `PROMPT_COMMAND`
+  hook to `~/.bashrc` that sets the terminal tab title to the current directory (`~` in
+  `$HOME`) on every prompt, inside a marker-guarded block **guaranteed to sit after the
+  Starship activation** — otherwise Starship's `PROMPT_COMMAND` rewrite would clobber it.
+  Against a throwaway `$HOME` the suite asserts it **preserves foreign `.bashrc` content**
+  (one timestamped backup), is **idempotent** (a second run changes nothing and makes no
+  second backup), lands **after the Starship block**, **wraps a hand-rolled hook that had no
+  markers** (de-duplicated and relocated after Starship), and **reverts only its own block**;
+  `--dry-run` changes nothing. It writes to no real file and installs nothing.
 - **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
   Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
   it never gates the result.
 
-The same shellcheck + `test_sete.sh` + `test_pypi.sh` run on every push via GitHub Actions
-(`.github/workflows/ci.yml`).
+The same shellcheck + `test_sete.sh` + `test_pypi.sh` + `test_tab_title.sh` run on every push
+via GitHub Actions (`.github/workflows/ci.yml`).
 
 ## 12. Repository layout
 
@@ -512,10 +522,12 @@ install.sh            entrypoint: flags, detection, module dispatch, validation
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
-                      50-git-docker-tui 60-ssh-alias 70-starship 90-vscodium (gated)
+                      50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
+                      90-vscodium (gated)
 dotfiles/             kitty/ helix/ wezterm/ starship/ yazi/
-tests/                run.sh · test_sete.sh · test_pypi.sh · validate.sh + sample.md/py/ipynb
-.github/workflows/    ci.yml (shellcheck + test_sete + test_pypi on push)
+tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh · validate.sh
+                      + sample.md/py/ipynb
+.github/workflows/    ci.yml (shellcheck + test_sete + test_pypi + test_tab_title on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 
