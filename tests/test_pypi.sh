@@ -43,7 +43,9 @@ sort head tail grep sed awk cut tr uname id mktemp chmod sleep timeout tee \
 dirname basename readlink ls expr"
   for c in $cmds; do
     src="$(command -v "$c" 2>/dev/null || true)"
-    [[ -n "$src" ]] && ln -s "$src" "$dir/$c" 2>/dev/null || true
+    # if-form (not A && B || C): keeps shellcheck SC2015-clean and the intent
+    # explicit — link the tool when present, ignore link errors, never fail.
+    if [[ -n "$src" ]]; then ln -s "$src" "$dir/$c" 2>/dev/null || true; fi
   done
 }
 _mkshim() { printf '#!/bin/sh\n%s\n' "$2" >"$1/$3"; chmod +x "$1/$3"; }
