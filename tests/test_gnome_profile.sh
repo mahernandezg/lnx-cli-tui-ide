@@ -15,7 +15,7 @@
 # Cases (each mutation-verified):
 #   G1 create: fresh db -> the mahg-dark/mahg-light PAIR, both in the list,
 #      mahg-dark set as default, keys actually written (background-color +
-#      cursor-shape='underline' for each)
+#      cursor-shape: 'block' for mahg-dark, 'underline' for mahg-light)
 #   G2 idempotency: a second apply on the same db adds no duplicate of EITHER
 #      profile -> PRESENT
 #   G3 preserve + revert: a pre-seeded foreign profile survives apply; revert
@@ -26,8 +26,8 @@
 #   G6 upgrade: a box that already has mahg-dark gets ONLY mahg-light added; the
 #      user's manual default is left untouched
 #   G7 --force-profile-keys: an EXISTING mahg-dark with a stale cursor-shape is
-#      refreshed to 'underline' in place (UUID + default kept); a plain apply
-#      leaves it stale
+#      refreshed to the vendored 'block' in place (UUID + default kept); a plain
+#      apply leaves it stale
 #   G8 --force-profile-keys honors --dry-run (prints [DRY], changes nothing)
 set -uo pipefail
 
@@ -129,11 +129,11 @@ case "$1" in
     echo "SEEDED=1"
     ;;
   seed_dark_stale)
-    # Pre-existing mahg-dark with a STALE cursor-shape (predates underline), the
-    # user's default. --force-profile-keys must refresh cursor-shape to 'underline'
-    # WITHOUT changing the UUID or the default.
+    # Pre-existing mahg-dark with a STALE cursor-shape (here 'underline', != the
+    # vendored 'block'), the user's default. --force-profile-keys must refresh
+    # cursor-shape to the vendored 'block' WITHOUT changing the UUID or the default.
     dconf write "$BASE/:d0000000-0000-0000-0000-000000000003/visible-name" "'mahg-dark'"
-    dconf write "$BASE/:d0000000-0000-0000-0000-000000000003/cursor-shape" "'block'"
+    dconf write "$BASE/:d0000000-0000-0000-0000-000000000003/cursor-shape" "'underline'"
     dconf write "$BASE/list" "['d0000000-0000-0000-0000-000000000003']"
     dconf write "$BASE/default" "'d0000000-0000-0000-0000-000000000003'"
     echo "SEEDED=1"
@@ -187,7 +187,7 @@ field() { sed -n "s/^$1=//p" <<<"$2" | head -n1; }
 
 # =============================================================================
 # G1 — create: fresh db gets the dark/light PAIR, both listed, mahg-dark
-# defaulted, keys actually written (dark background + cursor-shape='underline',
+# defaulted, keys actually written (dark background + cursor-shape='block',
 # light background + cursor-shape='underline').
 # MUTATION BITE: a no-op apply, a bad dconf load, a missing default-write, a
 # dropped cursor-shape key, or a module that creates only ONE profile all flip
@@ -205,11 +205,11 @@ if [[ "$(field COUNT "$o1")" == "1" ]] \
    && [[ "$(field LIST "$o1")" == *"$u1"* ]] \
    && [[ "$(field LIST "$o1")" == *"$l1"* ]] \
    && [[ "$(field BG "$o1")" == "'#070b16'" ]] \
-   && [[ "$(field CURSOR "$o1")" == "'underline'" ]] \
+   && [[ "$(field CURSOR "$o1")" == "'block'" ]] \
    && [[ "$(field LBG "$o1")" == "'#eef1f8'" ]] \
    && [[ "$(field LCURSOR "$o1")" == "'underline'" ]] \
    && [[ "$(field OUTCOME "$o1")" == INSTALLED* ]]; then
-  _pass "G1 created mahg-dark ($u1) + mahg-light ($l1); both listed, dark default, backgrounds + underline cursors written"
+  _pass "G1 created mahg-dark ($u1) + mahg-light ($l1); both listed, dark default, bg + cursors (dark block, light underline) written"
 else
   _fail "G1 unexpected: $(tr '\n' '|' <<<"$o1")"
 fi
@@ -321,11 +321,11 @@ rm -rf "$T6"
 
 # =============================================================================
 # G7 — --force-profile-keys refreshes an EXISTING profile's keys in place. A
-# pre-existing mahg-dark with a STALE cursor-shape='block' must come out with
-# cursor-shape='underline' (the vendored value) WITHOUT changing its UUID or the
-# default — that is the "cursor underline retroactive" path.
+# pre-existing mahg-dark with a STALE cursor-shape='underline' must come out with
+# cursor-shape='block' (the vendored value) WITHOUT changing its UUID or the
+# default — that is the "refresh existing profile keys retroactively" path.
 # MUTATION BITE: drop the `dconf load` in _gnome_profile_force_refresh (or fail to
-# call it) and CURSOR stays 'block' / OUTCOME is not the refresh line.
+# call it) and CURSOR stays 'underline' / OUTCOME is not the refresh line.
 # =============================================================================
 echo "== G7 --force-profile-keys refreshes existing keys (UUID kept) =="
 T7="$(mktemp -d)"
@@ -335,13 +335,13 @@ drive "$T7" seed_dark_stale >/dev/null
 o7n="$(drive "$T7" apply)"
 # force: refresh keys in place.
 o7="$(drive "$T7" apply 0 1)"
-if [[ "$(field CURSOR "$o7n")" == "'block'" ]] \
-   && [[ "$(field CURSOR "$o7")" == "'underline'" ]] \
+if [[ "$(field CURSOR "$o7n")" == "'underline'" ]] \
+   && [[ "$(field CURSOR "$o7")" == "'block'" ]] \
    && [[ "$(field UUID "$o7")" == "$SUUID" ]] \
    && [[ "$(field DEFAULT "$o7")" == "'$SUUID'" ]] \
    && [[ "$(field COUNT "$o7")" == "1" ]] \
    && [[ "$(field OUTCOME "$o7")" == *force-profile-keys* ]]; then
-  _pass "G7 --force-profile-keys: cursor block->underline, UUID + default kept (no-force left it stale)"
+  _pass "G7 --force-profile-keys: cursor underline->block, UUID + default kept (no-force left it stale)"
 else
   _fail "G7 wrong: noforce=[$(tr '\n' '|' <<<"$o7n")] force=[$(tr '\n' '|' <<<"$o7")]"
 fi
@@ -350,13 +350,13 @@ rm -rf "$T7"
 # =============================================================================
 # G8 — --force-profile-keys honors --dry-run: prints [DRY] and changes nothing.
 # MUTATION BITE: a dropped DRY_RUN guard in _gnome_profile_force_refresh would
-# flip CURSOR to 'underline' here.
+# flip CURSOR to 'block' here.
 # =============================================================================
 echo "== G8 --force-profile-keys is a true no-op under --dry-run =="
 T8="$(mktemp -d)"
 drive "$T8" seed_dark_stale >/dev/null
 o8="$(drive "$T8" dryrun_force 1 1)"   # dry=1 force=1, output NOT suppressed
-if [[ "$(field CURSOR "$o8")" == "'block'" ]] && grep -q '\[DRY\]' <<<"$o8"; then
+if [[ "$(field CURSOR "$o8")" == "'underline'" ]] && grep -q '\[DRY\]' <<<"$o8"; then
   _pass "G8 dry-run force-profile-keys printed [DRY] and left the stale cursor untouched"
 else
   _fail "G8 wrong: $(tr '\n' '|' <<<"$o8")"

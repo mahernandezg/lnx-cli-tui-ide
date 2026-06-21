@@ -11,13 +11,13 @@
 [/]
 visible-name='mahg-dark'
 use-theme-colors=false
-cursor-shape='underline'
+cursor-shape='block'
 background-color='#070b16'
 foreground-color='#edf2ff'
 bold-color-same-as-fg=false
 bold-color='#ffffff'
 cursor-colors-set=true
-cursor-background-color='#2f6bff'
+cursor-background-color='#edf2ff'
 cursor-foreground-color='#0d1530'
 highlight-colors-set=true
 highlight-background-color='#2f6bff'
