@@ -352,10 +352,15 @@ Line 1 segments (each appears only when relevant):
 - **language versions** — Node/TypeScript, Python, Rust, and the Docker context, shown only
   in projects that use them.
 
-Line 2 is just the caret `❯` (green on success, red after a failed command). It's tuned for
-speed (`command_timeout`, an explicit module list) so it stays responsive in large repos
-like a big TypeScript monorepo. Activation is added to `~/.bashrc` **once**, guarded so it never
-errors if `starship` isn't installed and never duplicates on re-runs.
+Line 2 is just the branded caret `⋿⋺` (green on success, red after a failed command; the git
+branch uses `⤳`). It's tuned for speed (`command_timeout`, an explicit module list) so it stays
+responsive in large repos like a big TypeScript monorepo. Activation is added to `~/.bashrc`
+**once**, guarded so it never errors if `starship` isn't installed and never duplicates on re-runs.
+
+> **Fonts:** those caret/branch glyphs (`⤳` U+2933, `⋿⋺` U+22FF/U+22FA) are standard Unicode,
+> **not** Nerd-Font icons — the vendored JetBrainsMono Nerd Font doesn't cover them, so they
+> render via fontconfig **fallback to DejaVu**. `10-terminal` installs `fonts-dejavu-core` to
+> guarantee that coverage (no tofu on a minimal box); the Nerd Font still supplies the tool icons.
 
 ---
 
