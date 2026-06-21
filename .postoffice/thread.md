@@ -335,3 +335,43 @@ quieras (git stash/pull o re-deploy); no lo toqué para no alterar tu estado de 
 
 RECLAMO la tarea 013 (investigación título de pestaña vs Claude Code/TUI). Solo investigo y
 propongo; NO implemento. (Ejecutor CLI.)
+
+### 017 · FROM executor→strategy · 2026-06-21 12:34 · status:done
+
+013 — Título de pestaña vs Claude Code: INVESTIGACIÓN + PROPUESTA (NO implementado). Cierra el
+reclamo 016. Decide tú antes de implementar.
+
+CAUSA RAÍZ (confirmada): 75-tab-title fija el título con PROMPT_COMMAND → OSC 0 (\033]0;dir\a),
+pero PROMPT_COMMAND SOLO dispara cuando bash dibuja el prompt. Mientras Claude Code (TUI en
+foreground) corre, bash NO está en prompt, así que el hook no re-aplica y el título queda el que
+puso la TUI. Al salir Claude Code, el prompt vuelve y el dir se re-pone — pero durante la sesión
+(lo que te importa) manda la TUI.
+
+HALLAZGOS (verificados):
+- Claude Code fija el título vía OSC 2 a "Claude Code" (literal; SIN cwd/repo). No hay setting
+  (settings.json), env var, ni flag para personalizarlo o desactivarlo hoy. Issues upstream
+  abiertos: anthropics/claude-code #21677 (desactivar), #18326 (session→title), #55197
+  (/rename→title). Su STATUSLINE (config /statusline) sí puede mostrar repo/dir DENTRO de la UI
+  (campos workspace.repo.name, workspace.current_dir, session_name); y /rename nombra la sesión.
+- GNOME Terminal 3.56.2 (VTE 0.80): NO hay key title-mode (ni perfil ni legacy) → no se puede
+  configurar "conservar/prefijar" el título; las apps lo poseen mientras corren.
+
+OPCIONES:
+(A) [RECOMENDADA] Identificar la sesión vía la STATUSLINE de Claude Code, no el título del tab
+    (que es inevitablemente de Claude Code). Un /statusline que muestre repo + dir hace que cada
+    sesión se auto-identifique dentro de su ventana. El repo puede vendorizar un script de
+    statusline recomendado + documentarlo. Robusta porque NO depende del título.
+(B) Pre-fijar el título del tab antes de lanzar claude (función `cc`): NO funciona — Claude Code
+    sobreescribe a "Claude Code" al arrancar (confirmado). Descartada.
+(C) GNOME Terminal title-mode (keep/prepend): NO disponible en 3.56. Descartada.
+(D) Combinar (A) con `/rename "<repo>"` por sesión (memorable en la UI; y se sincronizará al
+    título si #55197 aterriza) + documentar la limitación y los issues upstream.
+(E) Mejora menor a 75-tab-title: título cualificado por repo (no solo basename) vía OSC. Solo
+    ayuda EN el prompt (entre sesiones de Claude Code), no durante. Marginal; opcional.
+
+RECOMENDACIÓN: (A)+(D). Como el título del tab lo posee Claude Code y no es configurable, la vía
+robusta es la statusline (repo+dir) + /rename por sesión; documentar la limitación del título y
+enlazar los issues. Si quieres, como tarea futura: vendorizar un statusline mahg (script +
+settings) y una nota en README. (E) es un extra de bajo valor.
+
+PÁRO aquí (solo investigación). Dime qué opción implemento y abro la tarea.
