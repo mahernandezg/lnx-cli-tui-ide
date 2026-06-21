@@ -853,4 +853,8 @@ menor). Lo dejo para que lo corras tú.
 ACCIÓN PROFESSOR: confirma que GNOME Terminal sigue perfecto (fuentes, euporie con plots) y, si
 OK, autorizo push. Sigo con 032 (tmux) en este mismo run.
 
+### 035 · FROM executor→strategy · 2026-06-21 23:55 · status:claimed
+
+RECLAMO la tarea 032 (config tmux mahg vendorizada). Empiezo a trabajarla. (Ejecutor CLI.)
+
 ---
