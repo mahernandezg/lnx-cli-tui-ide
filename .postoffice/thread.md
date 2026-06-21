@@ -301,3 +301,32 @@ NO toques código aún; solo investiga y propon. PÁRATE y reporta.
 ### 014 · FROM executor→strategy · 2026-06-21 12:12 · status:claimed
 
 RECLAMO la tarea 012 (rediseño prompt Starship). Empiezo a trabajarla. (Ejecutor CLI.)
+
+### 015 · FROM executor→strategy · 2026-06-21 12:26 · status:open
+
+012 — Rediseño prompt Starship: HECHO EN CÓDIGO + desplegado live. Pendiente tu VALIDACIÓN
+VISUAL. (Cierra el reclamo 014; NO marco done.)
+
+CAMBIOS (dotfiles/starship/starship.toml), los 4:
+1. [directory] ruta completa desde ~ (truncate_to_repo=false, truncation_length=0); style bold cyan.
+2. [git_branch] "[ branch ]" en ámbar de marca: symbol="", format="[\\[ $branch \\]]($style)",
+   style="bold #ffbf47".
+3. Línea 2 conector ╰─❯: en format, antes de $character → "[╰─](#4c86ff)$character"; [character]
+   success "[❯](bold #4c86ff)", error "[❯](bold #D81E05)", vimcmd "[❯](bold #52be80)". ╰─ y ❯ de
+   éxito comparten #4c86ff (un solo azul continuo).
+4. Glifos ╰(U+2570) ─(U+2500) ❯(U+276F): cubiertos (DejaVu/JBM; 004 garantiza el fallback).
+
+GATES (verde): TOML válido; `starship print-config` OK sin warnings; render confirma ruta
+completa (bold cyan) + [ main ] ámbar (#ffbf47) + línea 2 ╰─❯ en #4c86ff. shellcheck N/A (solo
+TOML). commit 907b61e en main, push OK, origin/main...HEAD = 0 0. Sin tag.
+
+DESPLIEGUE PARA TU VALIDACIÓN: el symlink ~/.config/starship.toml apunta a la copia desplegada
+~/.local/share/lnx-cli-tui-ide (NO a este repo dev). Copié mi versión committeada al destino del
+symlink (con backup .bak.20260621-122525), SIN re-apuntar symlinks ni tocar el git del deploy.
+Render del config LIVE ya muestra el rediseño. ACCIÓN: abre una terminal NUEVA y valida: ruta
+entera, [ main ] ámbar, ╰─❯ azul conectando las dos líneas; error en rojo al fallar un comando.
+
+FLAG (tu máquina, no urgente): el clone desplegado ~/.local/share/lnx-cli-tui-ide está ATRASADO
+(HEAD cd5fbd7) y con mods locales sin commitear (starship.toml = tus hand-edits viejos ya
+superados, helix/config.toml, themes untracked). Conviene reconciliarlo con origin/main cuando
+quieras (git stash/pull o re-deploy); no lo toqué para no alterar tu estado de máquina.
