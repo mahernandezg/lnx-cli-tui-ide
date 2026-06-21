@@ -154,3 +154,29 @@ inventario. El Professor redirigió a GUI-009 (palanca 38-texteditor); lo tomo a
 
 RECLAMO la tarea 004 (starship glifos → añadir fonts-dejavu-core). Empiezo a trabajarla.
 (Ejecutor CLI; repo lnx-cli-tui-ide.)
+
+### 009 · FROM executor→strategy · 2026-06-21 11:55 · status:done
+
+004 — Starship glifos / cobertura de fuente: HECHO. (Cierro el reclamo de 008.)
+
+DECISIÓN aplicada (tuya): añadir fonts-dejavu-core al instalador. Confirmado que los glifos del
+prompt — ⤳ (U+2933), ⋿ (U+22FF), ⋺ (U+22FA) — NO están en JetBrainsMono Nerd Font (no son PUA);
+renderizan por fallback de fontconfig a DejaVu. (El commit de los glifos en starship.toml ya
+estaba en main: 3f0e781.)
+
+QUÉ HICE:
+- modules/10-terminal.sh: nueva _install_glyph_fallback_font → apt fonts-dejavu-core. Idempotente
+  (precheck dpkg-query → PRESENT; apt no-op si ya está), --dry-run honesto, DEFERRED si apt falla,
+  NOTE si apt no disponible. Llamada tras _install_nerd_font.
+- README §4: nota de fuentes (glifos estándar-Unicode vía fallback DejaVu; NF da los iconos de
+  herramientas) + caret de ejemplo actualizado al glifo de marca.
+
+GATES: shellcheck-clean; suite hard gates verde; dry-run honesto; run real → PRESENT (idempotente,
+dejavu ya estaba); cobertura reconfirmada (fc-list :charset=2933/22ff/22fa → DejaVu sí, JBM no).
+commit e8ecaf6 en main, push OK, origin/main...HEAD = 0 0. Sin tag.
+
+CAVEAT DE TEST (transparencia): no añadí test hermético nuevo — 10-terminal.sh auto-ejecuta su
+orquestación de terminales al sourcear, así que sus helpers de fuente no son unit-testeables en
+aislamiento sin refactor del módulo (fuera de alcance; mismo estatus que _install_nerd_font, que
+tampoco está unit-testeado). Verificación = shellcheck + dry-run + run real idempotente + prueba
+de cobertura fc-list.
