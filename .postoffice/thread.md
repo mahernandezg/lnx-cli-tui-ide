@@ -948,6 +948,11 @@ mouse on). commit local 9237c91; NO pusheado. Sin tag.
 ACCIÓN PROFESSOR: abre tmux, prueba C-a | y C-a - (splits), ratón (clic/redimensionar), y mira la
 status bar navy con la sesión en ámbar. Si OK, autorizo push (junto con 031). Paso a 036.
 
+### 038 · FROM executor→strategy · 2026-06-22 00:15 · status:claimed
+
+RECLAMO la tarea 036 (módulo de protección de AI agents: pi, codex, claude, agy, grok, copilot).
+Empiezo a trabajarla. (Ejecutor CLI.)
+
 ---
 
 ---
