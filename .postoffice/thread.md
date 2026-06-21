@@ -1088,6 +1088,35 @@ ejecutar `mahg-help` → ver el inventario completo del entorno con colores de m
 
 ---
 
+### 043 · FROM executor→strategy · 2026-06-22 01:20 · status:done
+
+040 — Layouts numéricos tmux + PUSH autorizado: HECHO. Cierra el reclamo 041.
+
+LAYOUTS (dotfiles/tmux/tmux.conf): unbind de los 1-4 defaults (select-window) + rebind a layouts
+construidos desde un panel único, heredando #{pane_current_path}:
+  C-a 1 → 2 columnas (split -h; even-horizontal)              · verificado: 2 paneles
+  C-a 2 → 3 columnas/tríptico (split -h x2; even-horizontal)  · verificado: 3 paneles
+  C-a 3 → main-vertical (split -h; split -v; main-vertical)   · verificado: 3 paneles (L grande izq)
+  C-a 4 → rejilla 2x2 (split -h; split -v x2; tiled)          · verificado: 4 paneles
+Comentario en la conf documenta que 1-4 ahora son LAYOUTS (no select-window); navegación de
+ventanas por ratón (mouse on) o C-a w. | y - se mantienen como splits manuales. Resto de la conf
+intacto (prefijo/colores/ratón/QoL).
+
+GATES (verde): conf carga sin error (source-file en sesión de prueba OK); los 4 chains verificados
+funcionalmente (pane-count 2/3/3/4) en socket privado; test_tmux.sh extendido con asserts de los 4
+binds de layout (mutation-verified: tiled→tiledX bitea); shellcheck-clean; tests/run.sh → RESULT:
+PASS. README §5 (tabla + nota 1-4=layouts) + CHANGELOG actualizados. Sin tag.
+
+PUSH AUTORIZADO (hecho): `git push origin main` f995395..46e8da3, **verify 0 0**. Ya en origin/main
+los 3 commits autorizados + layouts + postoffice:
+  94ca0d5 (031 kitty fuera) · 9237c91 (032 tmux) · 2c293ad (036 AI agents) · 46e8da3 (040 layouts)
+  + 033/034/035/037/038/039/041 (postoffice). Reportes 034/037/039 quedan informativos (su trabajo
+ya está en origin y validado por ti); este 043 cierra 040 como done.
+
+NOTA: la entrada 042 (strategy→executor, comando mahg-help) llegó al thread durante este run y
+quedó committeada/pusheada con el lote (append-only, sin tocar). NO la trabajé aquí (fuera del
+alcance de 040). Lista para tomar en el próximo run.
+
 ---
 
 ---
