@@ -279,11 +279,12 @@ use it** — including the exact command to start it.
   run it.
   **Enable types per project:** drop a `.helix/languages.toml` in the repo adding
   `"basedpyright"` to the Python `language-servers` list.
-- **Theme (dark/light):** ships a branded pair — **`mahg-dark`** (default) and **`mahg-light`**
-  (light chrome, dark text, same blue accent) — both symlinked into Helix's runtime themes dir.
-  Helix has **no native OS color-scheme follow** (there's no theme-by-mode key), so switch by
-  hand: type **`:theme mahg-light`** (or `:theme mahg-dark`) at runtime, or edit `theme =` in
-  `~/.config/helix/config.toml` and reload config in place with **`pkill -USR1 hx`**.
+- **Theme — dark, always (matches the terminal policy):** Helix is configured to **`mahg-dark`
+  in every desktop mode**. A branded **`mahg-light`** theme (light chrome, dark text, same blue
+  accent) is still **vendored and symlinked** into Helix's runtime themes dir for reference, but
+  it is **not** used by default and nothing switches it by `color-scheme`. Helix has no
+  theme-by-mode key anyway. If you ever want light for a single session you can `:theme
+  mahg-light` at runtime, but the shipped policy keeps Helix dark like the terminal.
 
 ### lazygit — Git TUI · [📖 Docs](https://github.com/jesseduffield/lazygit)
 - **What:** a full-screen UI for Git.
@@ -528,22 +529,18 @@ It runs:
   cannot round-trip in this environment — it prints `SKIP` and passes, so it never false-fails
   on a minimal box.
 
-  **Switching dark ↔ light:** GNOME Terminal does **not** follow the desktop color-scheme
-  automatically, so the active profile is chosen by hand (Terminal → *Preferences* → set the
-  profile) or scripted. To mirror the desktop's light/dark setting, an optional watcher (not
-  installed by this repo — opt in if you want it) can flip the **default** profile UUID:
-  ```bash
-  # Map mahg-dark/mahg-light visible-names -> their per-machine UUIDs, then follow
-  # org.gnome.desktop.interface color-scheme. New windows/tabs pick up the change.
-  base=/org/gnome/terminal/legacy/profiles:
-  uuid_for(){ for u in $(dconf read $base/list | tr -d "[],'"); do
-      [ "$(dconf read "$base/:$u/visible-name")" = "'$1'" ] && { echo "$u"; return; }; done; }
-  dark=$(uuid_for mahg-dark); light=$(uuid_for mahg-light)
-  gsettings monitor org.gnome.desktop.interface color-scheme | while read -r _ v; do
-    case "$v" in *prefer-dark*) dconf write $base/default "'$dark'";;
-                 *) dconf write $base/default "'$light'";; esac
-  done
-  ```
+  **Policy — the terminal stays dark, always.** By design the active GNOME Terminal profile is
+  **`mahg-dark` in every desktop mode** (dark *and* light): a dark terminal is more legible and
+  works better regardless of the desktop's light/dark setting. The module sets `mahg-dark` as the
+  default on creation and never flips it; nothing in this repo switches the terminal profile by
+  `color-scheme`. `mahg-light` is still **vendored** (`profiles/gnome-terminal/mahg-light.dconf`)
+  for reference and for anyone who deliberately wants it — pick it by hand in Terminal →
+  *Preferences* — but it is **not** activated automatically.
+
+  **Do NOT auto-switch the terminal by color-scheme.** A `color-scheme` watcher that flips the
+  default profile UUID would contradict this policy, so the installer ships none and one is **not
+  recommended**. (For the desktop side — GNOME Settings/Nautilus etc. — light/dark still switches;
+  that lives in `lnx-gui-ide`. Only the terminal is pinned dark.)
 - **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
   Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
   it never gates the result.

@@ -139,11 +139,11 @@ link_dotfile "$REPO_ROOT/dotfiles/helix/config.toml"    "$HOME/.config/helix/con
 link_dotfile "$REPO_ROOT/dotfiles/helix/languages.toml" "$HOME/.config/helix/languages.toml"
 
 # Branded themes "mahg-dark" / "mahg-light": symlink both into the runtime themes
-# dir Helix searches. config.toml selects theme = "mahg-dark" by default (managed
-# via the symlink above); the light mirror is resolvable so it can be selected at
-# runtime with `:theme mahg-light` (or by editing config.toml + `pkill -USR1 hx`).
-# Helix has no native desktop color-scheme follow — see README §3. link_dotfile
-# creates the dir, backs up any pre-existing file, and is idempotent.
+# dir Helix searches. Policy: Helix stays mahg-dark in EVERY desktop mode (matches
+# the terminal — see README §3/§11). config.toml selects theme = "mahg-dark"; the
+# light mirror is symlinked for reference only (resolvable for a one-off `:theme
+# mahg-light`) but is NOT the default and nothing switches it by color-scheme.
+# link_dotfile creates the dir, backs up any pre-existing file, and is idempotent.
 link_dotfile "$REPO_ROOT/dotfiles/helix/themes/mahg-dark.toml" \
   "$HOME/.config/helix/runtime/themes/mahg-dark.toml"
 link_dotfile "$REPO_ROOT/dotfiles/helix/themes/mahg-light.toml" \

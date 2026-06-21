@@ -2,10 +2,11 @@
 # Legible, terminal-first defaults. Language servers are wired in languages.toml.
 
 theme = "mahg-dark"   # branded theme; inherits base16_terminal so it still follows the terminal palette
-# Dark/light pair: a matching "mahg-light" theme is also installed. Helix has no
-# native "follow the OS color-scheme" switch (no theme-by-mode key), so switch
-# manually: `:theme mahg-light` / `:theme mahg-dark` at runtime, or change the
-# line above and reload config in place with `pkill -USR1 hx`. See README §3.
+# Policy: Helix stays mahg-dark in EVERY desktop mode, matching the terminal
+# (a dark editor is more legible regardless of the desktop's light/dark setting).
+# A "mahg-light" theme is still vendored/symlinked for reference but is NOT used by
+# default and nothing switches it by color-scheme. For a one-off you can `:theme
+# mahg-light` at runtime, but the shipped default is dark. See README §3.
 
 [editor]
 line-number = "relative"

@@ -22,9 +22,10 @@
 # The whole profiles:/ tree is backed up before any write, which also captures the
 # prior `default` so a revert can restore it.
 #
-# Switching dark<->light: GNOME Terminal does NOT follow the desktop color-scheme
-# automatically. Pick the active profile by hand (Preferences) or write
-# .../default from a script — see README §11 for an optional color-scheme watcher.
+# Policy: the terminal stays mahg-dark in EVERY desktop mode. mahg-dark is the
+# default and nothing here flips it by color-scheme; mahg-light is vendored for
+# reference only (pick it by hand in Preferences if you really want it). A
+# color-scheme watcher is intentionally NOT shipped — see README §11.
 #
 # Non-GNOME boxes: when `dconf` (or python3) is absent there is nothing to do and
 # no rerun can fix it -> recorded as a NOTE, never a failure.
@@ -190,7 +191,7 @@ _gnome_profile_apply() {
   fi
 
   record_outcome INSTALLED gnome-terminal-profile "created: ${created[*]} (added to list; backup=$backup)"
-  log_ok "gnome-terminal-profile: created ${created[*]} — open a NEW GNOME Terminal window/tab to see it (mahg-dark is default; switch to mahg-light in Preferences)"
+  log_ok "gnome-terminal-profile: created ${created[*]} — open a NEW GNOME Terminal window/tab to see it (policy: mahg-dark stays the default in every desktop mode; mahg-light vendored for reference)"
 }
 
 # _gnome_profile_revert — remove ONLY our profiles (both mahg-dark and

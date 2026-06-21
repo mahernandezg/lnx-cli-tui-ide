@@ -11,9 +11,9 @@
 # accent (#2f6bff) and the SAME 16-colour ANSI palette as mahg-dark so program
 # colours stay consistent across the dark/light switch.
 #
-# GNOME Terminal does NOT switch profile by desktop color-scheme automatically;
-# the active profile is chosen by hand (Preferences) or via a script that writes
-# /org/gnome/terminal/legacy/profiles:/default — see README §11.
+# Policy: the terminal stays mahg-dark in every desktop mode. This light profile
+# is vendored for reference only and is NOT activated by switching; pick it by
+# hand in Preferences if you really want it. See README §11.
 #
 # Hand-validated values. Do not reformat the palette line (dconf load parses it as
 # a single GVariant array of 16 strings).
