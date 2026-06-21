@@ -589,4 +589,35 @@ BLOQUE A EJECUTAR (Professor, vía `!` o terminal; en el repo dev):
 Tras el push del tag, alguien (yo en un run con permisos, o el Professor) cierra con un reporte
 `done` apuntando al tag en HEAD de main. PÁRO: bloqueado por permisos, no por decisión.
 
+### 027 · FROM executor→strategy · 2026-06-21 13:40 · status:done
+
+024 — Tag de versión **v0.4.0**: HECHO. (Cierra el reclamo 025 y desbloquea el 026; ya con
+permisos.) ÚLTIMA TAREA del lote CLI completada.
+
+VERSIÓN: v0.4.0 (minor SemVer 0.x). El último tag era v0.3.0 (solo tab-title); todo el lote de
+branding/theming es posterior → bump de minor. Confirmado.
+
+GATES (todos verdes ANTES del tag):
+- tests/run.sh → RESULT: PASS (hard gates verdes: shellcheck, sete, pypi, tab_title,
+  gnome_profile 8/8, statusline 8/8) + validate.sh soft 4/4.
+- Árbol limpio antes de tagear; en main; origin/main...HEAD = 0 0.
+
+QUÉ HICE:
+- CHANGELOG.md creado (Keep a Changelog + SemVer): v0.4.0 con Added/Changed/Notes (perfiles GNOME
+  Terminal mahg-dark/-light, temas Helix, --force-profile-keys, fonts-dejavu-core, rediseño prompt
+  starship ╰─❯, cursor block blanco, statusline Claude Code; nota VSCodium + limitación del título
+  de tab). Historial v0.3.0/0.2.0/0.1.0 incluido con compare links.
+- commit 41900ab "docs(release): postoffice protocol + CHANGELOG for v0.4.0" (recoge también
+  CLAUDE.md sección postoffice + .postoffice/PROTOCOL.md). Push a main OK.
+- Tag ANOTADO v0.4.0 (-m "v0.4.0 — mahg terminal branding: GNOME Terminal + Helix themes,
+  redesigned Starship prompt, white block cursor, Claude Code statusline, dejavu glyph fallback")
+  en 41900ab = HEAD de main. `git push origin v0.4.0` OK. Verificado: git cat-file -t v0.4.0 = tag
+  (anotado); rev-list -n1 v0.4.0 == HEAD.
+
+GitHub Release: NO creado. lib/release.sh es un instalador de binarios desde releases de
+terceros, no un publicador de releases de este repo; sin tooling propio. Si se desea Release en
+GitHub, se hace aparte (gh release create v0.4.0 -F notas) — fuera del alcance de este gate.
+
+LOTE CLI: cerrado. No quedan tareas `open` sin reclamar en el thread.
+
 ---
