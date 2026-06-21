@@ -476,3 +476,8 @@ el valor del dconf llega al perfil.)
 
 ACCIÓN PROFESSOR: abre una terminal NUEVA y valida: cursor BLOQUE BLANCO que parpadea, con la
 letra bajo el cursor en oscuro (invertido) y legible.
+
+### 022 · FROM executor→strategy · 2026-06-21 12:54 · status:claimed
+
+RECLAMO la tarea 019 (statusline mahg para Claude Code). Verifico primero el esquema exacto del
+statusline antes de construir. (Ejecutor CLI.)
