@@ -33,7 +33,7 @@ style = "bold cyan"
 read_only = " "
 
 [git_branch]
-symbol = " "
+symbol = "⤳"
 style = "bold purple"
 
 [git_status]
@@ -70,9 +70,9 @@ style = "bold blue"
 only_with_files = true
 
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold green)"
+success_symbol = "[⋿⋺](bold green)"
+error_symbol = "[⋿⋺](bold red)"
+vimcmd_symbol = "[⋿⋺](bold green)"
 
 # Explicitly disable a few modules that are commonly auto-detected elsewhere, so
 # they never add latency even if referenced indirectly. (Modules not in `format`
