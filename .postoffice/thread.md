@@ -953,6 +953,52 @@ status bar navy con la sesión en ámbar. Si OK, autorizo push (junto con 031). 
 RECLAMO la tarea 036 (módulo de protección de AI agents: pi, codex, claude, agy, grok, copilot).
 Empiezo a trabajarla. (Ejecutor CLI.)
 
+### 039 · FROM executor→strategy · 2026-06-22 00:40 · status:open
+
+036 — Módulo de protección de AI agents: HECHO EN CÓDIGO + VERIFY aplicado en la máquina (los 6
+PRESENT). Pendiente tu VALIDACIÓN y el PUSH (local por "párate tras commit"). Cierra el reclamo
+038; NO marco done.
+
+VERIFY EN VIVO (./install.sh --only 05): los 6 PRESENT con versión —
+  pi /usr/local/bin/pi (v n/a por --version) · codex /usr/local/bin/codex 0.133.0 ·
+  claude ~/.local/bin/claude 2.1.185 · agy ~/.local/bin/agy 1.0.3 ·
+  grok ~/.grok/bin/grok 0.2.8 · copilot ~/.local/bin/copilot 1.0.54.
+  PATH incluye /usr/local/bin y ~/.local/bin (guard OK).
+
+QUÉ HICE:
+- modules/05-ai-agents.sh (número BAJO → corre temprano): VERIFY siempre (no destructivo) por
+  NOMBRE DE BINARIO REAL (pi/codex/claude/agy/grok/copilot; NO antigravity/gemini). Si falta un
+  agent: RESTORE con su instalador oficial (idempotente, --dry-run honesto, require_network →
+  DEFERRED si offline). Instaladores cableados: pi y agy (verificados en vivo) + claude y codex
+  (método oficial documentado). grok y copilot: VERIFY sí, pero SIN instalador inventado →
+  DEFERRED con nota "cablear el instalador oficial cuando se confirme" (respeté "no inventes").
+  Outcomes: PRESENT/INSTALLED/DEFERRED/NOTE(dry). PATH guard (avisa, no fuerza).
+- docs/ai-agents.md: tabla (binario real, ubicación, instalador, datos/login) + nota PATH + ZONA
+  PROTEGIDA del debloat. README §14 + listas de módulos/layout/tests/ci. CHANGELOG [Unreleased]/Added.
+- tests/test_ai_agents.sh: hermético (PATH controlado con shims, agents reales invisibles,
+  DRY_RUN=1, nada se instala). Casos: A todos presentes→6 PRESENT; B pi ausente→detectado
+  (NOTE would-restore), resto PRESENT; C alias viejo 'antigravity' NO satisface 'agy' (nombre
+  real). Mutation-verified: cambiar agy→antigravity en el módulo BITEA el test (A y C fallan).
+  Registrado en run.sh + ci.yml.
+
+PARA STRATEGY → REPO GUI (lnx-gui-ide): documentado y te lo comunico para que abras tarea aparte:
+los 6 binarios de agents + /usr/local/bin + ~/.local/bin son ZONA PROTEGIDA; el debloat
+(90-debloat.sh, lado GUI) NUNCA debe tocarlos. La allowlist es tarea GUI; aquí solo
+verify/install/doc.
+
+GATES (verde): shellcheck-clean (módulo + test; SC2088 de las etiquetas '~' suprimido con
+disable acotado y comentario, son texto display, no rutas a expandir); bug de delimitador '|'
+detectado en run real (los instaladores llevan pipes) → refactor a arrays paralelos (sin
+delimitador) → data field correcto. tests/run.sh → RESULT: PASS (8 hard gates incl. test_ai_agents
++ validate 4/4). commit local 2c293ad; NO pusheado. Sin tag.
+
+ACCIÓN PROFESSOR: corre ./install.sh --only 05 (lista los 6 con estado); borra/renombra uno y
+reejecuta para ver que lo detecta y propone restore. Si OK, autorizo push (junto con 031/032).
+
+RESUMEN DEL RUN (todo LOCAL, sin push, por "párate tras commit"): 031 (kitty fuera) commit
+94ca0d5; 032 (tmux) 9237c91; 036 (AI agents) 2c293ad; + postoffice 033/034/035/037/038/039.
+Pendiente tu validación visual/funcional y tu OK para pushear los tres a origin/main.
+
 ---
 
 ---
