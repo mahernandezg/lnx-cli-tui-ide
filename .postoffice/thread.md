@@ -375,3 +375,79 @@ enlazar los issues. Si quieres, como tarea futura: vendorizar un statusline mahg
 settings) y una nota en README. (E) es un extra de bajo valor.
 
 PÁRO aquí (solo investigación). Dime qué opción implemento y abro la tarea.
+
+---
+
+### 018 · FROM strategy→executor · 2026-06-21 12:40 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Cursor de GNOME Terminal: block blanco de marca (decisión del Professor).
+
+ESTADO ACTUAL (verificado en profiles/gnome-terminal/mahg-dark.dconf):
+  cursor-shape='underline' · cursor-background-color='#2f6bff' (azul) ·
+  cursor-foreground-color='#0d1530' · cursor-colors-set=true · foreground-color='#edf2ff'
+
+El Professor quiere el cursor BLOCK BLANCO, con el MISMO blanco del texto estándar de la
+terminal (foreground-color #edf2ff). Cambios en profiles/gnome-terminal/mahg-dark.dconf:
+  cursor-shape           'underline' → 'block'
+  cursor-background-color '#2f6bff'  → '#edf2ff'   (el blanco del texto)
+  cursor-foreground-color '#0d1530'  (SE MANTIENE: la letra bajo el bloque se ve oscura sobre
+                                      el bloque blanco = invertido legible, estándar)
+  cursor-colors-set=true (ya está)
+Mantén cursor-blink-mode como esté (el Professor confirma que el blink ya funciona).
+
+NOTA: el blanco de marca es #edf2ff (= foreground del perfil = mahg_text dark). NO uses #ffffff
+puro; el estándar de la terminal es #edf2ff. Así el cursor casa con el texto.
+
+MECANISMO: edita las 2 keys (shape + background-color) en el .dconf vendorizado. El cambio se
+aplica a perfiles NUEVOS al instalar; para el perfil EXISTENTE del Professor usa el flag ya
+creado en 003: install.sh --only 80 --force-profile-keys (recarga las keys vendorizadas en el
+UUID actual sin borrarlo). Idempotente, backup, revert.
+
+GATES: las 2 keys objetivo cambian en el .dconf; el resto del perfil intacto; prueba del rojo
+(cursor-background-color → #FF0000 → aparece en el dconf); test_gnome_profile verde
+(actualiza el assert de cursor-shape si comprueba 'underline' → ahora 'block'); shellcheck-clean;
+commit+push verify 0 0, sin tag. PÁRATE y reporta. NO marques done sin validación visual del
+Professor (cursor bloque blanco que parpadea, letra invertida legible bajo el cursor).
+
+---
+
+### 019 · FROM strategy→executor · 2026-06-21 12:48 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Statusline mahg para Claude Code (identificar la sesión por repo+dir). Aprobada por el
+Professor: opción (A) de la investigación 017. El título del tab lo posee Claude Code y NO es
+configurable hoy; la vía robusta es la STATUSLINE de Claude Code, que sí puede mostrar repo+dir
+DENTRO de su UI, para que el Professor distinga qué sesión es cuál.
+
+TAREA:
+1. Vendoriza un script de statusline mahg (ej. dotfiles/claude-code/statusline.sh o la ruta que
+   Claude Code espere) que muestre, con colores de marca, al menos: nombre del repo
+   (workspace.repo.name), directorio actual (workspace.current_dir) y, si aplica, session_name.
+   Formato claro y compacto; usa los tonos de marca (azul #4c86ff, ámbar #ffbf47, texto #edf2ff
+   sobre el fondo del statusline). Claude Code pasa un JSON por stdin al script; parsea esos
+   campos (workspace.repo.name, workspace.current_dir, session_name) y emite la línea.
+2. Documenta en README cómo activarlo: el ajuste /statusline de Claude Code apuntando al script
+   vendorizado (o la entrada en settings de Claude Code). Incluye la nota de la LIMITACIÓN: el
+   título del tab NO es configurable (Claude Code lo fija a "Claude Code"); enlaza los issues
+   upstream (#21677, #18326, #55197). Menciona /rename para nombrar sesiones.
+3. NO dependas del título del tab. La identificación vive en la statusline.
+
+VERIFICA primero el formato exacto que Claude Code espera para el statusline (el JSON de entrada
+y cómo se configura) — si no está claro/estable, vendoriza el script + doc y deja la activación
+documentada (DEFER honesto) en vez de forzar.
+
+GATES: script shellcheck-clean; parsea el JSON de forma robusta (jq si está, o fallback); maneja
+campos ausentes sin romper; test hermético si es viable (alimentar un JSON de ejemplo → línea
+esperada) mutation-verified; commit+push verify 0 0, sin tag. PÁRATE y reporta. Validación del
+Professor: activar el statusline y ver repo+dir en la UI de cada sesión de Claude Code.
+
+---
+
+---
+
+### 020 · FROM executor→strategy · 2026-06-21 12:50 · status:claimed
+
+RECLAMO la tarea 018 (cursor block blanco en mahg-dark). Empiezo a trabajarla. (Ejecutor CLI.)
