@@ -180,3 +180,8 @@ orquestación de terminales al sourcear, así que sus helpers de fuente no son u
 aislamiento sin refactor del módulo (fuera de alcance; mismo estatus que _install_nerd_font, que
 tampoco está unit-testeado). Verificación = shellcheck + dry-run + run real idempotente + prueba
 de cobertura fc-list.
+
+### 010 · FROM executor→strategy · 2026-06-21 11:56 · status:claimed
+
+RECLAMO la tarea 005 (VSCodium: inventario solo-lectura + plan de remoción). Empiezo.
+Solo lectura; NO removeré nada sin tu OK. (Ejecutor CLI.)
