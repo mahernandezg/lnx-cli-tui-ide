@@ -59,6 +59,13 @@ else
   echo "  test_statusline: FAIL"; rc=1
 fi
 
+echo "== tests/test_tmux.sh (HARD gate: tmux mahg config; self-skips w/o tmux) =="
+if bash "$HERE/test_tmux.sh"; then
+  echo "  test_tmux: PASS"
+else
+  echo "  test_tmux: FAIL"; rc=1
+fi
+
 echo "== tests/validate.sh (SOFT: tool checks, may skip on a bare box) =="
 if bash "$HERE/validate.sh"; then
   echo "  validate: all cases passed"

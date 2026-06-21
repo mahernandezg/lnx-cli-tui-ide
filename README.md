@@ -113,7 +113,7 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | `--verbose` | Verbose/debug logging. |
 | `-h`, `--help` | Usage. |
 
-Module names: `00-uv 10-terminal 20-viewers 30-euporie 40-helix 50-git-docker-tui
+Module names: `00-uv 10-terminal 15-tmux 20-viewers 30-euporie 40-helix 50-git-docker-tui
 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
@@ -372,9 +372,32 @@ shells:
 | `Ctrl+PgUp` / `Ctrl+PgDn` | previous / next tab |
 | `Ctrl+Shift+W` | close tab |
 
-For **splits** and **persistent sessions**, the stack uses **tmux** — its config is vendored by
-this repo (branded, mouse on, intuitive splits). It does **not** auto-start; launch it by hand
-when you want it. See the tmux module for the keybindings.
+For **splits** and **persistent sessions**, the stack uses **tmux**. Its config is vendored by
+this repo (`dotfiles/tmux/tmux.conf`, installed by `modules/15-tmux.sh` to
+`~/.config/tmux/tmux.conf`). It does **not** auto-start — launch it by hand when you want it:
+
+```bash
+tmux                  # start (or, reattach to "main": tmux new -A -s main)
+```
+
+> **Optional alias.** For a one-keystroke create-or-reattach, add to `~/.bashrc`:
+> `alias tm='tmux new -A -s main'`. (Not added automatically — tmux stays manual.)
+
+The config (branded navy, dark only) changes the **prefix to `C-a`** (press `C-a`, then the key):
+
+| Keys | Action |
+|------|--------|
+| `C-a` `\|` | split **vertically** (left/right) |
+| `C-a` `-` | split **horizontally** (top/bottom) |
+| `C-a` `h`/`j`/`k`/`l` | move between panes (vim directions) |
+| `C-a` `H`/`J`/`K`/`L` | resize the pane (hold to repeat) |
+| `C-a` `c` | new window | 
+| `C-a` `r` | reload the config |
+| `C-a` `C-a` | send a literal `C-a` to the shell |
+
+The **mouse is on** (click panes/windows, drag borders to resize), windows count from **1**, and
+new splits/windows inherit the current pane's directory. The status bar shows the session name in
+brand amber on the left and a compact clock on the right.
 
 ---
 
@@ -536,12 +559,19 @@ It runs:
   default profile UUID would contradict this policy, so the installer ships none and one is **not
   recommended**. (For the desktop side — GNOME Settings/Nautilus etc. — light/dark still switches;
   that lives in `lnx-gui-ide`. Only the terminal is pinned dark.)
+- **`tests/test_tmux.sh`** (hard gate, **self-skipping**) — a mutation-verified suite for the
+  vendored tmux config (`dotfiles/tmux/tmux.conf`). On a private socket and isolated session it
+  loads the config and asserts the Professor's decisions are in effect (**prefix `C-a`**, mouse
+  on, `base-index 1`, the brand navy status background `#070b16`, and the `|` / `-` split
+  bindings). When `tmux` is absent it prints `SKIP` and passes, so it never false-fails on a
+  minimal box.
 - **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
   Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
   it never gates the result.
 
 The same shellcheck + `test_sete.sh` + `test_pypi.sh` + `test_tab_title.sh` +
-`test_gnome_profile.sh` run on every push via GitHub Actions (`.github/workflows/ci.yml`).
+`test_gnome_profile.sh` + `test_statusline.sh` + `test_tmux.sh` run on every push via GitHub
+Actions (`.github/workflows/ci.yml`).
 
 ## 12. Repository layout
 
@@ -549,18 +579,19 @@ The same shellcheck + `test_sete.sh` + `test_pypi.sh` + `test_tab_title.sh` +
 install.sh            entrypoint: flags, detection, module dispatch, validation
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
-modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
+modules/              00-uv 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
                       50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
                       80-gnome-terminal-profile 90-vscodium (gated)
 dotfiles/             helix/ (config.toml languages.toml
                       themes/mahg-{dark,light}.toml — branded dark/light pair)
-                      starship/ yazi/ claude-code/
+                      starship/ tmux/ yazi/ claude-code/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
                       into fresh UUIDs; not symlinked; mahg-dark is the default)
 tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh ·
-                      test_gnome_profile.sh · validate.sh + sample.md/py/ipynb
+                      test_gnome_profile.sh · test_statusline.sh · test_tmux.sh ·
+                      validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_pypi + test_tab_title +
-                      test_gnome_profile + test_statusline on push)
+                      test_gnome_profile + test_statusline + test_tmux on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 

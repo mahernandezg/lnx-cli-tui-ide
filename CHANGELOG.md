@@ -9,6 +9,13 @@ bump means fixes only.
 
 ## [Unreleased]
 
+### Added
+- **tmux** (`modules/15-tmux.sh` + `dotfiles/tmux/tmux.conf`) for splits and persistent
+  sessions on top of GNOME Terminal's tabs. Branded navy (dark only); prefix `C-a`;
+  intuitive `|` / `-` splits that inherit the pane's path; mouse on; vim pane
+  navigation/resize; `base-index 1`. Manual launch — no auto-start. Hermetic,
+  mutation-verified, self-skipping test (`tests/test_tmux.sh`), wired into CI.
+
 ### Removed
 - **kitty and WezTerm.** The installer no longer installs or replaces a terminal
   emulator; the stack uses the system's GNOME Terminal. `modules/10-terminal.sh` now

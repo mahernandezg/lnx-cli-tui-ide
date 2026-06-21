@@ -34,3 +34,10 @@ jobs:
 
       - name: Claude Code statusline suite
         run: bash tests/test_statusline.sh
+
+      # tmux so the config suite runs for real (it self-skips if tmux is absent).
+      - name: install tmux for the tmux config suite
+        run: sudo apt-get install -y tmux
+
+      - name: tmux mahg config suite
+        run: bash tests/test_tmux.sh
