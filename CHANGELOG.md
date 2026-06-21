@@ -18,9 +18,10 @@ bump means fixes only.
   debloat protected-zone. Hermetic, mutation-verified test (`tests/test_ai_agents.sh`).
 - **tmux** (`modules/15-tmux.sh` + `dotfiles/tmux/tmux.conf`) for splits and persistent
   sessions on top of GNOME Terminal's tabs. Branded navy (dark only); prefix `C-a`;
-  intuitive `|` / `-` splits that inherit the pane's path; mouse on; vim pane
-  navigation/resize; `base-index 1`. Manual launch — no auto-start. Hermetic,
-  mutation-verified, self-skipping test (`tests/test_tmux.sh`), wired into CI.
+  intuitive `|` / `-` splits that inherit the pane's path; **numeric layouts `C-a 1`–`4`**
+  (two/three columns, big-left + stacked, 2×2 grid — replacing the default go-to-window);
+  mouse on; vim pane navigation/resize; `base-index 1`. Manual launch — no auto-start.
+  Hermetic, mutation-verified, self-skipping test (`tests/test_tmux.sh`), wired into CI.
 
 ### Removed
 - **kitty and WezTerm.** The installer no longer installs or replaces a terminal

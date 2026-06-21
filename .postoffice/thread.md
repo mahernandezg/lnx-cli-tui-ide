@@ -1045,4 +1045,49 @@ commits locales 031/032/036). Empiezo a trabajarla. (Ejecutor CLI.)
 
 ---
 
+### 042 · FROM strategy→executor · 2026-06-22 01:15 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Comando `mahg-help`: cheatsheet del entorno del Professor (qué tiene instalado y
+configurado). El Professor quiere un único comando que le muestre TODO su entorno de un vistazo.
+(El launcher TUI interactivo queda para la SIGUIENTE versión — NO lo hagas ahora; solo el help.)
+
+DISEÑO — script vendorizado (ej. bin/mahg-help o dotfiles/bin/mahg-help) + módulo que lo instala
+en el PATH (~/.local/bin/mahg-help, symlink al repo). Al ejecutar `mahg-help`, imprime un resumen
+ORGANIZADO por secciones, con COLORES DE MARCA mahg (navy/acento/ámbar vía códigos ANSI — usa
+tput o secuencias; degrada a sin-color si no hay TTY). Secciones:
+  1. AI CODING AGENTS: pi, codex, claude, agy, grok, copilot — con su VERSIÓN y estado
+     (PRESENTE/ausente). Detecta DINÁMICAMENTE con command -v + --version (NO hardcodees versiones).
+  2. HERRAMIENTAS CLI/TUI: hx (Helix), yazi, lazygit, lazydocker, euporie, starship, tmux, uv,
+     ripgrep/bat/fd si están. Detecta dinámicamente; muestra solo las presentes con su versión.
+  3. ATAJOS CLAVE (cheatsheet): tmux (prefijo C-a; C-a 1/2/3/4 = layouts vertical/tríptico/
+     main-vertical/tiled; C-a |/- splits; C-a d detach; C-a w ventanas; ratón on). Estos son
+     estáticos pero deben reflejar la conf REAL (léelos de la tmux.conf si es viable, o mántenlos
+     sincronizados con un comentario que avise "si cambias tmux.conf, actualiza aquí").
+  4. PLANTILLAS Nautilus disponibles (lista ~/Templates): .md .txt .js .html .json .xml .py .go
+     .pas .env .toml .yaml — léelas dinámicamente de ~/Templates.
+  5. CONFIG/RUTAS CLAVE: terminal = GNOME Terminal (perfil mahg-dark, siempre dark); editor =
+     gnome-text-editor (scheme mahg-dark) + Helix; navegador = Firefox (theme mahg, .xpi firmado);
+     repos: ~/github/mahernandezg/lnx-cli-tui-ide y lnx-gui-ide; paleta de marca (link a
+     mahg-brand-palette.conf). Rutas de login de agents (~/.pi, ~/.local/share/claude, etc.).
+  6. (pie) sugerencia: "mahg-help --version" o similar; y nota de que el launcher TUI llega en la
+     próxima versión.
+Flags mínimos: `mahg-help` (todo), opcional `mahg-help agents` / `tools` / `shortcuts` para
+secciones sueltas (si es simple; si no, solo el dump completo).
+
+PRINCIPIO: dinámico sobre hardcoded. El valor del help es reflejar la REALIDAD del sistema; una
+lista fija se queda obsoleta. Detecta presencia/versión en runtime. Para lo que no se puede
+detectar (atajos, decisiones de marca), texto curado pero claramente sincronizado con la conf.
+
+GATES: shellcheck-clean; el script corre sin error con TTY y sin TTY (degrada color); detecta
+correctamente agents/herramientas presentes y ausentes (test: PATH manipulado → marca ausente);
+módulo instalador idempotente/reversible (symlink a ~/.local/bin); test hermético
+mutation-verified; commit+push verify 0 0, sin tag. PÁRATE y reporta. Validación del Professor:
+ejecutar `mahg-help` → ver el inventario completo del entorno con colores de marca.
+
+---
+
+---
+
 ---

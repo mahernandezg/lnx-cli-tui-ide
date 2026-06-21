@@ -62,6 +62,20 @@ else
   die "no - -> split-window -v binding"
 fi
 
+# Numeric layouts: C-a 1/2/3/4 build a layout (replacing select-window defaults).
+check_layout() {
+  local key="$1" layout="$2"
+  if echo "$binds" | grep -qE "[[:space:]]${key}[[:space:]]+split-window.*select-layout ${layout}\$"; then
+    pass "C-a $key -> $layout layout"
+  else
+    die "C-a $key not bound to a $layout layout"
+  fi
+}
+check_layout 1 even-horizontal
+check_layout 2 even-horizontal
+check_layout 3 main-vertical
+check_layout 4 tiled
+
 stop
 
 if [[ "$fail" -eq 0 ]]; then

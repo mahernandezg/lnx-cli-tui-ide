@@ -389,6 +389,7 @@ The config (branded navy, dark only) changes the **prefix to `C-a`** (press `C-a
 
 | Keys | Action |
 |------|--------|
+| `C-a` `1`/`2`/`3`/`4` | build a **layout** from the current pane: `1` two columns · `2` three columns · `3` big-left + two stacked · `4` 2×2 grid |
 | `C-a` `\|` | split **vertically** (left/right) |
 | `C-a` `-` | split **horizontally** (top/bottom) |
 | `C-a` `h`/`j`/`k`/`l` | move between panes (vim directions) |
@@ -400,6 +401,9 @@ The config (branded navy, dark only) changes the **prefix to `C-a`** (press `C-a
 The **mouse is on** (click panes/windows, drag borders to resize), windows count from **1**, and
 new splits/windows inherit the current pane's directory. The status bar shows the session name in
 brand amber on the left and a compact clock on the right.
+
+> `C-a 1`–`4` are remapped to **layouts** (above), replacing tmux's default "go to window 1–4".
+> Switch windows with the **mouse** or **`C-a w`** (window list).
 
 ---
 
