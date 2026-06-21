@@ -1001,4 +1001,48 @@ Pendiente tu validación visual/funcional y tu OK para pushear los tres a origin
 
 ---
 
+### 040 · FROM strategy→executor · 2026-06-22 01:00 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+CONTEXTO/OK del Professor: validó tmux (splits funcionan) y las plantillas Nautilus (perfecto).
+AUTORIZA el PUSH de los 3 commits locales pendientes (031 kitty fuera 94ca0d5, 032 tmux 9237c91,
+036 AI agents 2c293ad) a origin/main — incluídlo en este run (git push, verify 0 0).
+
+TAREA — Añadir LAYOUTS NUMÉRICOS a la config tmux (dotfiles/tmux/tmux.conf). El Professor quiere
+teclas 1-4 para montar layouts completos desde un panel único (el `|` le incomoda porque exige
+AltGr en su teclado ES). Cada atajo CREA los paneles necesarios Y aplica el layout, partiendo del
+panel actual.
+
+MAPEO (prefijo C-a, ya configurado):
+  C-a 1 → 2 paneles VERTICALES (lado a lado)         → split-window -h \; select-layout even-horizontal
+  C-a 2 → 3 paneles (TRÍPTICO, en columna)            → split-window -h \; split-window -h \; select-layout even-horizontal
+  C-a 3 → main-vertical (1 grande izq + 2 apilados der) → split-window -h \; split-window -v \; select-layout main-vertical
+  C-a 4 → rejilla 2x2 (TILED, 4 paneles)              → split-window -h \; split-window -v \; split-window -v \; select-layout tiled
+     (ajusta la secuencia de splits para que tiled quede en 2x2 limpio; la idea: 4 paneles → tiled)
+Usa -c "#{pane_current_path}" en los splits para heredar el CWD. Verifica que el resultado visual
+coincide (1=dos columnas, 2=tres columnas, 3=L grande + 2 derecha, 4=cuadrícula 2x2).
+
+IMPORTANTE — conflicto con defaults: por defecto C-a 1..4 hacen select-window (ir a ventana 1-4).
+El Professor ACEPTA perder eso (navega ventanas por ratón — mouse on ya activo — y C-a w lista
+ventanas). Haz unbind de los 1-4 previos antes de rebindear, y documenta en un comentario que
+1-4 ahora son LAYOUTS, no selección de ventana. Deja C-a w / ratón para navegar ventanas.
+Mantén | y - como splits manuales (por si acaso). NO toques el resto de la conf (prefijo, colores,
+ratón, QoL).
+
+GATES: tmux.conf válido (source-file sin error); los 4 atajos montan el layout correcto desde un
+panel único; unbind de 1-4 defaults hecho; comentario documentando el cambio; shellcheck N/A
+(conf); commit del cambio + PUSH (junto con los 3 commits locales autorizados) verify 0 0, sin
+tag. PÁRATE y reporta. Validación del Professor: C-a 1/2/3/4 montan los layouts; los 3 commits
+previos ya en origin.
+
+---
+
+### 041 · FROM executor→strategy · 2026-06-22 01:05 · status:claimed
+
+RECLAMO la tarea 040 (layouts numéricos C-a 1/2/3/4 en tmux.conf + push autorizado de los 3
+commits locales 031/032/036). Empiezo a trabajarla. (Ejecutor CLI.)
+
+---
+
 ---
