@@ -813,4 +813,44 @@ RECLAMO la tarea 031 (sacar kitty del stack). Empiezo a trabajarla. El Professor
 pregunta directa) que el instalador NO instala terminal alguno: ni kitty ni WezTerm; el stack usa
 GNOME Terminal (sistema) + tmux (032). (Ejecutor CLI.)
 
+### 034 · FROM executor→strategy · 2026-06-21 23:50 · status:open
+
+031 — Sacar kitty del stack: HECHO EN CÓDIGO + desinstalado de la máquina. Pendiente tu
+VALIDACIÓN (GNOME Terminal intacto) y el PUSH (lo dejo local por "párate tras commit"). Cierra el
+reclamo 033; NO marco done.
+
+DECISIÓN AMPLIADA (confirmada por el Professor vía pregunta directa): el instalador NO instala
+NINGÚN terminal — ni kitty ni WezTerm. El stack usa GNOME Terminal (sistema) + tmux (032).
+euporie sigue mostrando plots inline vía el soporte de imagen de GNOME Terminal (sixel).
+
+1. GIT (descartar da3ac25 sin pushear): `git reset --mixed f995395` (= origin/main) — da3ac25
+   (rebrand kitty) y d0dc77e (reporte 030) eran LOCALES sin push, así que reset es la vía limpia
+   (revert dejaría el churn; reset no es force-push porque origin nunca los tuvo). El working tree
+   se conservó; el kitty.conf rebrandeado se borró al eliminar dotfiles/kitty. da3ac25 NO existe en
+   ninguna historia.
+2. INSTALADOR: modules/10-terminal.sh reescrito → solo instala FUENTES (Nerd Font + dejavu);
+   eliminado todo install/config/desktop de kitty y WezTerm. Borrados dotfiles/kitty y
+   dotfiles/wezterm. 60-ssh-alias: quitado el linking del ssh-kitten (alias SSH intacto).
+   30-euporie: validación de gráficos sin kitten (nota → sixel de GNOME Terminal). lib/detect +
+   lib/fallback: comentarios/logs de-kitty.
+3. grep=0 de kitty/kitten/wezterm en install.sh/modules/lib (gate cumplido). README reescrito
+   (§3 terminal, §5 → "GNOME Terminal tabs + tmux", §6 ssh, §7 fallback, §8, §12, tabla docs,
+   intro). CHANGELOG: sección [Unreleased]/Removed. validate.sh: comentarios actualizados.
+4. MÁQUINA: kitty desinstalado de forma REVERSIBLE (mv, no rm) a
+   ~/.local/share/lnx-cli-tui-ide-removed/kitty-20260621-230338/ : kitty.app, symlinks
+   bin/kitty+kitten, kitty.desktop, ~/.config/kitty. `command -v kitty` ahora vacío. Revert =
+   mover de vuelta.
+
+GATES (verde): shellcheck-clean (scripts cambiados); tests/run.sh → RESULT: PASS (hard gates +
+validate 4/4). validate.sh re-corrido TRAS desinstalar kitty → case 3 (euporie inline plots) sigue
+PASS (no dependía de kitten). commit local 94ca0d5; NO pusheado.
+
+PENDIENTE MANUAL (requiere sudo, no interactivo aquí): quitar el alternative colgante
+  sudo update-alternatives --remove x-terminal-emulator ~/.local/bin/kitty
+(estaba en manual→kitty; al faltar kitty queda colgante; GNOME Terminal se lanza directo, impacto
+menor). Lo dejo para que lo corras tú.
+
+ACCIÓN PROFESSOR: confirma que GNOME Terminal sigue perfecto (fuentes, euporie con plots) y, si
+OK, autorizo push. Sigo con 032 (tmux) en este mismo run.
+
 ---
