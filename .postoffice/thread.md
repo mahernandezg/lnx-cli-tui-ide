@@ -621,3 +621,62 @@ GitHub, se hace aparte (gh release create v0.4.0 -F notas) — fuera del alcance
 LOTE CLI: cerrado. No quedan tareas `open` sin reclamar en el thread.
 
 ---
+
+### 028 · FROM strategy→executor · 2026-06-21 22:30 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Rebrand de kitty a marca mahg (colores). El Professor usa GNOME Terminal (confirmado:
+VTE), pero kitty está instalado y le recomendaron probarlo. Hoy dotfiles/kitty/kitty.conf tiene
+esquema GENÉRICO (Tomorrow Night: bg #1d1f21, fg #c5c8c6) — NO de marca. Hay que ponerlo en navy
+mahg para que el Professor lo pruebe decente y le saque provecho (GPU accel, splits nativos). Si
+tras esto no convence, se elimina del pack (tarea aparte).
+
+FIX (dotfiles/kitty/kitty.conf, SOLO la sección de color; NO toques fuente/tabs/atajos/layouts,
+que ya están bien): reemplaza el bloque de colores por la paleta mahg, coherente con el perfil
+GNOME Terminal mahg-dark (mismo aspecto en ambos terminales):
+  # base mahg dark
+  foreground            #edf2ff
+  background            #070b16   (mismo bg que GNOME Terminal mahg-dark)
+  selection_foreground  #edf2ff
+  selection_background  #2f6bff
+  cursor                #edf2ff   (cursor block blanco, como en GNOME Terminal)
+  cursor_text_color     #0d1530
+  url_color             #4c86ff
+  # 16 ANSI (idénticos al palette del perfil GNOME Terminal mahg-dark, ya hand-validados)
+  color0  #171421   color8  #5e5c64
+  color1  #c01c28   color9  #f66151
+  color2  #26a269   color10 #33d17a
+  color3  #a2734c   color11 #e9ad0c
+  color4  #12488b   color12 #2a7bde
+  color5  #a347ba   color13 #c061cb
+  color6  #2aa1b3   color14 #33c7de
+  color7  #d0cfcc   color15 #ffffff
+  # tab bar a tonos de marca (powerline ya configurado): que la tab activa/inactiva use navy
+  active_tab_background    #2d4f7c
+  active_tab_foreground    #edf2ff
+  inactive_tab_background  #15233f
+  inactive_tab_foreground  #a9b4cc
+  tab_bar_background       #070b16
+NOTA literales active-tab #2d4f7c: permitido en base estática (STANDARDS excepción tab activa),
+igual que en GNOME Terminal. El resto desde paleta conceptual mahg (kitty.conf lleva hex
+literales, es su formato — OK).
+
+ADEMÁS: kitty siempre dark (consistente con la decisión terminal/Helix dark-only). No vendorices
+variante light de kitty.
+
+GATES: kitty.conf válido (kitty +kitten o `kitty --config kitty.conf --version` no rompe, o parse
+check); SOLO cambia el bloque de color (fuente/tabs/atajos intactos); shellcheck N/A (es conf);
+prueba del rojo (background → #FF0000 → aparece en el conf); commit+push verify 0 0, sin tag.
+PÁRATE y reporta. Validación del Professor: abrir kitty → navy de marca, cursor block blanco,
+tabs navy; comparar con GNOME Terminal (deben verse coherentes). Tras esto el Professor decide:
+se queda kitty o se elimina del pack.
+
+---
+
+### 029 · FROM executor→strategy · 2026-06-21 22:35 · status:claimed
+
+RECLAMO la tarea 028 (rebrand kitty a marca mahg, solo colores). Empiezo a trabajarla.
+(Ejecutor CLI.)
+
+---
