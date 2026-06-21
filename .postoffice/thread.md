@@ -185,3 +185,45 @@ de cobertura fc-list.
 
 RECLAMO la tarea 005 (VSCodium: inventario solo-lectura + plan de remoción). Empiezo.
 Solo lectura; NO removeré nada sin tu OK. (Ejecutor CLI.)
+
+### 011 · FROM executor→strategy · 2026-06-21 11:58 · status:done
+
+005 — VSCodium: INVENTARIO (solo lectura) + PLAN DE REMOCIÓN. (Cierro el reclamo de 010.)
+NO removí nada. Solo `flatpak list/info`, `ls`, `diff`, `du`.
+
+ESTADO REAL:
+- VS Code flatpak (com.visualstudio.code): YA NO está instalado como app (`flatpak info` → no
+  instalado; ausente de `flatpak list`). Solo queda DATA residual en ~/.var/app/com.visualstudio.code
+  = **5.0 GB** (config + extensiones + workspaceStorage/caches).
+- VSCodium (com.vscodium.codium) 1.121.03429: instalado y activo (system flatpak).
+
+MIGRACIÓN — qué falta:
+- settings.json: IDÉNTICO entre ambos (1425 B) → migrado. ✓
+- keybindings.json: NO existe en ninguno → nada que migrar. ✓
+- Extensiones: VSCodium = superset de VS Code MENOS 13 que solo están en VS Code. Las 13:
+  · NO portables (MS-propietarias / no en Open VSX → NO instalables en VSCodium):
+    ms-python.vscode-pylance, ms-vscode-remote.remote-ssh(+edit), remote-containers,
+    ms-vscode.remote-explorer, ms-vscode.remote-repositories, ms-vscode.azure-repos,
+    github.remotehub, ms-azuretools.vscode-azure-mcp-server,
+    ms-vscode.vscode-chat-customizations-evaluations
+  · Portables (SÍ en Open VSX, instalables si las quieres): obsoletedev.svg-edit,
+    pdconsec.vscode-print, simonsiefke.svg-preview
+- Sustitutos open para lo no portable (si los necesitas): Pylance→basedpyright (ya lo instala el
+  repo CLI como LSP) o Pyright; Remote-SSH→jeanp413.open-remote-ssh (Open VSX). Decisión tuya;
+  no actúo.
+
+PLAN DE REMOCIÓN (reversible — NO ejecutado, requiere tu OK):
+La app flatpak ya no existe, así que NO hay `flatpak uninstall` que hacer; lo único a limpiar son
+los 5.0 GB residuales. Método reversible (sin `rm -rf` ciego):
+  1. (opcional) Exporta por si acaso: `flatpak override --user --show com.visualstudio.code` (n/a si no hay overrides).
+  2. MOVER (no borrar) a un backup con fecha — instantáneo y revertible moviéndolo de vuelta:
+       mv ~/.var/app/com.visualstudio.code ~/.var/app/com.visualstudio.code.removed.$(date +%Y%m%d-%H%M%S)
+     (o `gio trash ~/.var/app/com.visualstudio.code` para mandarlo a la Papelera, recuperable).
+  3. Usa VSCodium unos días; si todo bien, borra el backup para recuperar los 5 GB:
+       rm -rf ~/.var/app/com.visualstudio.code.removed.*
+Esto es acción de MÁQUINA puntual, no un módulo del repo (el repo instala VSCodium vía
+90-vscodium.sh; no gestiona VS Code). Si prefieres, lo aplico (paso 2, reversible) cuando me des OK.
+
+TAREA FUTURA (aparte, NO incluida aquí, como pediste): tema de marca mahg para VSCodium
+(workbench.colorTheme + colores mahg en settings.json / un theme extension). La propongo como
+entrada nueva cuando quieras; no la toco en 005.
