@@ -1122,6 +1122,43 @@ alcance de 040). Lista para tomar en el próximo run.
 RECLAMO la tarea 042 (comando mahg-help: cheatsheet dinámico del entorno con colores de marca).
 Empiezo a trabajarla. (Ejecutor CLI.)
 
+### 045 · FROM executor→strategy · 2026-06-22 01:45 · status:open
+
+042 — Comando mahg-help: HECHO EN CÓDIGO + instalado en la máquina (mahg-help en PATH). Pendiente
+tu VALIDACIÓN VISUAL (ejecutar mahg-help y ver el inventario con colores) y el PUSH (local por
+"párate tras commit"). Cierra el reclamo 044; NO marco done. (Launcher TUI: NO hecho, queda para
+la próxima versión como pediste.)
+
+QUÉ HICE:
+- bin/mahg-help (script vendorizado, autocontenido): imprime 6 secciones con colores de marca
+  (ANSI truecolor; degrada a sin-color si no hay TTY, NO_COLOR o --no-color):
+  1) AI agents (pi/codex/claude/agy/grok/copilot): ✓/✗ + versión DINÁMICA (command -v +
+     --version/-V, truncada a 48). En vivo: los 6 ✓ con versión.
+  2) Herramientas CLI/TUI presentes: hx/yazi/lazygit/lazydocker/euporie/starship/tmux/uv/rg/
+     bat(batcat)/fd(fdfind), con versión. Solo muestra las presentes.
+  3) Atajos tmux (curado, comentario "keep in sync con tmux.conf"): C-a, 1/2/3/4 layouts, |/-,
+     h/j/k/l, c/w, d/r, mouse.
+  4) Plantillas Nautilus: leídas DINÁMICAMENTE de ~/Templates (12 listadas en vivo).
+  5) Config/rutas: terminal GNOME Terminal mahg-dark, editores Helix+gnome-text-editor, Firefox
+     mahg, prompt Starship, paleta de marca (hex + nota: mahg-brand-palette.conf vive en
+     lnx-gui-ide), repos, rutas de datos/login de los agents.
+  6) Pie: flags + nota "TUI launcher en próxima versión".
+  Flags: secciones sueltas (agents/tools/shortcuts/templates/paths), --version, --no-color, -h.
+- modules/95-mahg-help.sh: symlink bin/mahg-help → ~/.local/bin/mahg-help. Idempotente
+  (PRESENT si ya enlazado / INSTALLED), backup vía link_dotfile, --dry-run safe.
+- tests/test_mahg_help.sh: hermético (PATH controlado con shims; pi/codex/agy presentes,
+  claude/grok/copilot ausentes → detecta bien), --no-color escape-free, --version, run sin TTY
+  exit 0. Mutation-verified (agy→antigravity bitea). En run.sh + ci.yml; shellcheck ahora cubre
+  bin/mahg-help (y añadí dotfiles/claude-code/statusline.sh al shellcheck de ci.yml).
+
+GATES (verde): shellcheck-clean; tests/run.sh → RESULT: PASS (9 hard gates incl. test_mahg_help +
+validate 4/4). Instalado en la máquina: ./install.sh --only mahg-help → symlink OK; mahg-help
+corre y lista los 6 agents + tools + plantillas; 2ª pasada = PRESENT (idempotente). commit local
+29275f1; NO pusheado. Sin tag.
+
+ACCIÓN PROFESSOR: corre `mahg-help` (y `mahg-help agents` / `tools` / `shortcuts`) y mira el
+inventario con colores de marca. Si OK, autorizo push.
+
 ---
 
 ---
