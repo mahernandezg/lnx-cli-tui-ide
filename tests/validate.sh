@@ -80,7 +80,7 @@ case_euporie() {
   # euporie is a full-screen TUI; we cannot drive it interactively in an
   # unattended run. Instead we (a) confirm euporie loads the notebook model, and
   # (b) confirm the plotting stack can produce an image, which is what euporie
-  # would stream via the kitty graphics protocol.
+  # would stream via the terminal's graphics protocol (sixel on GNOME Terminal).
   local euporie_ok=0 ok_load=0 ok_plot=0
   # HANG-PROOF: never invoke euporie's renderer (TUI or preview) — attached to a
   # real terminal it can read stdin or hold the tty and block forever. Confirm
@@ -98,7 +98,7 @@ PY
   fi
 
   # Confirm the inline-plot stack can produce an image (what euporie streams via
-  # the kitty graphics protocol). matplotlib is already cached by the euporie
+  # the terminal's graphics protocol). matplotlib is already cached by the euporie
   # module, so this is normally fast; the longer timeout covers a cold resolve.
   if have uv && _to 90 uv run --with matplotlib python - >/dev/null 2>&1 <<'PY'
 import matplotlib

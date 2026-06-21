@@ -86,15 +86,17 @@ _detect_ram() {
   return 0  # keep set -e safe even if the meminfo parse yields nothing
 }
 
-# opengl_ge_33 — true if detected OpenGL >= 3.3 (kitty's hardware threshold).
+# opengl_ge_33 — true if detected OpenGL >= 3.3 (a common GPU-acceleration
+# threshold; informational now that the stack uses the system GNOME Terminal).
 opengl_ge_33() {
   (( DETECT_OPENGL_MAJOR > 3 )) && return 0
   (( DETECT_OPENGL_MAJOR == 3 && DETECT_OPENGL_MINOR >= 3 )) && return 0
   return 1
 }
 
-# scrollback_lines_for_ram — size kitty scrollback to available RAM.
-# Conservative tiers so old, RAM-constrained laptops don't hoard memory.
+# scrollback_lines_for_ram — a RAM-sized scrollback budget (informational; the
+# system terminal and tmux keep their own history). Conservative tiers so old,
+# RAM-constrained laptops don't hoard memory.
 scrollback_lines_for_ram() {
   if   (( DETECT_RAM_MB >= 16000 )); then echo 100000
   elif (( DETECT_RAM_MB >= 8000  )); then echo 50000
@@ -119,9 +121,9 @@ run_detection() {
 
   log_info "OS:        ${DETECT_OS_PRETTY:-unknown} (version_id=${DETECT_DEBIAN_VERSION:-?})"
   log_info "Arch:      ${DETECT_ARCH}"
-  log_info "RAM:       ${DETECT_RAM_MB} MB  (kitty scrollback -> $(scrollback_lines_for_ram) lines)"
+  log_info "RAM:       ${DETECT_RAM_MB} MB  (scrollback budget -> $(scrollback_lines_for_ram) lines)"
   if [[ -n "$DETECT_OPENGL_STRING" ]]; then
-    log_info "OpenGL:    ${DETECT_OPENGL_MAJOR}.${DETECT_OPENGL_MINOR}  ($(opengl_ge_33 && echo '>=3.3 -> kitty hardware OK' || echo '<3.3 -> software fallback'))"
+    log_info "OpenGL:    ${DETECT_OPENGL_MAJOR}.${DETECT_OPENGL_MINOR}  ($(opengl_ge_33 && echo '>=3.3 -> GPU acceleration available' || echo '<3.3 -> software rendering'))"
   else
     log_info "OpenGL:    undetectable (no glxinfo / headless) -> terminal will assume software fallback"
   fi

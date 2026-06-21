@@ -8,10 +8,10 @@
 # returns non-zero — but never exits, satisfying the non-fatal-failures rule.
 #
 # Usage:
-#   try_methods "kitty" \
-#       method_kitty_official \
-#       method_kitty_apt \
-#       method_kitty_wezterm_fallback
+#   try_methods "yazi" \
+#       method_yazi_release \
+#       method_yazi_apt \
+#       method_yazi_cargo
 #
 # Each method function should:
 #   - return 0 on success (tool installed / already present),

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 While on `0.x`, a **minor** bump means substantial new functionality and a **patch**
 bump means fixes only.
 
+## [Unreleased]
+
+### Removed
+- **kitty and WezTerm.** The installer no longer installs or replaces a terminal
+  emulator; the stack uses the system's GNOME Terminal. `modules/10-terminal.sh` now
+  only installs the terminal fonts (Nerd Font + DejaVu fallback). `dotfiles/kitty/` and
+  `dotfiles/wezterm/` are deleted, and the kitty ssh-kitten linking is dropped from the
+  SSH module. euporie inline plots ride GNOME Terminal's sixel support.
+
 ## [0.4.0] — 2026-06-21
 
 Branding & theming batch: a vendored mahg terminal look (GNOME Terminal + Helix +

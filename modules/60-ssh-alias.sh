@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# modules/60-ssh-alias.sh — optional SSH alias + kitty ssh kitten config.
+# modules/60-ssh-alias.sh — optional SSH alias.
 #
 # Connection details are NOT stored in this repo. They live in a local, gitignored
 # config.env (copy of config.env.example) that the user fills in per machine. If
 # config.env is absent, this module SKIPS entirely — no prompt, no writes.
 #
 # HARD CONSTRAINT: no key material is ever written or committed. This only writes
-# an ~/.ssh/config alias that *references* a local key path, and links the kitty
-# ssh kitten config so terminfo travels to the remote automatically.
+# an ~/.ssh/config alias that *references* a local key path.
 
 CONFIG_ENV="$REPO_ROOT/config.env"
 
@@ -148,19 +147,7 @@ _check_key_present() {
   fi
 }
 
-_link_kitten_conf() {
-  # The kitty ssh kitten config makes terminfo travel to the remote so Helix,
-  # lazygit, yazi, etc. render correctly over SSH. kitty.conf already includes it.
-  link_dotfile "$REPO_ROOT/dotfiles/kitty/ssh.conf" "$HOME/.config/kitty/ssh.conf"
-  if have kitten || have kitty; then
-    log_info "ssh: kitty ssh kitten configured — use 'kitten ssh $SSH_ALIAS' to carry terminfo"
-  else
-    log_info "ssh: (kitty not active here; kitten ssh applies when running under kitty)"
-  fi
-}
-
 _ensure_ssh_config
 _check_key_present
-_link_kitten_conf
 
 log_ok "ssh-alias module done"

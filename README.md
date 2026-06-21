@@ -8,8 +8,8 @@ for that machine and falls back automatically when something isn't available.
 
 The philosophy: **live in the terminal.** Edit with Helix, manage files with yazi, read
 code with bat, render Markdown with glow, drive Git/Docker with lazygit/lazydocker, view
-notebooks with euporie, and multiplex with kitty's own tabs/splits (no tmux). The desktop
-is only a fallback.
+notebooks with euporie, and multiplex with GNOME Terminal's tabs plus **tmux** for splits.
+The desktop is only a fallback.
 
 ---
 
@@ -19,7 +19,7 @@ is only a fallback.
 2. [Command-line flags](#2-command-line-flags)
 3. [Daily use — every tool explained](#3-daily-use--every-tool-explained)
 4. [The Starship prompt](#4-the-starship-prompt)
-5. [kitty: tabs, splits & layouts (your multiplexer)](#5-kitty-tabs-splits--layouts-your-multiplexer)
+5. [Multiplexing: GNOME Terminal tabs + tmux](#5-multiplexing-gnome-terminal-tabs--tmux)
 6. [SSH alias — keys & host details stay local](#6-ssh-alias--keys--host-details-stay-local)
 7. [How the fallback engine works](#7-how-the-fallback-engine-works)
 8. [Idempotency, dotfiles & backups](#8-idempotency-dotfiles--backups)
@@ -44,7 +44,7 @@ cd ~/.local/share/lnx-cli-tui-ide
 ```
 
 **Step 2 — (Optional) Configure your SSH alias**
-Only if you want the installer to set up an `ssh`/`kitten ssh` alias. Nothing here is
+Only if you want the installer to set up an `ssh` alias. Nothing here is
 committed — `config.env` is git-ignored.
 ```bash
 cp config.env.example config.env
@@ -76,7 +76,7 @@ via its best available method; a failing step **logs and continues** instead of 
 Cautious? Install in stages: `./install.sh --only viewers`, then `--only terminal`, etc.
 
 > **Trust note:** as *fallbacks*, a few tools may install via their official one-line
-> installers — uv (`astral.sh`), kitty (`sw.kovidgoyal.net`), starship (`starship.rs`) —
+> installers — uv (`astral.sh`), starship (`starship.rs`) —
 > which pipe a script from the tool's own HTTPS source into a shell. That runs remote code
 > from those upstreams; if you'd rather not, install those tools yourself first (they'll be
 > detected and skipped) or use `apt` where available. All other downloads are release
@@ -85,7 +85,7 @@ Cautious? Install in stages: `./install.sh --only viewers`, then `--only termina
 **Step 5 — Open a new terminal**
 Reload your shell so the new prompt and `PATH` take effect:
 ```bash
-exec bash        # or just open a new kitty window/tab
+exec bash        # or just open a new terminal window/tab
 ```
 You should now see the two-line **Starship** prompt.
 
@@ -162,18 +162,14 @@ use it** — including the exact command to start it.
   uv self update                 # keep uv current
   ```
 
-### kitty / WezTerm — the terminal · [📖 kitty](https://sw.kovidgoyal.net/kitty/) · [📖 WezTerm](https://wezterm.org/)
-- **What:** a GPU-accelerated terminal (kitty), or WezTerm in software-rendering mode on
-  GPUs that can't do OpenGL 3.3.
-- **Advantage:** the **kitty graphics protocol** lets images and notebook plots render
-  *inline* in the terminal — that's why euporie and yazi can show pictures. Plus built-in
-  tabs/splits so you don't need tmux.
-- **How:** see [§5](#5-kitty-tabs-splits--layouts-your-multiplexer) for the keybindings.
-  Quick wins:
-  ```bash
-  kitten icat image.png          # display an image inline
-  kitten ssh myhost              # SSH carrying terminfo so remote TUIs render right
-  ```
+### Terminal — GNOME Terminal (+ tmux) · [📖 GNOME Terminal](https://help.gnome.org/users/gnome-terminal/stable/)
+- **What:** the stack uses the system's **GNOME Terminal** (VTE). The installer does **not**
+  install or replace a terminal — it only adds the terminal fonts (Nerd Font + DejaVu fallback).
+- **Advantage:** native tabs and desktop integration; images and notebook plots render *inline*
+  via GNOME Terminal's **sixel** support (that's how euporie and yazi show pictures). Splits and
+  persistent sessions come from **tmux**.
+- **How:** new tab `Ctrl+Shift+T`, switch tabs `Ctrl+PgUp`/`Ctrl+PgDn`. For splits and sessions,
+  see [§5](#5-multiplexing-gnome-terminal-tabs--tmux).
 
 ### bat — a better `cat` · [📖 Docs](https://github.com/sharkdp/bat)
 - **What:** `cat` with syntax highlighting, line numbers, and a Git change gutter.
@@ -197,8 +193,8 @@ use it** — including the exact command to start it.
 
 ### yazi — the file manager · [📖 Docs](https://yazi-rs.github.io/docs/quick-start)
 - **What:** a fast (Rust) TUI file manager with image/preview support.
-- **Advantage:** navigate, preview (including images via the kitty protocol), and do bulk
-  file ops far faster than `cd`/`ls`/`mv`.
+- **Advantage:** navigate, preview (including images via the terminal's sixel support), and do
+  bulk file ops far faster than `cd`/`ls`/`mv`.
 - **How:** launch with `yazi`. Core keys:
   | Key | Action | Key | Action |
   |-----|--------|-----|--------|
@@ -234,7 +230,7 @@ use it** — including the exact command to start it.
 
 ### euporie — Jupyter notebooks in the terminal · [📖 Docs](https://euporie.readthedocs.io/)
 - **What:** a TUI for viewing and running `.ipynb` notebooks, with **inline plots** via the
-  kitty graphics protocol.
+  terminal's graphics protocol (sixel on GNOME Terminal).
 - **Advantage:** open notebooks (and see matplotlib figures) without a browser or Jupyter
   server. Installed in isolation via `uv tool`.
 - **How:**
@@ -317,8 +313,8 @@ use it** — including the exact command to start it.
 | Tool | Command | Official documentation |
 |------|---------|------------------------|
 | uv | `uv` | https://docs.astral.sh/uv/ |
-| kitty | `kitty` / `kitten` | https://sw.kovidgoyal.net/kitty/ |
-| WezTerm | `wezterm` | https://wezterm.org/ |
+| GNOME Terminal | *(your terminal)* | https://help.gnome.org/users/gnome-terminal/stable/ |
+| tmux | `tmux` | https://github.com/tmux/tmux/wiki |
 | bat | `bat` | https://github.com/sharkdp/bat |
 | glow | `glow` | https://github.com/charmbracelet/glow |
 | yazi | `yazi` | https://yazi-rs.github.io/docs/quick-start |
@@ -365,31 +361,28 @@ responsive in large repos like a big TypeScript monorepo. Activation is added to
 
 ---
 
-## 5. kitty: tabs, splits & layouts (your multiplexer)
+## 5. Multiplexing: GNOME Terminal tabs + tmux
 
-kitty's own windows/tabs/layouts replace tmux for daily use (tmux is **not** installed; add
-it yourself with `sudo apt install tmux` if you want it).
+The terminal is the system's **GNOME Terminal**; use its native **tabs** for quick parallel
+shells:
 
 | Keys | Action |
 |------|--------|
-| `Ctrl+Shift+Enter` | new split (window) in the current tab |
 | `Ctrl+Shift+T` | new tab |
-| `Ctrl+Shift+]` / `Ctrl+Shift+[` | focus next / previous split |
-| `Ctrl+Shift+L` | cycle layout (splits → stack → tall → fat → grid) |
-| `Ctrl+Shift+W` | close the current split |
-| `Ctrl+Shift+H` | open scrollback in the pager |
-| `Ctrl+Shift+=` / `Ctrl+Shift+-` | font size up / down |
+| `Ctrl+PgUp` / `Ctrl+PgDn` | previous / next tab |
+| `Ctrl+Shift+W` | close tab |
 
-Scrollback is sized to your RAM automatically (more RAM → longer history), so long AI-CLI
-output stays reachable.
+For **splits** and **persistent sessions**, the stack uses **tmux** — its config is vendored by
+this repo (branded, mouse on, intuitive splits). It does **not** auto-start; launch it by hand
+when you want it. See the tmux module for the keybindings.
 
 ---
 
 ## 6. SSH alias — keys & host details stay local
 
-The installer can configure an SSH alias and the kitty ssh kitten, but **no connection
-details and no key material live in this repo**. Host, user, and key path come from a
-local, git-ignored `config.env` (created in [Step 2](#1-step-by-step-first-install)).
+The installer can configure an SSH alias, but **no connection details and no key material
+live in this repo**. Host, user, and key path come from a local, git-ignored `config.env`
+(created in [Step 2](#1-step-by-step-first-install)).
 
 On install, `modules/60-ssh-alias.sh` reads `config.env`, **auto-detects your key** from
 `~/.ssh` if `SSH_IDENTITY` is unset, and writes a managed block to `~/.ssh/config`:
@@ -404,10 +397,9 @@ Host myhost
 # <<< lnx-cli-tui-ide managed block <<<
 ```
 
-Then connect with terminfo carried to the remote (so Helix/lazygit/yazi render correctly):
+Then connect via the alias:
 ```bash
-kitten ssh myhost      # preferred, from kitty
-ssh myhost             # plain ssh also works via ~/.ssh/config
+ssh myhost             # uses the managed ~/.ssh/config alias
 ```
 
 The private key **must already exist locally** at the `SSH_IDENTITY` path (`chmod 600`); if
@@ -423,9 +415,8 @@ Every tool declares a **primary install method and ordered fallbacks**. The engi
 (`lib/fallback.sh`) tries each in turn, in an isolated subshell, logs which path won, and
 **continues on failure** instead of aborting. Examples:
 
-- **Terminal — hardware-adaptive.** OpenGL ≥ 3.3 → **kitty** (GPU); otherwise → **WezTerm**
-  in software-rendering mode — both speak the kitty graphics protocol.
-- **kitty:** official installer (newer than Debian stable) → `apt` (offline / if it fails).
+- **Terminal — the system GNOME Terminal** is used as-is (not installed/replaced); the module
+  only adds the terminal fonts (Nerd Font, with a DejaVu glyph fallback).
 - **Release tools** (yazi, Helix, lazygit, lazydocker, Starship): the **latest stable**
   release is resolved at runtime from GitHub — **no pinned versions** — with `apt`/`cargo`
   as fallbacks.
@@ -444,8 +435,6 @@ modules branch on them.
   before linking — nothing is silently overwritten.
 - Edits to `~/.bashrc` (Starship activation, `EDITOR`/`VISUAL=hx`) live in clearly marked
   `# >>> lnx-cli-tui-ide: … >>>` blocks and are written **once**.
-- Per-machine values (RAM-sized scrollback) go to `local.conf` / `local.lua`, which are
-  git-ignored.
 
 ---
 
@@ -563,9 +552,9 @@ lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
 modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
                       50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
                       80-gnome-terminal-profile 90-vscodium (gated)
-dotfiles/             kitty/ helix/ (config.toml languages.toml
+dotfiles/             helix/ (config.toml languages.toml
                       themes/mahg-{dark,light}.toml — branded dark/light pair)
-                      wezterm/ starship/ yazi/
+                      starship/ yazi/ claude-code/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
                       into fresh UUIDs; not symlinked; mahg-dark is the default)
 tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh ·
