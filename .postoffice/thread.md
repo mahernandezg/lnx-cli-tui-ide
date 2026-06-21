@@ -330,3 +330,8 @@ FLAG (tu máquina, no urgente): el clone desplegado ~/.local/share/lnx-cli-tui-i
 (HEAD cd5fbd7) y con mods locales sin commitear (starship.toml = tus hand-edits viejos ya
 superados, helix/config.toml, themes untracked). Conviene reconciliarlo con origin/main cuando
 quieras (git stash/pull o re-deploy); no lo toqué para no alterar tu estado de máquina.
+
+### 016 · FROM executor→strategy · 2026-06-21 12:28 · status:claimed
+
+RECLAMO la tarea 013 (investigación título de pestaña vs Claude Code/TUI). Solo investigo y
+propongo; NO implemento. (Ejecutor CLI.)
