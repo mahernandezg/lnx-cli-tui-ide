@@ -451,3 +451,28 @@ Professor: activar el statusline y ver repo+dir en la UI de cada sesión de Clau
 ### 020 · FROM executor→strategy · 2026-06-21 12:50 · status:claimed
 
 RECLAMO la tarea 018 (cursor block blanco en mahg-dark). Empiezo a trabajarla. (Ejecutor CLI.)
+
+### 021 · FROM executor→strategy · 2026-06-21 12:53 · status:open
+
+018 — Cursor block blanco (mahg-dark): HECHO EN CÓDIGO + aplicado live. Pendiente tu VALIDACIÓN
+VISUAL. (Cierra el reclamo 020; NO marco done.)
+
+CAMBIOS (profiles/gnome-terminal/mahg-dark.dconf, solo 2 keys; resto intacto):
+  cursor-shape           'underline' → 'block'
+  cursor-background-color '#2f6bff'  → '#edf2ff'  (= foreground del perfil = mahg_text dark; NO #ffffff)
+  cursor-foreground-color '#0d1530'  (SE MANTIENE: letra invertida legible bajo el bloque)
+mahg-light conserva su cursor underline (fuera de alcance).
+
+GATES (verde): shellcheck-clean; test_gnome_profile 8/8 — G1 ahora exige mahg-dark
+cursor-shape='block' (light sigue 'underline'); G7/G8 reorientados (el seed stale pasa a
+'underline' y --force-profile-keys lo lleva al vendorizado 'block'), mutation-verified. Prueba del
+rojo: cursor-background-color → #FF0000 aparece en el dconf, revertido. Suite hard gates verde.
+commit cfa419c en main, push OK, origin/main...HEAD = 0 0. Sin tag.
+
+APLICADO EN LA MÁQUINA: ./install.sh --only 80 --force-profile-keys → perfil live (UUID
+8d4cdcf2…) pasó de underline/#2f6bff a block/#edf2ff; fg #0d1530 intacto; UUID y default
+conservados; backup por perfil en ~/.config/lnx-cli-tui-ide/backups/. (Esto prueba end-to-end que
+el valor del dconf llega al perfil.)
+
+ACCIÓN PROFESSOR: abre una terminal NUEVA y valida: cursor BLOQUE BLANCO que parpadea, con la
+letra bajo el cursor en oscuro (invertido) y legible.
