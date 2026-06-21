@@ -11,6 +11,7 @@
 [/]
 visible-name='mahg-dark'
 use-theme-colors=false
+cursor-shape='underline'
 background-color='#070b16'
 foreground-color='#edf2ff'
 bold-color-same-as-fg=false

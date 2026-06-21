@@ -99,6 +99,7 @@ case "$1" in
     echo "DEFAULT=$(dconf read "$BASE/default" 2>/dev/null)"
     echo "LIST=$(dconf read "$BASE/list" 2>/dev/null)"
     [ -n "$u" ] && echo "BG=$(dconf read "$BASE/:$u/background-color" 2>/dev/null)"
+    [ -n "$u" ] && echo "CURSOR=$(dconf read "$BASE/:$u/cursor-shape" 2>/dev/null)"
     echo "OUTCOME=$(tail -n1 "${OUTCOME_FILE:-/dev/null}" 2>/dev/null)"
     ;;
   seed_foreign)
@@ -146,9 +147,9 @@ field() { sed -n "s/^$1=//p" <<<"$2" | head -n1; }
 
 # =============================================================================
 # G1 — create: fresh db gets exactly one mahg-dark profile, listed, defaulted,
-# with keys actually written.
-# MUTATION BITE: a no-op apply, a bad dconf load, or a missing default-write all
-# flip one of COUNT/DEFAULT/BG.
+# with keys actually written (background AND cursor-shape='underline').
+# MUTATION BITE: a no-op apply, a bad dconf load, a missing default-write, or a
+# dropped cursor-shape key all flip one of COUNT/DEFAULT/BG/CURSOR.
 # =============================================================================
 echo "== G1 create (one profile, listed, default, keys written) =="
 T1="$(mktemp -d)"
@@ -159,8 +160,9 @@ if [[ "$(field COUNT "$o1")" == "1" ]] \
    && [[ "$(field DEFAULT "$o1")" == "'$u1'" ]] \
    && [[ "$(field LIST "$o1")" == *"$u1"* ]] \
    && [[ "$(field BG "$o1")" == "'#070b16'" ]] \
+   && [[ "$(field CURSOR "$o1")" == "'underline'" ]] \
    && [[ "$(field OUTCOME "$o1")" == INSTALLED* ]]; then
-  _pass "G1 created mahg-dark (uuid=$u1), in list, default, background written"
+  _pass "G1 created mahg-dark (uuid=$u1), in list, default, background + underline cursor written"
 else
   _fail "G1 unexpected: $(tr '\n' '|' <<<"$o1")"
 fi
