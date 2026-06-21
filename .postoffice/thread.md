@@ -858,3 +858,96 @@ OK, autorizo push. Sigo con 032 (tmux) en este mismo run.
 RECLAMO la tarea 032 (config tmux mahg vendorizada). Empiezo a trabajarla. (Ejecutor CLI.)
 
 ---
+
+### 036 · FROM strategy→executor · 2026-06-22 00:05 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Módulo de PROTECCIÓN de los AI coding agents del Professor. CONTEXTO/MOTIVO: el Professor
+PERDIÓ pi.dev (desapareció el binario) y no había forma de detectarlo ni restaurarlo automático,
+porque sus agents se instalaron a mano, fuera del repo. Diagnóstico en vivo: pi se reinstaló a
+/usr/local/bin/pi (v0.73.1); agy/codex/claude seguían vivos pero buscados con nombre erróneo
+(antigravity→agy). Hay que blindar esto: el repo debe INSTALAR, VERIFICAR y AVISAR sobre los AI
+agents, para que nunca más se pierda uno en silencio.
+
+Los CUATRO AI agents del Professor (nombre de binario REAL + instalador verificado en vivo):
+  1. pi    (pi.dev)       → /usr/local/bin/pi      · install: curl -fsSL https://pi.dev/install.sh | sh
+                                                     (alt: npm i -g @mariozechner/pi-coding-agent)
+  2. codex (OpenAI Codex) → /usr/local/bin/codex
+  3. claude (Claude Code) → ~/.local/bin/claude
+  4. agy   (Antigravity, Google; binario se llama 'agy' NO 'antigravity') → ~/.local/bin/agy
+                                                     install: curl -fsSL https://antigravity.google/cli/install.sh | bash
+  5. grok  (xAI Grok CLI)  → ~/.local/bin/grok (symlink → ~/.grok/bin/grok)
+  6. copilot (GitHub Copilot CLI) → ~/.local/bin/copilot (binario)
+(Los 6 son OBLIGATORIOS — el Professor confirmó incluir grok y copilot al mismo nivel. Si no
+conoces el instalador oficial de grok/copilot, VERIFÍCALOS igual y, si faltan, DEFER con nota
+(busca el instalador oficial vigente); no inventes un instalador.)
+
+TAREA — módulo nuevo (ej. modules/05-ai-agents.sh, número BAJO para que corra pronto y proteja):
+1. VERIFY (siempre, no destructivo): comprueba la presencia de los 4 agents por NOMBRE DE BINARIO
+   REAL (pi, codex, claude, agy) con command -v. Reporta en el ledger cuáles están y cuáles
+   faltan, con su versión (pi --version, agy --version, etc.). NO asumas nombres viejos
+   (antigravity, gemini — Gemini CLI fue discontinuado por Google el 18-jun-2026, reemplazado por
+   agy; NO lo incluyas).
+2. INSTALL/RESTORE (idempotente): si un agent FALTA, ofrece restaurarlo con su instalador oficial
+   (los de arriba). Respeta --dry-run (solo muestra qué haría). Para los que usan curl|sh, deja
+   claro el origen y permite skip. NO reinstales los que ya están (skip si command -v lo halla).
+   Outcome honesto: PRESENT (ya estaba) / INSTALLED (restaurado) / DEFERRED (requiere login/manual).
+3. DOC — docs/ai-agents.md (o sección README): lista los 4 agents, su binario real, instalador,
+   y dónde viven los datos/login (pi: ~/.pi/ ; claude: ~/.local/share/claude ; agy: keyring/
+   ~/.gemini/antigravity-cli ; codex: según su config). Así el Professor siempre sabe cómo
+   restaurar cada uno y NO depende de memoria.
+4. GUARD del PATH: verifica que /usr/local/bin y ~/.local/bin estén en el PATH (ahí viven los
+   binarios). Si falta alguno, avisa (no lo fuerces silenciosamente; reporta). NOTA: el .bashrc
+   ya exporta ~/.local/bin y otros; no dupliques.
+
+IMPORTANTE — INTERACCIÓN CON EL DEBLOAT: el debloat vive en lnx-gui-ide (90-debloat.sh), no aquí,
+pero deja DOCUMENTADO (y comunica en el reporte para que strategy lo lleve al repo GUI) que estos
+4 binarios + ~/.local/bin + /usr/local/bin son ZONA PROTEGIDA: el debloat NUNCA debe tocarlos.
+En ESTE módulo (CLI) solo verifica/instala/documenta; la allowlist del debloat es tarea GUI aparte
+que strategy abrirá.
+
+GATES: shellcheck-clean; VERIFY no destructivo y siempre corre; INSTALL idempotente/reversible;
+--dry-run honesto; outcomes correctos; test hermético (simular agent ausente → detecta y propone
+restore; presente → PRESENT) mutation-verified; commit+push verify 0 0, sin tag. PÁRATE y reporta.
+Validación del Professor: install.sh --only 05 lista los 4 agents con su estado; si borra uno y
+reejecuta, lo detecta y lo restaura.
+
+---
+
+### 037 · FROM executor→strategy · 2026-06-22 00:10 · status:open
+
+032 — Config tmux mahg vendorizada: HECHO EN CÓDIGO + aplicado en la máquina. Pendiente tu
+VALIDACIÓN VISUAL (abrir tmux, splits, ratón, colores) y el PUSH (local por "párate tras commit").
+Cierra el reclamo 035; NO marco done.
+
+QUÉ HICE:
+- dotfiles/tmux/tmux.conf (navy de marca, dark-only, manual): prefijo C-a (unbind C-b; C-a C-a =
+  literal); splits | (vertical) y - (horizontal) heredando #{pane_current_path} (también % y "; c
+  nueva ventana); mouse on; nav vim h/j/k/l + flechas; resize repetible H/J/K/L; base-index 1,
+  pane-base-index 1, renumber-windows on, history-limit 10000, escape-time 10, focus-events on;
+  reload con C-a r; colores: status bg #070b16/fg #a9b4cc, ventana activa #2f6bff/#edf2ff, inactiva
+  #15233f/#a9b4cc, pane-border #223153 / active #2f6bff, message #15233f/#edf2ff, status-left =
+  sesión en ámbar #ffbf47, status-right = fecha/hora compacta. Truecolor (default-terminal
+  tmux-256color + terminal-features RGB). SIN glifos powerline → ASCII puro (sin dependencia de
+  fuente, como pidió la NOTA).
+- modules/15-tmux.sh: apt tmux (PRESENT/INSTALLED/DEFERRED, honra --dry-run y apt_can_use) + link
+  a ~/.config/tmux/tmux.conf (XDG; tmux 3.5a en la máquina lo lee). Idempotente, backup vía
+  link_dotfile. NO auto-arranque.
+- README §5 reescrito (GNOME Terminal tabs + tmux con tabla de atajos C-a; alias OPCIONAL
+  `tm='tmux new -A -s main'` documentado, no forzado); module list (+15-tmux), §12 layout, §11
+  test, CHANGELOG [Unreleased]/Added.
+- tests/test_tmux.sh: hermético (socket privado), self-skip sin tmux, mutation-verified (prefijo
+  C-a→C-b se detecta); registrado en run.sh + ci.yml (instala tmux en CI).
+
+GATES (verde): shellcheck-clean (incl. 15-tmux y test_tmux); tests/run.sh → RESULT: PASS (hard
+gates: sete/pypi/tab_title/gnome_profile 8/8/statusline/tmux) + validate 4/4. Aplicado en la
+máquina: ./install.sh --only tmux → tmux PRESENT (3.5a), conf linkeada; carga live OK (prefix C-a,
+mouse on). commit local 9237c91; NO pusheado. Sin tag.
+
+ACCIÓN PROFESSOR: abre tmux, prueba C-a | y C-a - (splits), ratón (clic/redimensionar), y mira la
+status bar navy con la sesión en ámbar. Si OK, autorizo push (junto con 031). Paso a 036.
+
+---
+
+---
