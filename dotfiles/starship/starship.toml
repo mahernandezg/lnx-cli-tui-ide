@@ -1,10 +1,13 @@
 # starship.toml — lnx-cli-tui-ide
-# Two-line prompt: info on line 1, a clean input caret on line 2.
+# Two-line prompt: full path + git/versions on line 1, a ╰─❯ connector caret on
+# line 2 (one continuous brand blue when all is well, inviting you to type).
 #
 # Tuned for speed on old machines and large git repos (e.g. a big TypeScript monorepo):
 # conservative timeouts and ONLY the modules actually used (the explicit `format`
 # below means no other module renders, so the prompt stays fast and quiet).
-# Glyphs come from JetBrainsMono Nerd Font, which the installer provides.
+# Most icons come from JetBrainsMono Nerd Font; a few standard-Unicode glyphs
+# (❯ U+276F, box-drawing ╰─) render via fontconfig fallback to DejaVu (10-terminal
+# installs fonts-dejavu-core to guarantee coverage).
 
 "$schema" = 'https://starship.rs/config-schema.json'
 
@@ -14,7 +17,7 @@ scan_timeout = 30
 add_newline = true
 
 # Line 1: directory + git + language/tooling versions for my stack.
-# Line 2: just the input caret.
+# Line 2: the ╰─❯ connector caret.
 format = """
 $directory\
 $git_branch\
@@ -24,17 +27,22 @@ $python\
 $rust\
 $docker_context\
 $line_break\
-$character"""
+[╰─](#4c86ff)$character"""
 
 [directory]
-truncation_length = 4
-truncate_to_repo = true
+# Full path from ~ (no truncation) — the Professor always wants the whole path to
+# orient (e.g. ~/github/mahernandezg/lnx-gui-ide). truncation_length=0 disables
+# the truncation; truncate_to_repo=false stops collapsing to the repo root.
+truncate_to_repo = false
+truncation_length = 0
 style = "bold cyan"
 read_only = " "
 
 [git_branch]
-symbol = "⤳"
-style = "bold purple"
+# Brand amber, rendered as "[ branch ]" (literal brackets escaped; no symbol).
+symbol = ""
+format = "[\\[ $branch \\]]($style)"
+style = "bold #ffbf47"
 
 [git_status]
 style = "bold yellow"
@@ -70,9 +78,12 @@ style = "bold blue"
 only_with_files = true
 
 [character]
-success_symbol = "[⋿⋺](bold green)"
-error_symbol = "[⋿⋺](bold red)"
-vimcmd_symbol = "[⋿⋺](bold green)"
+# Line 2 is the connector ╰─❯: the ╰─ (in `format`) and the success ❯ share the
+# brand blue #4c86ff so a healthy prompt is one continuous blue inviting you to
+# type; error red / vimcmd green of the brand.
+success_symbol = "[❯](bold #4c86ff)"
+error_symbol = "[❯](bold #D81E05)"
+vimcmd_symbol = "[❯](bold #52be80)"
 
 # Explicitly disable a few modules that are commonly auto-detected elsewhere, so
 # they never add latency even if referenced indirectly. (Modules not in `format`
