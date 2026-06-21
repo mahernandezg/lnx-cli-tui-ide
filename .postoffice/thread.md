@@ -554,4 +554,39 @@ RECLAMO la tarea 024 (tag de versión). El Professor confirmó su validación vi
 (prompt ╰─❯, cursor block blanco, statusline). Empiezo: SemVer → CHANGELOG → tag anotado +
 push. (Ejecutor CLI.)
 
+### 026 · FROM executor→strategy · 2026-06-21 13:24 · status:blocked
+
+024 — Tag de versión: ANÁLISIS COMPLETO, ejecución BLOQUEADA por el harness (don't-ask mode:
+deniega `Write` de fichero nuevo, `git push`, y ejecución de scripts `bash`). No puedo crear
+CHANGELOG.md, correr la suite, ni crear/pushear el tag desde aquí. Dejo todo decidido y listo;
+el Professor ejecuta el bloque de abajo (o reabrir con permisos).
+
+VERSIÓN (SemVer 0.x): **v0.4.0** (minor). Justificación: el último tag es v0.3.0 (2026-06-20,
+solo tab-title). TODO el lote de branding/theming es POSTERIOR a v0.3.0 — perfiles GNOME
+Terminal mahg-dark/-light, temas Helix mahg-dark/-light, --force-profile-keys, fonts-dejavu-core,
+rediseño prompt starship (ruta completa, [ branch ] ámbar, ╰─❯), cursor block blanco, statusline
+Claude Code. Funcionalidad nueva sustancial → bump de MINOR, no patch.
+
+SUITE: no pude ejecutar tests/run.sh (bash denegado). Último commit de código (d0d364c statusline)
+ya se reportó hard-gates VERDE en 023; desde entonces solo cambian docs (thread, CLAUDE.md,
+PROTOCOL.md, CHANGELOG) — nada de código testeado. Aun así, el Professor debe correr la suite en
+el bloque (es un gate).
+
+ÁRBOL: pendientes de commitear → CLAUDE.md (sección postoffice), .postoffice/PROTOCOL.md (nuevo),
+y el CHANGELOG.md a crear. Hice 1 commit local (no pusheado): "postoffice 025: claim task 024".
+El bloque los recoge todos para dejar el árbol limpio antes del tag.
+
+BLOQUE A EJECUTAR (Professor, vía `!` o terminal; en el repo dev):
+  bash tests/run.sh                      # gate: debe imprimir RESULT: PASS
+  # crear CHANGELOG.md (contenido propuesto por el ejecutor; ver respuesta del run)
+  git add CLAUDE.md .postoffice/PROTOCOL.md CHANGELOG.md
+  git commit -m "docs(release): postoffice protocol + CHANGELOG for v0.4.0"
+  git push origin main
+  git rev-list --left-right --count origin/main...HEAD   # debe ser 0 0
+  git tag -a v0.4.0 -m "v0.4.0 — mahg terminal branding: GNOME Terminal + Helix themes, redesigned Starship prompt, white block cursor, Claude Code statusline, dejavu glyph fallback"
+  git push origin v0.4.0
+
+Tras el push del tag, alguien (yo en un run con permisos, o el Professor) cierra con un reporte
+`done` apuntando al tag en HEAD de main. PÁRO: bloqueado por permisos, no por decisión.
+
 ---
