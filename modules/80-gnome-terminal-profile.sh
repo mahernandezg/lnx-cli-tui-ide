@@ -233,7 +233,61 @@ _gnome_profile_revert() {
   log_ok "gnome-terminal-profile: reverted — removed ${found[*]}; backup: $backup"
 }
 
+# _gnome_profile_force_refresh — with --force-profile-keys (FORCE_PROFILE_KEYS=1),
+# reload the vendored keys into each EXISTING managed profile's CURRENT UUID. This
+# brings a profile created before a key was added (e.g. a mahg-dark that predates
+# cursor-shape='underline') up to the vendored values WITHOUT deleting it: the
+# UUID, its place in the list, and the default all stay put. `dconf load` only sets
+# the keys present in the vendored file, so user-added keys (font, etc.) survive.
+# Each profile subtree is dumped to a timestamped backup first, so a revert is just
+# `dconf load <backup>`. Idempotent (a second run reloads identical keys). Honors
+# --dry-run. Normal runs (flag unset) never call this, so default behaviour and the
+# create-if-missing idempotency are unchanged.
+_gnome_profile_force_refresh() {
+  have dconf || { record_outcome NOTE gnome-terminal-profile "--force-profile-keys: dconf absent — nothing to refresh"; return 0; }
+  local name uuid file ts backup
+  local -a refreshed=()
+  for name in "${MANAGED_PROFILES[@]}"; do
+    uuid="$(_gnome_profile_find "$name")"
+    [[ -z "$uuid" ]] && continue   # missing -> _gnome_profile_apply creates it fresh
+    file="$PROFILE_DIR/$name.dconf"
+    if [[ ! -f "$file" ]]; then
+      log_error "gnome-terminal-profile: vendored profile missing: $file"
+      return 1
+    fi
+    if [[ "$DRY_RUN" == "1" ]]; then
+      log_info "[DRY] gnome-terminal-profile: --force-profile-keys would back up $BASE/:$uuid/ and reload $(basename "$file") into it ($name keys refreshed; UUID/list/default unchanged)"
+      continue
+    fi
+    ts="$(date +%Y%m%d-%H%M%S)"
+    run mkdir -p "$BACKUP_DIR"
+    backup="$BACKUP_DIR/gnome-terminal-profile.$name.$ts.dconf"
+    if dconf dump "$BASE/:$uuid/" >"$backup" 2>/dev/null; then
+      log_info "gnome-terminal-profile: backed up $name profile -> $backup"
+    else
+      log_warn "gnome-terminal-profile: could not dump $name before refresh (continuing)"
+    fi
+    if ! dconf load "$BASE/:$uuid/" <"$file"; then
+      log_error "gnome-terminal-profile: --force-profile-keys dconf load failed for $name (uuid=$uuid)"
+      return 1
+    fi
+    refreshed+=("$name=$uuid")
+  done
+  [[ "$DRY_RUN" == "1" ]] && return 0
+  if [[ "${#refreshed[@]}" -gt 0 ]]; then
+    record_outcome INSTALLED gnome-terminal-profile "--force-profile-keys refreshed: ${refreshed[*]} (UUIDs kept; per-profile backups in $BACKUP_DIR)"
+    log_ok "gnome-terminal-profile: refreshed vendored keys for ${refreshed[*]} — open a NEW window/tab to see it (e.g. the underline cursor)"
+  else
+    record_outcome NOTE gnome-terminal-profile "--force-profile-keys set but no managed profile present to refresh"
+  fi
+}
+
 # ---- Run --------------------------------------------------------------------
+# Always create-if-missing (idempotent). --force-profile-keys ADDITIONALLY reloads
+# the vendored keys into any already-existing managed profile (UUID preserved).
 _gnome_profile_apply
+if [[ "${FORCE_PROFILE_KEYS:-0}" == "1" ]]; then
+  _gnome_profile_force_refresh
+fi
 
 log_ok "gnome-terminal-profile module done"

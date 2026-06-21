@@ -25,6 +25,10 @@
 #   G5 dry-run: changes nothing and prints [DRY]
 #   G6 upgrade: a box that already has mahg-dark gets ONLY mahg-light added; the
 #      user's manual default is left untouched
+#   G7 --force-profile-keys: an EXISTING mahg-dark with a stale cursor-shape is
+#      refreshed to 'underline' in place (UUID + default kept); a plain apply
+#      leaves it stale
+#   G8 --force-profile-keys honors --dry-run (prints [DRY], changes nothing)
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd -P)"
@@ -124,6 +128,16 @@ case "$1" in
     dconf write "$BASE/default" "'d0000000-0000-0000-0000-000000000002'"
     echo "SEEDED=1"
     ;;
+  seed_dark_stale)
+    # Pre-existing mahg-dark with a STALE cursor-shape (predates underline), the
+    # user's default. --force-profile-keys must refresh cursor-shape to 'underline'
+    # WITHOUT changing the UUID or the default.
+    dconf write "$BASE/:d0000000-0000-0000-0000-000000000003/visible-name" "'mahg-dark'"
+    dconf write "$BASE/:d0000000-0000-0000-0000-000000000003/cursor-shape" "'block'"
+    dconf write "$BASE/list" "['d0000000-0000-0000-0000-000000000003']"
+    dconf write "$BASE/default" "'d0000000-0000-0000-0000-000000000003'"
+    echo "SEEDED=1"
+    ;;
   revert)
     . "$REPO_ROOT/modules/80-gnome-terminal-profile.sh" >/dev/null 2>&1 || true
     _gnome_profile_revert >/dev/null 2>&1 || true
@@ -146,18 +160,26 @@ case "$1" in
     echo "COUNT=$(count_name mahg-dark)"
     echo "LCOUNT=$(count_name mahg-light)"
     ;;
+  dryrun_force)
+    # DRY_RUN=1 + FORCE_PROFILE_KEYS=1 in env. Do NOT suppress: assert [DRY] and
+    # that the existing stale cursor is left untouched.
+    . "$REPO_ROOT/modules/80-gnome-terminal-profile.sh" 2>&1 || true
+    u="$(name_uuid mahg-dark)"
+    [ -n "$u" ] && echo "CURSOR=$(dconf read "$BASE/:$u/cursor-shape" 2>/dev/null)"
+    ;;
 esac
 DRIVER_EOF
 
-# drive <tmp> <scenario> [dry] — run one scenario under an isolated session bus +
-# dconf db rooted at <tmp>. Reusing the same <tmp> persists the db across calls.
+# drive <tmp> <scenario> [dry] [force] — run one scenario under an isolated session
+# bus + dconf db rooted at <tmp>. Reusing the same <tmp> persists the db across
+# calls. [force] sets FORCE_PROFILE_KEYS for the --force-profile-keys path.
 drive() {
-  local tmp="$1" scen="$2" dry="${3:-0}"
+  local tmp="$1" scen="$2" dry="${3:-0}" force="${4:-0}"
   mkdir -p "$tmp/.config" "$tmp/run" "$tmp/.cache" "$tmp/.logs"
   chmod 700 "$tmp/run"
   HOME="$tmp" XDG_CONFIG_HOME="$tmp/.config" XDG_RUNTIME_DIR="$tmp/run" \
     XDG_CACHE_HOME="$tmp/.cache" OUTCOME_FILE="$tmp/.led" LOG_DIR="$tmp/.logs" \
-    REPO_ROOT="$REPO_ROOT" DRY_RUN="$dry" \
+    REPO_ROOT="$REPO_ROOT" DRY_RUN="$dry" FORCE_PROFILE_KEYS="$force" \
     dbus-run-session -- bash "$DRIVER" "$scen" 2>&1
 }
 
@@ -296,6 +318,50 @@ else
   _fail "G6 wrong: $(tr '\n' '|' <<<"$o6")"
 fi
 rm -rf "$T6"
+
+# =============================================================================
+# G7 — --force-profile-keys refreshes an EXISTING profile's keys in place. A
+# pre-existing mahg-dark with a STALE cursor-shape='block' must come out with
+# cursor-shape='underline' (the vendored value) WITHOUT changing its UUID or the
+# default — that is the "cursor underline retroactive" path.
+# MUTATION BITE: drop the `dconf load` in _gnome_profile_force_refresh (or fail to
+# call it) and CURSOR stays 'block' / OUTCOME is not the refresh line.
+# =============================================================================
+echo "== G7 --force-profile-keys refreshes existing keys (UUID kept) =="
+T7="$(mktemp -d)"
+SUUID="d0000000-0000-0000-0000-000000000003"
+drive "$T7" seed_dark_stale >/dev/null
+# control: a plain apply (no force) must NOT touch the stale cursor.
+o7n="$(drive "$T7" apply)"
+# force: refresh keys in place.
+o7="$(drive "$T7" apply 0 1)"
+if [[ "$(field CURSOR "$o7n")" == "'block'" ]] \
+   && [[ "$(field CURSOR "$o7")" == "'underline'" ]] \
+   && [[ "$(field UUID "$o7")" == "$SUUID" ]] \
+   && [[ "$(field DEFAULT "$o7")" == "'$SUUID'" ]] \
+   && [[ "$(field COUNT "$o7")" == "1" ]] \
+   && [[ "$(field OUTCOME "$o7")" == *force-profile-keys* ]]; then
+  _pass "G7 --force-profile-keys: cursor block->underline, UUID + default kept (no-force left it stale)"
+else
+  _fail "G7 wrong: noforce=[$(tr '\n' '|' <<<"$o7n")] force=[$(tr '\n' '|' <<<"$o7")]"
+fi
+rm -rf "$T7"
+
+# =============================================================================
+# G8 — --force-profile-keys honors --dry-run: prints [DRY] and changes nothing.
+# MUTATION BITE: a dropped DRY_RUN guard in _gnome_profile_force_refresh would
+# flip CURSOR to 'underline' here.
+# =============================================================================
+echo "== G8 --force-profile-keys is a true no-op under --dry-run =="
+T8="$(mktemp -d)"
+drive "$T8" seed_dark_stale >/dev/null
+o8="$(drive "$T8" dryrun_force 1 1)"   # dry=1 force=1, output NOT suppressed
+if [[ "$(field CURSOR "$o8")" == "'block'" ]] && grep -q '\[DRY\]' <<<"$o8"; then
+  _pass "G8 dry-run force-profile-keys printed [DRY] and left the stale cursor untouched"
+else
+  _fail "G8 wrong: $(tr '\n' '|' <<<"$o8")"
+fi
+rm -rf "$T8"
 
 rm -f "$DRIVER"
 

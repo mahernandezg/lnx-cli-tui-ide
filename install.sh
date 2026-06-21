@@ -22,6 +22,7 @@ export REPO_ROOT
 DRY_RUN=0
 VERBOSE=0
 WITH_VSCODIUM=0
+FORCE_PROFILE_KEYS=0
 ONLY_MODULES=()
 SKIP_MODULES=()
 export DRY_RUN VERBOSE
@@ -36,6 +37,9 @@ Options:
                        or name fragment, e.g. --only terminal --only 40-helix
   --skip <module>      Skip the given module (repeatable).
   --with-vscodium      Also install VSCodium (off by default; heavy Electron).
+  --force-profile-keys Reload the vendored GNOME Terminal profile keys (e.g. the
+                       underline cursor) into an ALREADY-EXISTING mahg-dark/-light
+                       profile, keeping its UUID. Pairs well with --only 80.
   --verbose            Verbose/debug logging.
   -h, --help           Show this help.
 
@@ -50,6 +54,7 @@ while [[ $# -gt 0 ]]; do
     --dry-run)       DRY_RUN=1 ;;
     --verbose)       VERBOSE=1 ;;
     --with-vscodium) WITH_VSCODIUM=1 ;;
+    --force-profile-keys) FORCE_PROFILE_KEYS=1 ;;
     --only)          shift; [[ $# -gt 0 ]] || { echo "--only needs an argument" >&2; exit 2; }; ONLY_MODULES+=("$1") ;;
     --skip)          shift; [[ $# -gt 0 ]] || { echo "--skip needs an argument" >&2; exit 2; }; SKIP_MODULES+=("$1") ;;
     -h|--help)       usage; exit 0 ;;
@@ -57,7 +62,7 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
-export DRY_RUN VERBOSE WITH_VSCODIUM
+export DRY_RUN VERBOSE WITH_VSCODIUM FORCE_PROFILE_KEYS
 
 # ---- Source libraries (order matters: log -> detect -> fallback -> ...) ------
 # shellcheck source=lib/log.sh
