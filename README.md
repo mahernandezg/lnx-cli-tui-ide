@@ -509,16 +509,36 @@ It runs:
   markers** (de-duplicated and relocated after Starship), and **reverts only its own block**;
   `--dry-run` changes nothing. It writes to no real file and installs nothing.
 - **`tests/test_gnome_profile.sh`** (hard gate, **self-skipping**) — a hermetic,
-  mutation-verified suite for the branded **GNOME Terminal "mahg-dark" profile**
-  (`modules/80-gnome-terminal-profile.sh`). All dconf I/O runs inside `dbus-run-session` with
-  an isolated `XDG_CONFIG_HOME`, so the real user database is never touched. It asserts the
-  module **creates one profile** (minted under a fresh per-machine UUID, added to the list and
-  set as default, with keys actually written), is **idempotent** (a second apply makes no
-  duplicate — identity is the `visible-name`), **preserves an existing foreign profile** through
-  apply and **reverts only its own** (resetting the default), the pure list helper **dedups and
-  seeds the stock UUID on an unset list**, and **`--dry-run` changes nothing**. When `dconf` /
-  `dbus-run-session` are absent — or dconf cannot round-trip in this environment — it prints
-  `SKIP` and passes, so it never false-fails on a minimal box.
+  mutation-verified suite for the branded **GNOME Terminal "mahg-dark" / "mahg-light" profile
+  pair** (`modules/80-gnome-terminal-profile.sh`). All dconf I/O runs inside `dbus-run-session`
+  with an isolated `XDG_CONFIG_HOME`, so the real user database is never touched. It asserts the
+  module **creates both profiles** (each minted under a fresh per-machine UUID, added to the
+  list, with keys actually written — including `cursor-shape='underline'` — and **mahg-dark set
+  as default**), is **idempotent per profile** (a second apply makes no duplicate of either —
+  identity is the `visible-name`), takes the **upgrade path** (a box that already has mahg-dark
+  gets only the missing mahg-light, leaving the user's manual default untouched), **preserves an
+  existing foreign profile** through apply and **reverts only its own two** (resetting the
+  default), the pure list helper **dedups and seeds the stock UUID on an unset list**, and
+  **`--dry-run` changes nothing**. When `dconf` / `dbus-run-session` are absent — or dconf
+  cannot round-trip in this environment — it prints `SKIP` and passes, so it never false-fails
+  on a minimal box.
+
+  **Switching dark ↔ light:** GNOME Terminal does **not** follow the desktop color-scheme
+  automatically, so the active profile is chosen by hand (Terminal → *Preferences* → set the
+  profile) or scripted. To mirror the desktop's light/dark setting, an optional watcher (not
+  installed by this repo — opt in if you want it) can flip the **default** profile UUID:
+  ```bash
+  # Map mahg-dark/mahg-light visible-names -> their per-machine UUIDs, then follow
+  # org.gnome.desktop.interface color-scheme. New windows/tabs pick up the change.
+  base=/org/gnome/terminal/legacy/profiles:
+  uuid_for(){ for u in $(dconf read $base/list | tr -d "[],'"); do
+      [ "$(dconf read "$base/:$u/visible-name")" = "'$1'" ] && { echo "$u"; return; }; done; }
+  dark=$(uuid_for mahg-dark); light=$(uuid_for mahg-light)
+  gsettings monitor org.gnome.desktop.interface color-scheme | while read -r _ v; do
+    case "$v" in *prefer-dark*) dconf write $base/default "'$dark'";;
+                 *) dconf write $base/default "'$light'";; esac
+  done
+  ```
 - **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
   Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
   it never gates the result.
@@ -537,7 +557,8 @@ modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
                       80-gnome-terminal-profile 90-vscodium (gated)
 dotfiles/             kitty/ helix/ (config.toml languages.toml themes/mahg-dark.toml)
                       wezterm/ starship/ yazi/
-profiles/             gnome-terminal/mahg-dark.dconf (loaded into a fresh UUID; not symlinked)
+profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
+                      into fresh UUIDs; not symlinked; mahg-dark is the default)
 tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh ·
                       test_gnome_profile.sh · validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_pypi + test_tab_title +

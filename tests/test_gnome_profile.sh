@@ -13,14 +13,18 @@
 # simply cannot run dconf (e.g. a minimal CI image without dconf-cli).
 #
 # Cases (each mutation-verified):
-#   G1 create: fresh db -> one mahg-dark profile, in the list, set as default,
-#      keys actually written (background-color)
-#   G2 idempotency: a second apply on the same db adds no duplicate -> PRESENT
+#   G1 create: fresh db -> the mahg-dark/mahg-light PAIR, both in the list,
+#      mahg-dark set as default, keys actually written (background-color +
+#      cursor-shape='underline' for each)
+#   G2 idempotency: a second apply on the same db adds no duplicate of EITHER
+#      profile -> PRESENT
 #   G3 preserve + revert: a pre-seeded foreign profile survives apply; revert
-#      removes ONLY ours and resets the default, foreign intact
+#      removes BOTH ours and resets the default, foreign intact
 #   G4 list helper: _profiles_list_edit dedups, seeds the stock UUID on an unset
 #      list, and removes
 #   G5 dry-run: changes nothing and prints [DRY]
+#   G6 upgrade: a box that already has mahg-dark gets ONLY mahg-light added; the
+#      user's manual default is left untouched
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd -P)"
@@ -74,18 +78,18 @@ for u in (ast.literal_eval(raw) if raw else []):
     print(u)
 '
 }
-mahg_uuid() {
-  local u
+name_uuid() {
+  local want="$1" u
   while IFS= read -r u; do
     [ -z "$u" ] && continue
-    [ "$(dconf read "$BASE/:$u/visible-name" 2>/dev/null)" = "'mahg-dark'" ] && { printf '%s' "$u"; return 0; }
+    [ "$(dconf read "$BASE/:$u/visible-name" 2>/dev/null)" = "'$want'" ] && { printf '%s' "$u"; return 0; }
   done < <(list_uuids)
 }
-count_mahg() {
-  local u n=0
+count_name() {
+  local want="$1" u n=0
   while IFS= read -r u; do
     [ -z "$u" ] && continue
-    [ "$(dconf read "$BASE/:$u/visible-name" 2>/dev/null)" = "'mahg-dark'" ] && n=$((n + 1))
+    [ "$(dconf read "$BASE/:$u/visible-name" 2>/dev/null)" = "'$want'" ] && n=$((n + 1))
   done < <(list_uuids)
   printf '%s' "$n"
 }
@@ -93,13 +97,18 @@ count_mahg() {
 case "$1" in
   apply)
     . "$REPO_ROOT/modules/80-gnome-terminal-profile.sh" >/dev/null 2>&1 || true
-    u="$(mahg_uuid)"
-    echo "COUNT=$(count_mahg)"
+    u="$(name_uuid mahg-dark)"
+    l="$(name_uuid mahg-light)"
+    echo "COUNT=$(count_name mahg-dark)"
+    echo "LCOUNT=$(count_name mahg-light)"
     echo "UUID=$u"
+    echo "LUUID=$l"
     echo "DEFAULT=$(dconf read "$BASE/default" 2>/dev/null)"
     echo "LIST=$(dconf read "$BASE/list" 2>/dev/null)"
     [ -n "$u" ] && echo "BG=$(dconf read "$BASE/:$u/background-color" 2>/dev/null)"
     [ -n "$u" ] && echo "CURSOR=$(dconf read "$BASE/:$u/cursor-shape" 2>/dev/null)"
+    [ -n "$l" ] && echo "LBG=$(dconf read "$BASE/:$l/background-color" 2>/dev/null)"
+    [ -n "$l" ] && echo "LCURSOR=$(dconf read "$BASE/:$l/cursor-shape" 2>/dev/null)"
     echo "OUTCOME=$(tail -n1 "${OUTCOME_FILE:-/dev/null}" 2>/dev/null)"
     ;;
   seed_foreign)
@@ -108,10 +117,18 @@ case "$1" in
     dconf write "$BASE/default" "'f0000000-0000-0000-0000-000000000001'"
     echo "SEEDED=1"
     ;;
+  seed_dark)
+    # Pre-existing mahg-dark (as on an upgrading box), set as the user's default.
+    dconf write "$BASE/:d0000000-0000-0000-0000-000000000002/visible-name" "'mahg-dark'"
+    dconf write "$BASE/list" "['d0000000-0000-0000-0000-000000000002']"
+    dconf write "$BASE/default" "'d0000000-0000-0000-0000-000000000002'"
+    echo "SEEDED=1"
+    ;;
   revert)
     . "$REPO_ROOT/modules/80-gnome-terminal-profile.sh" >/dev/null 2>&1 || true
     _gnome_profile_revert >/dev/null 2>&1 || true
-    echo "COUNT=$(count_mahg)"
+    echo "COUNT=$(count_name mahg-dark)"
+    echo "LCOUNT=$(count_name mahg-light)"
     echo "DEFAULT=$(dconf read "$BASE/default" 2>/dev/null)"
     echo "LIST=$(dconf read "$BASE/list" 2>/dev/null)"
     ;;
@@ -126,7 +143,8 @@ case "$1" in
   dryrun)
     # DRY_RUN=1 in env. Do NOT suppress output: we assert the [DRY] marker.
     . "$REPO_ROOT/modules/80-gnome-terminal-profile.sh" 2>&1 || true
-    echo "COUNT=$(count_mahg)"
+    echo "COUNT=$(count_name mahg-dark)"
+    echo "LCOUNT=$(count_name mahg-light)"
     ;;
 esac
 DRIVER_EOF
@@ -146,61 +164,76 @@ drive() {
 field() { sed -n "s/^$1=//p" <<<"$2" | head -n1; }
 
 # =============================================================================
-# G1 — create: fresh db gets exactly one mahg-dark profile, listed, defaulted,
-# with keys actually written (background AND cursor-shape='underline').
-# MUTATION BITE: a no-op apply, a bad dconf load, a missing default-write, or a
-# dropped cursor-shape key all flip one of COUNT/DEFAULT/BG/CURSOR.
+# G1 — create: fresh db gets the dark/light PAIR, both listed, mahg-dark
+# defaulted, keys actually written (dark background + cursor-shape='underline',
+# light background + cursor-shape='underline').
+# MUTATION BITE: a no-op apply, a bad dconf load, a missing default-write, a
+# dropped cursor-shape key, or a module that creates only ONE profile all flip
+# one of COUNT/LCOUNT/DEFAULT/BG/CURSOR/LBG/LCURSOR.
 # =============================================================================
-echo "== G1 create (one profile, listed, default, keys written) =="
+echo "== G1 create (dark+light pair, listed, mahg-dark default, keys written) =="
 T1="$(mktemp -d)"
 o1="$(drive "$T1" apply)"
 u1="$(field UUID "$o1")"
+l1="$(field LUUID "$o1")"
 if [[ "$(field COUNT "$o1")" == "1" ]] \
-   && [[ -n "$u1" ]] \
+   && [[ "$(field LCOUNT "$o1")" == "1" ]] \
+   && [[ -n "$u1" ]] && [[ -n "$l1" ]] && [[ "$u1" != "$l1" ]] \
    && [[ "$(field DEFAULT "$o1")" == "'$u1'" ]] \
    && [[ "$(field LIST "$o1")" == *"$u1"* ]] \
+   && [[ "$(field LIST "$o1")" == *"$l1"* ]] \
    && [[ "$(field BG "$o1")" == "'#070b16'" ]] \
    && [[ "$(field CURSOR "$o1")" == "'underline'" ]] \
+   && [[ "$(field LBG "$o1")" == "'#eef1f8'" ]] \
+   && [[ "$(field LCURSOR "$o1")" == "'underline'" ]] \
    && [[ "$(field OUTCOME "$o1")" == INSTALLED* ]]; then
-  _pass "G1 created mahg-dark (uuid=$u1), in list, default, background + underline cursor written"
+  _pass "G1 created mahg-dark ($u1) + mahg-light ($l1); both listed, dark default, backgrounds + underline cursors written"
 else
   _fail "G1 unexpected: $(tr '\n' '|' <<<"$o1")"
 fi
 
 # =============================================================================
-# G2 — idempotency: a second apply on the SAME db adds no duplicate.
-# MUTATION BITE: an apply that keyed off UUID instead of visible-name would mint a
-# second profile -> COUNT=2 and OUTCOME=INSTALLED.
+# G2 — idempotency: a second apply on the SAME db adds no duplicate of EITHER
+# profile.
+# MUTATION BITE: an apply that keyed off UUID instead of visible-name, or that
+# recreated the pair unconditionally, would mint a second profile -> COUNT=2 or
+# LCOUNT=2 and OUTCOME=INSTALLED.
 # =============================================================================
-echo "== G2 idempotency (no duplicate on re-apply) =="
+echo "== G2 idempotency (no duplicate of either profile on re-apply) =="
 o2="$(drive "$T1" apply)"   # same T1 -> db persists
 if [[ "$(field COUNT "$o2")" == "1" ]] \
+   && [[ "$(field LCOUNT "$o2")" == "1" ]] \
    && [[ "$(field OUTCOME "$o2")" == PRESENT* ]] \
    && [[ "$(field LIST "$o2")" == "$(field LIST "$o1")" ]]; then
-  _pass "G2 re-apply added no duplicate (still one; PRESENT; list unchanged)"
+  _pass "G2 re-apply added no duplicate (dark+light still one each; PRESENT; list unchanged)"
 else
   _fail "G2 not idempotent: $(tr '\n' '|' <<<"$o2")"
 fi
 rm -rf "$T1"
 
 # =============================================================================
-# G3 — preserve a foreign profile through apply, then revert removes ONLY ours.
+# G3 — preserve a foreign profile through apply, then revert removes BOTH ours
+# (dark AND light) and resets the default, foreign intact.
 # MUTATION BITE: a list rebuild that dropped existing entries would lose the
-# foreign UUID; a revert that truncated the list (or reset all) would too.
+# foreign UUID; a revert that only removed mahg-dark would leave LCOUNT=1 or the
+# light UUID still in the list.
 # =============================================================================
-echo "== G3 preserve foreign + revert removes only ours =="
+echo "== G3 preserve foreign + revert removes both ours =="
 T3="$(mktemp -d)"
 FUUID="f0000000-0000-0000-0000-000000000001"
 drive "$T3" seed_foreign >/dev/null
 o3a="$(drive "$T3" apply)"
 o3b="$(drive "$T3" revert)"
 if [[ "$(field COUNT "$o3a")" == "1" ]] \
+   && [[ "$(field LCOUNT "$o3a")" == "1" ]] \
    && [[ "$(field LIST "$o3a")" == *"$FUUID"* ]] \
    && [[ "$(field COUNT "$o3b")" == "0" ]] \
+   && [[ "$(field LCOUNT "$o3b")" == "0" ]] \
    && [[ "$(field LIST "$o3b")" == *"$FUUID"* ]] \
    && [[ "$(field LIST "$o3b")" != *"$(field UUID "$o3a")"* ]] \
+   && [[ "$(field LIST "$o3b")" != *"$(field LUUID "$o3a")"* ]] \
    && [[ "$(field DEFAULT "$o3b")" != "$(field DEFAULT "$o3a")" ]]; then
-  _pass "G3 foreign preserved through apply; revert removed only mahg-dark + reset default"
+  _pass "G3 foreign preserved through apply; revert removed mahg-dark + mahg-light + reset default"
 else
   _fail "G3 wrong: apply=[$(tr '\n' '|' <<<"$o3a")] revert=[$(tr '\n' '|' <<<"$o3b")]"
 fi
@@ -232,12 +265,37 @@ rm -rf "$T4"
 echo "== G5 dry-run is a true no-op =="
 T5="$(mktemp -d)"
 o5="$(drive "$T5" dryrun 1)"
-if [[ "$(field COUNT "$o5")" == "0" ]] && grep -q '\[DRY\]' <<<"$o5"; then
-  _pass "G5 dry-run created nothing and printed [DRY]"
+if [[ "$(field COUNT "$o5")" == "0" ]] && [[ "$(field LCOUNT "$o5")" == "0" ]] \
+   && grep -q '\[DRY\]' <<<"$o5"; then
+  _pass "G5 dry-run created neither profile and printed [DRY]"
 else
   _fail "G5 dry-run wrong: $(tr '\n' '|' <<<"$o5")"
 fi
 rm -rf "$T5"
+
+# =============================================================================
+# G6 — upgrade path: a box that already has mahg-dark (the user's default) gets
+# ONLY the missing mahg-light added, and its manual default is left untouched.
+# MUTATION BITE: a module that recreated mahg-dark would bump COUNT=2; one that
+# rewrote `default` unconditionally would change DEFAULT off the seeded UUID.
+# =============================================================================
+echo "== G6 upgrade path (dark present -> add only light, keep default) =="
+T6="$(mktemp -d)"
+DUUID="d0000000-0000-0000-0000-000000000002"
+drive "$T6" seed_dark >/dev/null
+o6="$(drive "$T6" apply)"
+if [[ "$(field COUNT "$o6")" == "1" ]] \
+   && [[ "$(field LCOUNT "$o6")" == "1" ]] \
+   && [[ "$(field UUID "$o6")" == "$DUUID" ]] \
+   && [[ "$(field DEFAULT "$o6")" == "'$DUUID'" ]] \
+   && [[ "$(field LIST "$o6")" == *"$DUUID"* ]] \
+   && [[ "$(field LIST "$o6")" == *"$(field LUUID "$o6")"* ]] \
+   && [[ "$(field OUTCOME "$o6")" == INSTALLED* ]]; then
+  _pass "G6 added only mahg-light; mahg-dark + user default untouched"
+else
+  _fail "G6 wrong: $(tr '\n' '|' <<<"$o6")"
+fi
+rm -rf "$T6"
 
 rm -f "$DRIVER"
 
