@@ -31,6 +31,13 @@ else
   echo "  test_sete: FAIL"; rc=1
 fi
 
+echo "== tests/test_ai_agents.sh (HARD gate: AI-agents verify/restore) =="
+if bash "$HERE/test_ai_agents.sh"; then
+  echo "  test_ai_agents: PASS"
+else
+  echo "  test_ai_agents: FAIL"; rc=1
+fi
+
 echo "== tests/test_pypi.sh (HARD gate: PyPI-unreachable resilience) =="
 if bash "$HERE/test_pypi.sh"; then
   echo "  test_pypi: PASS"

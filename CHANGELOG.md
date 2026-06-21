@@ -10,6 +10,12 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **AI-agents protection module** (`modules/05-ai-agents.sh` + `docs/ai-agents.md`):
+  verifies the Professor's AI coding agents by their real binary names (`pi`, `codex`,
+  `claude`, `agy`, `grok`, `copilot`) on every run, restores a missing one from its
+  official installer (idempotent, `--dry-run` aware), guards that `/usr/local/bin` and
+  `~/.local/bin` are on `PATH`, and documents each agent's data/login location and the
+  debloat protected-zone. Hermetic, mutation-verified test (`tests/test_ai_agents.sh`).
 - **tmux** (`modules/15-tmux.sh` + `dotfiles/tmux/tmux.conf`) for splits and persistent
   sessions on top of GNOME Terminal's tabs. Branded navy (dark only); prefix `C-a`;
   intuitive `|` / `-` splits that inherit the pane's path; mouse on; vim pane

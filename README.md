@@ -28,6 +28,7 @@ The desktop is only a fallback.
 11. [Development / tests](#11-development--tests)
 12. [Repository layout](#12-repository-layout)
 13. [Claude Code status line (tell sessions apart)](#13-claude-code-status-line-tell-sessions-apart)
+14. [AI coding agents (verified & protected)](#14-ai-coding-agents-verified--protected)
 
 ---
 
@@ -113,8 +114,9 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | `--verbose` | Verbose/debug logging. |
 | `-h`, `--help` | Usage. |
 
-Module names: `00-uv 10-terminal 15-tmux 20-viewers 30-euporie 40-helix 50-git-docker-tui
-60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium`. Every run writes
+Module names: `00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
+50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium`.
+Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
 ---
@@ -579,19 +581,21 @@ Actions (`.github/workflows/ci.yml`).
 install.sh            entrypoint: flags, detection, module dispatch, validation
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
-modules/              00-uv 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
-                      50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
+modules/              00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie
+                      40-helix 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
                       80-gnome-terminal-profile 90-vscodium (gated)
 dotfiles/             helix/ (config.toml languages.toml
                       themes/mahg-{dark,light}.toml — branded dark/light pair)
                       starship/ tmux/ yazi/ claude-code/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
                       into fresh UUIDs; not symlinked; mahg-dark is the default)
-tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh ·
-                      test_gnome_profile.sh · test_statusline.sh · test_tmux.sh ·
-                      validate.sh + sample.md/py/ipynb
-.github/workflows/    ci.yml (shellcheck + test_sete + test_pypi + test_tab_title +
-                      test_gnome_profile + test_statusline + test_tmux on push)
+docs/                 ai-agents.md (verify/restore/protect the AI coding agents)
+tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_pypi.sh ·
+                      test_tab_title.sh · test_gnome_profile.sh · test_statusline.sh ·
+                      test_tmux.sh · validate.sh + sample.md/py/ipynb
+.github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_pypi +
+                      test_tab_title + test_gnome_profile + test_statusline + test_tmux
+                      on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 
@@ -624,6 +628,27 @@ stdin (`workspace.repo.name`, `workspace.current_dir`, `session_name`), parses w
 at the script). **Name a session** with **`/rename <name>`** so `session_name` shows in the line.
 Reopen/`/statusline`-reload to see it. The tab title stays `"Claude Code"` by design — don't rely
 on it; the status line is the source of truth.
+
+## 14. AI coding agents (verified & protected)
+
+The Professor's AI coding agents were installed **by hand, outside this repo**, and one
+(pi.dev) once vanished with no way to detect or restore it. `modules/05-ai-agents.sh` runs
+**early on every install** and makes the repo their guardian — it **verifies** each agent by
+its real binary name, **restores** a missing one from its official installer (idempotent,
+`--dry-run` aware), and documents where each one's data/login lives.
+
+```bash
+./install.sh --only 05      # list each agent + status (PRESENT / restored / DEFERRED)
+```
+
+The six agents (use the **real binary name**): **`pi`** (pi.dev), **`codex`** (OpenAI Codex),
+**`claude`** (Claude Code), **`agy`** (Antigravity — *not* `antigravity`; Gemini CLI was
+discontinued 2026‑06‑18), **`grok`** (xAI), **`copilot`** (GitHub Copilot CLI). Full table of
+binaries, installers and data locations: **[`docs/ai-agents.md`](docs/ai-agents.md)**.
+
+> **Protected zone:** the six agent binaries plus `/usr/local/bin` and `~/.local/bin` must
+> never be removed by the desktop debloat (which lives in `lnx-gui-ide`). That allowlist is a
+> separate GUI task; this CLI module only verifies, restores, and documents.
 
 ## Author
 
