@@ -22,3 +22,12 @@ jobs:
 
       - name: tab-title managed-block suite
         run: bash tests/test_tab_title.sh
+
+      # dconf-cli so the GNOME Terminal profile suite runs for real (it self-skips
+      # if dconf is absent or its D-Bus service cannot activate). dbus-run-session
+      # ships with the preinstalled dbus package on the runner.
+      - name: install dconf for the GNOME Terminal profile suite
+        run: sudo apt-get update && sudo apt-get install -y dconf-cli
+
+      - name: GNOME Terminal profile suite
+        run: bash tests/test_gnome_profile.sh

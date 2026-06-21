@@ -138,6 +138,13 @@ _install_lsps
 link_dotfile "$REPO_ROOT/dotfiles/helix/config.toml"    "$HOME/.config/helix/config.toml"
 link_dotfile "$REPO_ROOT/dotfiles/helix/languages.toml" "$HOME/.config/helix/languages.toml"
 
+# Branded theme "mahg-dark": symlink into the runtime themes dir Helix searches.
+# config.toml already selects theme = "mahg-dark" (managed via the symlink above),
+# so this just makes the theme file resolvable. link_dotfile creates the dir and
+# backs up any pre-existing file, and is idempotent.
+link_dotfile "$REPO_ROOT/dotfiles/helix/themes/mahg-dark.toml" \
+  "$HOME/.config/helix/runtime/themes/mahg-dark.toml"
+
 # Surface LSP attachment readiness (full check is in tests/validate.sh).
 if _hx_present; then
   log_info "helix LSP languages configured: typescript(vtsls), python(ruff); basedpyright disabled by default"

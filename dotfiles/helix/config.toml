@@ -1,7 +1,7 @@
 # Helix config.toml — lnx-cli-tui-ide
 # Legible, terminal-first defaults. Language servers are wired in languages.toml.
 
-theme = "base16_terminal"   # follow the kitty palette; calm for long sessions
+theme = "mahg-dark"   # branded theme; inherits base16_terminal so it still follows the terminal palette
 
 [editor]
 line-number = "relative"

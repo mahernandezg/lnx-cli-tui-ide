@@ -113,8 +113,8 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | `-h`, `--help` | Usage. |
 
 Module names: `00-uv 10-terminal 20-viewers 30-euporie 40-helix 50-git-docker-tui
-60-ssh-alias 70-starship 75-tab-title 90-vscodium`. Every run writes a timestamped log to
-`logs/install-<timestamp>.log`.
+60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium`. Every run writes
+a timestamped log to `logs/install-<timestamp>.log`.
 
 ---
 
@@ -508,12 +508,23 @@ It runs:
   second backup), lands **after the Starship block**, **wraps a hand-rolled hook that had no
   markers** (de-duplicated and relocated after Starship), and **reverts only its own block**;
   `--dry-run` changes nothing. It writes to no real file and installs nothing.
+- **`tests/test_gnome_profile.sh`** (hard gate, **self-skipping**) — a hermetic,
+  mutation-verified suite for the branded **GNOME Terminal "mahg-dark" profile**
+  (`modules/80-gnome-terminal-profile.sh`). All dconf I/O runs inside `dbus-run-session` with
+  an isolated `XDG_CONFIG_HOME`, so the real user database is never touched. It asserts the
+  module **creates one profile** (minted under a fresh per-machine UUID, added to the list and
+  set as default, with keys actually written), is **idempotent** (a second apply makes no
+  duplicate — identity is the `visible-name`), **preserves an existing foreign profile** through
+  apply and **reverts only its own** (resetting the default), the pure list helper **dedups and
+  seeds the stock UUID on an unset list**, and **`--dry-run` changes nothing**. When `dconf` /
+  `dbus-run-session` are absent — or dconf cannot round-trip in this environment — it prints
+  `SKIP` and passes, so it never false-fails on a minimal box.
 - **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
   Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
   it never gates the result.
 
-The same shellcheck + `test_sete.sh` + `test_pypi.sh` + `test_tab_title.sh` run on every push
-via GitHub Actions (`.github/workflows/ci.yml`).
+The same shellcheck + `test_sete.sh` + `test_pypi.sh` + `test_tab_title.sh` +
+`test_gnome_profile.sh` run on every push via GitHub Actions (`.github/workflows/ci.yml`).
 
 ## 12. Repository layout
 
@@ -523,11 +534,14 @@ lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
                       50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
-                      90-vscodium (gated)
-dotfiles/             kitty/ helix/ wezterm/ starship/ yazi/
-tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh · validate.sh
-                      + sample.md/py/ipynb
-.github/workflows/    ci.yml (shellcheck + test_sete + test_pypi + test_tab_title on push)
+                      80-gnome-terminal-profile 90-vscodium (gated)
+dotfiles/             kitty/ helix/ (config.toml languages.toml themes/mahg-dark.toml)
+                      wezterm/ starship/ yazi/
+profiles/             gnome-terminal/mahg-dark.dconf (loaded into a fresh UUID; not symlinked)
+tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh ·
+                      test_gnome_profile.sh · validate.sh + sample.md/py/ipynb
+.github/workflows/    ci.yml (shellcheck + test_sete + test_pypi + test_tab_title +
+                      test_gnome_profile on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 
