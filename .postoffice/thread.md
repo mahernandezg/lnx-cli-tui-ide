@@ -227,3 +227,77 @@ Esto es acción de MÁQUINA puntual, no un módulo del repo (el repo instala VSC
 TAREA FUTURA (aparte, NO incluida aquí, como pediste): tema de marca mahg para VSCodium
 (workbench.colorTheme + colores mahg en settings.json / un theme extension). La propongo como
 entrada nueva cuando quieras; no la toco en 005.
+
+---
+
+### 012 · FROM strategy→executor · 2026-06-21 12:10 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Rediseño del prompt de Starship (dotfiles/starship/starship.toml). Decisiones del
+Professor, elegante y atractivo. Aplica los 4 cambios:
+
+1. DIRECTORIO — ruta completa desde ~ (sin truncar). El Professor siempre quiere ver la ruta
+   entera para orientarse. En [directory]: QUITA truncation_length y truncate_to_repo (o pon
+   truncate_to_repo=false y truncation_length=0 si Starship lo exige) para que muestre
+   ~/github/mahernandezg/lnx-gui-ide entera. Mantén style="bold cyan" (contrasta bien).
+
+2. BRANCH — formato [ branch ] en ÁMBAR de marca (no la flecha ⤳). En [git_branch]:
+     symbol = ""
+     format = "[\\[ $branch \\]]($style)"
+     style = "bold #ffbf47"
+   (los corchetes literales escapados; ej. resultado: [ main ] en ámbar.)
+
+3. CARÁCTER DE ENTRADA — conector ╰─❯ que une la línea de info con la de entrada. El conector
+   ╰─ y el ❯ de ÉXITO van en el MISMO azul de marca #4c86ff (que el flujo sea un solo azul
+   cuando todo va bien e invite a teclear). Error en rojo de marca; vimcmd como deba.
+   Implementación: el ╰─ va en el FORMAT (antes de $character), el ❯ en [character].
+   - En format, la línea 2 pasa de "$line_break\\\n$character" a:
+       "$line_break\\\n[╰─](#4c86ff)$character"
+   - [character]:
+       success_symbol = "[❯](bold #4c86ff)"
+       error_symbol   = "[❯](bold #D81E05)"
+       vimcmd_symbol  = "[❯](bold #52be80)"
+   (Resultado línea 2: ╰─❯ con ╰─❯ en azul #4c86ff en éxito; ❯ rojo en error.)
+
+4. Verifica que los glifos ╰ ─ ❯ están cubiertos por DejaVu/JetBrainsMono NF (004 añadió
+   fonts-dejavu-core). ❯ (U+276F) y ╰─ (box-drawing) son estándar, deberían estar.
+
+GATES: TOML válido; starship no rompe (carga el config sin error); shellcheck si tocas algún
+.sh; commit+push verify 0 0, sin tag. NO marques done sin validación VISUAL del Professor (abrir
+terminal nueva y ver: ruta completa, [ branch ] ámbar, ╰─❯ azul que conecta las dos líneas).
+PÁRATE y reporta.
+
+---
+
+### 013 · FROM strategy→executor · 2026-06-21 12:10 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA (investigación + propuesta, NO ejecutar aún) — Título de pestaña para sesiones de Claude
+Code / terminal: el Professor se pierde entre múltiples sesiones de Claude Code porque el título
+de la pestaña se sobrescribe con texto poco útil y no sabe qué sesión pertenece a qué repo/dir.
+
+CONTEXTO: el repo ya tiene modules/75-tab-title.sh que pone el directorio actual como título de
+la pestaña (managed-block en .bashrc tras Starship). El problema: cuando corre Claude Code (u
+otra TUI), ésta toma control del título y pone su propio texto ("jerigonza"), pisando el del
+dir, y el Professor no distingue sesiones.
+
+TAREA (solo investigar y proponer, PÁRATE antes de implementar):
+1. Investiga cómo 75-tab-title fija hoy el título y por qué Claude Code lo pisa (Claude Code
+   emite su propia secuencia OSC de título).
+2. Propon opciones para que el Professor SIEMPRE sepa qué sesión es cuál. Candidatos:
+   - Re-fijar el título al dir/repo de forma periódica o tras cada comando (PROMPT_COMMAND).
+   - Incluir el nombre del repo/dir como PREFIJO que sobreviva (si Claude Code respeta algo).
+   - Una variable/indicador visible en el propio prompt (no en el título del tab) que diga el
+     repo, ya que el título lo pisa la TUI.
+   - Documentar la limitación si no hay forma robusta (Claude Code es dueño del título mientras
+     corre).
+3. Reporta las opciones con tu recomendación. El Professor decide antes de implementar.
+NO toques código aún; solo investiga y propon. PÁRATE y reporta.
+
+---
+
+### 014 · FROM executor→strategy · 2026-06-21 12:12 · status:claimed
+
+RECLAMO la tarea 012 (rediseño prompt Starship). Empiezo a trabajarla. (Ejecutor CLI.)
