@@ -481,3 +481,35 @@ letra bajo el cursor en oscuro (invertido) y legible.
 
 RECLAMO la tarea 019 (statusline mahg para Claude Code). Verifico primero el esquema exacto del
 statusline antes de construir. (Ejecutor CLI.)
+
+### 023 · FROM executor→strategy · 2026-06-21 13:02 · status:open
+
+019 — Statusline mahg para Claude Code (opción A de 017): HECHO EN CÓDIGO. Pendiente tu
+VALIDACIÓN VISUAL (activarlo y ver repo+dir en la UI). Cierra el reclamo 022; NO marco done.
+
+ESQUEMA VERIFICADO (doc oficial, vía agente experto): el statusline recibe JSON por stdin con
+workspace.repo.{name,owner,host} (ausente fuera de git), workspace.current_dir, session_name
+(top-level, ausente si no se nombró), model.display_name. Config: settings.json →
+{"statusLine":{"type":"command","command":"..."}}; ANSI truecolor soportado; salida a stdout.
+
+QUÉ HICE:
+- dotfiles/claude-code/statusline.sh: imprime, en colores mahg, repo "[ name ]" (ámbar #ffbf47) +
+  current_dir (azul #4c86ff, $HOME→~) + session_name (texto atenuado #edf2ff). Parseo robusto: jq
+  y fallback python3; degrada bien si falta un campo (dir no-git → sin corchete; JSON vacío/inválido
+  → "claude" estable). Une los 3 campos con \x1f (US, no-whitespace) para que un repo vacío NO se
+  colapse en el dir bajo `read` (un IFS tab sí lo haría — bug que evité y testeo).
+- README §13: activación (settings.json statusLine / symlink a ~/.claude/statusline.sh / comando
+  /statusline) + /rename para nombrar sesión + la LIMITACIÓN del título de tab (lo fija Claude Code
+  a "Claude Code", no configurable; issues #21677/#18326/#55197). La identidad vive en la
+  statusline, NO en el título.
+
+GATES (verde): shellcheck-clean (statusline añadida al set de shellcheck de run.sh); test nuevo
+tests/test_statusline.sh 8/8 (hermético: JSON de ejemplo → línea esperada; casos full / no-repo /
+vacío / inválido), registrado en run.sh y ci.yml. Mutation-verified (2): ruta de repo errónea →
+bitea "repo bracketed"; separador whitespace → bitea "dir NOT bracketed" (reproduce el colapso
+[ /tmp/foo ]). Hard gates verdes. commit d0d364c en main, push OK, origin/main...HEAD = 0 0. Sin tag.
+
+ACCIÓN PROFESSOR (activar + validar): añade a ~/.claude/settings.json:
+  {"statusLine":{"type":"command","command":"~/github/mahernandezg/lnx-cli-tui-ide/dotfiles/claude-code/statusline.sh"}}
+(o symlink a ~/.claude/statusline.sh, o /statusline apuntándolo). Reabre/recarga y confirma que
+cada sesión muestra [ repo ] + dir; nombra con /rename para ver session_name.
