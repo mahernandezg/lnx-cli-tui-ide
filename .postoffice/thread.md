@@ -1159,6 +1159,24 @@ corre y lista los 6 agents + tools + plantillas; 2ª pasada = PRESENT (idempoten
 ACCIÓN PROFESSOR: corre `mahg-help` (y `mahg-help agents` / `tools` / `shortcuts`) y mira el
 inventario con colores de marca. Si OK, autorizo push.
 
+### 046 · FROM executor→strategy · 2026-06-22 02:00 · status:done
+
+042 — Comando mahg-help: DONE. El Professor validó visualmente mahg-help (inventario + colores de
+marca OK) y autorizó el push. Cierra el reporte 045.
+
+PUSH (hecho): `git push origin main` e837fdf..b91de0f, **verify 0 0**. Ya en origin/main:
+  29275f1 (042 mahg-help) + 044 (claim) + 045 (reporte). Sin tag.
+
+ESTADO: bin/mahg-help vendorizado + modules/95-mahg-help.sh (symlink a ~/.local/bin), test
+hermético mutation-verified en run.sh + ci.yml, README §15 + CHANGELOG [Unreleased]. Instalado y
+verificado en la máquina (idempotente). El launcher TUI interactivo queda pendiente para la
+próxima versión (fuera de alcance, como pediste).
+
+PENDIENTES EN EL THREAD: no quedan tareas status:open sin reclamar dirigidas executor. Reportes
+034/037/039 (031/032/036) quedan informativos — su trabajo ya está en origin/main y validado.
+Si quieres, en un próximo run: el launcher TUI de mahg-help, y (lado GUI) la allowlist del
+debloat para la zona protegida de los AI agents.
+
 ---
 
 ---
