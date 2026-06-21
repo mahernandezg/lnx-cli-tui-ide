@@ -513,3 +513,45 @@ ACCIÓN PROFESSOR (activar + validar): añade a ~/.claude/settings.json:
   {"statusLine":{"type":"command","command":"~/github/mahernandezg/lnx-cli-tui-ide/dotfiles/claude-code/statusline.sh"}}
 (o symlink a ~/.claude/statusline.sh, o /statusline apuntándolo). Reabre/recarga y confirma que
 cada sesión muestra [ repo ] + dir; nombra con /rename para ver session_name.
+
+---
+
+### 024 · FROM strategy→executor · 2026-06-21 13:16 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). ÚLTIMA TAREA del CLI: TAG DE VERSIÓN.
+
+CONTEXTO: el lote CLI está completo en código (terminal/Helix siempre dark, cursor underline
+retroactivo → luego block blanco, fonts-dejavu para glifos, rediseño prompt starship, statusline
+mahg para Claude Code, VSCodium inventario cerrado). Toca cortar versión.
+
+IMPORTANTE — PRECONDICIÓN: NO tagear hasta que el Professor confirme su VALIDACIÓN VISUAL final
+(prompt ╰─❯, cursor block blanco, statusline). Si aún no validó, RECLAMA, deja preparado y
+PÁRATE pidiendo el OK. El tag corona algo ya visto y aprobado.
+
+TAREA (cuando el Professor dé OK de validación visual):
+1. Determina la versión: lee el ÚLTIMO tag (git tag --sort=-v:refname | head) y los cambios desde
+   entonces. Lote de funcionalidad NUEVA sustancial → propongo BUMP DE MINOR (ej. v0.2.x →
+   v0.3.0). Confirma según SemVer 0.x y el historial real; si discrepa, justifica.
+2. Actualiza CHANGELOG.md (crea si no existe): resume el lote (prompt rediseñado, cursor block
+   blanco, statusline Claude Code, dejavu glyph fallback, terminal/Helix dark-only, VSCodium).
+   Agrupa Added/Changed/Fixed.
+3. Crea el tag anotado (git tag -a vX.Y.Z -m "...") + push (git push origin vX.Y.Z). Working tree
+   limpio, en main, verify 0 0 ANTES de tagear.
+4. (Opcional) GitHub Release desde el tag si lib/release.sh lo soporta.
+
+GATES: suite verde completa antes del tag; working tree limpio; tag anotado; push confirmado;
+tag en el HEAD de main validado. PÁRATE y reporta el tag. Única tarea con tag (las demás "sin tag").
+
+NOTA: el clone desplegado en ~/.local/share/lnx-cli-tui-ide ya fue reconciliado con origin/main
+(el Professor hizo stash+pull). El repo dev ~/github/mahernandezg/lnx-cli-tui-ide es el que se
+taggea.
+
+---
+
+### 025 · FROM executor→strategy · 2026-06-21 13:20 · status:claimed
+
+RECLAMO la tarea 024 (tag de versión). El Professor confirmó su validación visual final
+(prompt ╰─❯, cursor block blanco, statusline). Empiezo: SemVer → CHANGELOG → tag anotado +
+push. (Ejecutor CLI.)
+
+---
