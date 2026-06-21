@@ -679,4 +679,138 @@ se queda kitty o se elimina del pack.
 RECLAMO la tarea 028 (rebrand kitty a marca mahg, solo colores). Empiezo a trabajarla.
 (Ejecutor CLI.)
 
+### 030 · FROM executor→strategy · 2026-06-21 22:48 · status:open
+
+028 — Rebrand kitty a marca mahg (colores): HECHO EN CÓDIGO + aplicado en la máquina. Pendiente
+tu VALIDACIÓN VISUAL. (Cierra el reclamo 029; NO marco done.)
+
+CAMBIOS (dotfiles/kitty/kitty.conf, SOLO la sección de color; fuente/tabs/atajos/layouts/
+scrollback/graphics intactos — diff acotado a ese bloque):
+- base: foreground #edf2ff, background #070b16 (= bg GNOME Terminal mahg-dark), selection_fg
+  #edf2ff / selection_bg #2f6bff, cursor #edf2ff (block blanco), cursor_text_color #0d1530,
+  url_color #4c86ff (url_style curly se mantiene).
+- 16 ANSI idénticos al palette del perfil GNOME Terminal mahg-dark (color0 #171421 … color15
+  #ffffff). Mismo aspecto en ambos terminales.
+- tab bar navy: active_tab_background #2d4f7c (literal estático, excepción STANDARDS tab activa) /
+  fg #edf2ff; inactive #15233f / fg #a9b4cc; tab_bar_background #070b16.
+- kitty SIEMPRE dark (sin variante light vendorizada), coherente con la política terminal/Helix.
+
+GATES (verde): conf válido — kitty 0.47.3 carga el config sin error vía
+`kitty +runpy load_config('kitty.conf')` → PARSE_OK; todos los colores resuelven al hex esperado
+(background Color(7,11,22), cursor (237,242,255), active_tab (45,79,124), color4 (18,72,139)…).
+Prueba del rojo: background→#FF0000 → load_config lee Color(255,0,0); revertido a #070b16.
+shellcheck N/A (es conf). 
+
+APLICADO EN LA MÁQUINA: ~/.config/kitty/kitty.conf es symlink directo al fichero del repo dev
+que edité → el cambio ya está live (load_config del path live = navy de marca). No hay kitty
+corriendo (pgrep vacío); aplica al abrir kitty. El clone ~/.local/share solo lo referencian los
+.bak, no el config activo.
+
+COMMIT: da3ac25 "feat(kitty): rebrand colors to mahg navy (match GNOME Terminal mahg-dark)" en
+LOCAL, SIN PUSH. Honro tu "párate tras commit": dejo el commit hecho y NO pusheé (ni este reporte).
+Push pendiente de tu OK (junto con la validación visual). Sin tag.
+
+ACCIÓN PROFESSOR: abre kitty → navy de marca (#070b16), cursor BLOCK blanco, tabs navy; compara
+con GNOME Terminal mahg-dark (deben verse coherentes). Si OK, dime y pusheo (main, verify 0 0) y
+cierro done; si no, decides eliminar kitty del pack (tarea aparte).
+
+---
+
+### 031 · FROM strategy→executor · 2026-06-21 23:20 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+DECISIÓN del Professor sobre kitty (028/030): kitty SE ELIMINA DEL STACK. Probó los splits pero
+no le compensan cambiar de GNOME Terminal (que prefiere por tabs e integración). Para splits
+usará tmux en GNOME Terminal. Por tanto el rebrand de kitty (commit local da3ac25, NO pusheado)
+NO se pushea; kitty se retira.
+
+TAREA — Sacar kitty del stack, limpio y reversible:
+1. El commit LOCAL da3ac25 (rebrand colores kitty) NO se pushea. Descártalo del working area de
+   forma segura: como la decisión es retirar kitty, no necesitamos ese cambio de color. Si ya
+   está commiteado local sin push, revértelo/resétalo (git reset/revert según corresponda) para
+   que NO llegue a origin, o si prefieres, déjalo y simplemente elimina kitty por encima (el
+   resultado final es: kitty fuera). Decide la vía de git más limpia y justíficala. NUNCA
+   force-push a main; trabaja en la línea normal.
+2. RETIRA kitty del instalador: en el módulo que instala kitty (10-terminal.sh u otro), QUITA la
+   instalación de kitty (apt/flatpak) y el deploy de dotfiles/kitty. Mantén GNOME Terminal como
+   terminal del stack.
+3. dotfiles/kitty/: decide si BORRAR el directorio del repo (kitty.conf, ssh.conf, etc.) o dejarlo
+   vendorizado-inerte. Recomendación: BORRARLO (el Professor no usa kitty; dejarlo inerte solo
+   confunde). Pero si algo más lo referencia, resuélvelo. grep=0 de referencias colgantes a kitty
+   en install.sh/modules/lib tras la retirada.
+4. En la MÁQUINA del Professor: desinstala kitty (apt remove / flatpak uninstall según cómo se
+   instaló) con backup/confirmación, y limpia ~/.config/kitty (era symlink al repo — quítalo).
+   Reversible (revert reinstalaría si se quisiera, pero no es prioritario).
+5. README/docs: quita o ajusta menciones a kitty; el terminal del stack es GNOME Terminal
+   (+ tmux para splits, que llega como tarea aparte).
+
+GATES: grep=0 de kitty colgante en el instalador; install.sh no intenta instalar kitty; suite
+verde; shellcheck-clean; commit+push verify 0 0, sin tag. PÁRATE y reporta. Validación del
+Professor: install.sh ya no instala kitty; kitty desinstalado de la máquina; GNOME Terminal
+intacto.
+
+NOTA: viene tarea aparte para tmux (config mahg: splits, colores de marca, atajos), cuando el
+Professor confirme que tmux le sirve.
+
+---
+
+### 032 · FROM strategy→executor · 2026-06-21 23:35 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Config tmux mahg vendorizada en el repo (decisiones del Professor; tmux le sirve, lo
+lanzará MANUALMENTE cuando necesite splits/sesión persistente). SIN auto-arranque (el Professor
+usa los tabs de GNOME Terminal; no metemos doble capa).
+
+CREA dotfiles/tmux/tmux.conf (o ~/.tmux.conf según la convención del repo) + módulo instalador
+(ej. modules/XX-tmux.sh) que: instale tmux (apt, con fallback honesto), y symlinkee/instale la
+conf desde el repo a ~/.tmux.conf (o ~/.config/tmux/tmux.conf si usas XDG; elige y sé consistente).
+Idempotente, backup, revert, --dry-run honesto. Resiliente en TODAS las máquinas del Professor
+(no hardcodees rutas de máquina; usa $HOME/XDG).
+
+CONTENIDO de la conf (decisiones del Professor):
+1. PREFIJO: cambia de C-b a **C-a** (más cómodo). Libera C-b. (set -g prefix C-a; unbind C-b;
+   bind C-a send-prefix). Mantén C-a a doble-tap para enviar literal si hace falta.
+2. SPLITS INTUITIVOS:
+   bind | split-window -h   (vertical, izquierda/derecha)
+   bind - split-window -v   (horizontal, arriba/abajo)
+   (opcional: que el split herede el CWD del panel actual: -c "#{pane_current_path}")
+   Mantén también los % y " por compatibilidad si quieres, pero | y - son los principales.
+3. RATÓN habilitado: set -g mouse on (redimensionar/seleccionar paneles y ventanas con el ratón).
+4. NAVEGACIÓN de paneles cómoda: bind h/j/k/l (estilo vim) para moverse entre paneles, y/o las
+   flechas con prefijo. Redimensionar con H/J/K/L (repetibles).
+5. COLORES DE MARCA mahg (status bar + bordes), todo navy:
+   - status: fondo #070b16, texto #a9b4cc; sección activa texto #edf2ff
+   - ventana activa: fondo #2f6bff, texto #edf2ff
+   - ventana inactiva: fondo #15233f, texto #a9b4cc
+   - pane-border-style fg #223153 ; pane-active-border-style fg #2f6bff
+   - message-style: fondo #15233f, texto #edf2ff
+   - status-left con el nombre de sesión en ámbar #ffbf47 (coherente con el [ branch ] del prompt)
+   - status-right compacto: hora/fecha o lo mínimo, en tonos de marca. No lo recargues.
+6. QoL: base-index 1 (ventanas desde 1, no 0); pane-base-index 1; renumber-windows on;
+   set -g history-limit 10000; set -sg escape-time 10 (responsividad); set -g focus-events on.
+7. NADA de auto-arranque en .bashrc — el Professor lanza tmux a mano. (Si quieres, añade un alias
+   cómodo OPCIONAL documentado en README, p.ej. `tm` = tmux new -A -s main, que crea/reengancha
+   una sesión "main" — pero NO lo fuerces en cada shell.)
+8. tmux SIEMPRE dark (coherente con terminal/Helix dark-only). Sin variante light.
+
+NOTA fuente/glifos: si usas glifos en la status bar (powerline), asegúrate de que están en
+JetBrainsMono NF o DejaVu (004 añadió dejavu). Si dudas, usa separadores ASCII simples para no
+depender de glifos.
+
+GATES: tmux.conf válido (`tmux -f dotfiles/tmux/tmux.conf new-session -d \; kill-server` carga sin
+error, o `tmux source-file` en una sesión de prueba sin errores); módulo shellcheck-clean,
+idempotente/reversible; instala tmux + conf en la máquina; test hermético donde aplique
+(mutation-verified); commit+push verify 0 0, sin tag. PÁRATE y reporta. Validación del Professor:
+abrir tmux, C-a | y C-a - para splits, ratón, colores de marca en la status bar.
+
+---
+
+### 033 · FROM executor→strategy · 2026-06-21 23:45 · status:claimed
+
+RECLAMO la tarea 031 (sacar kitty del stack). Empiezo a trabajarla. El Professor confirmó (vía
+pregunta directa) que el instalador NO instala terminal alguno: ni kitty ni WezTerm; el stack usa
+GNOME Terminal (sistema) + tmux (032). (Ejecutor CLI.)
+
 ---
