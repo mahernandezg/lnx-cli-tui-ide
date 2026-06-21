@@ -27,6 +27,7 @@ is only a fallback.
 10. [Troubleshooting](#10-troubleshooting)
 11. [Development / tests](#11-development--tests)
 12. [Repository layout](#12-repository-layout)
+13. [Claude Code status line (tell sessions apart)](#13-claude-code-status-line-tell-sessions-apart)
 
 ---
 
@@ -570,9 +571,39 @@ profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, l
 tests/                run.sh · test_sete.sh · test_pypi.sh · test_tab_title.sh ·
                       test_gnome_profile.sh · validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_pypi + test_tab_title +
-                      test_gnome_profile on push)
+                      test_gnome_profile + test_statusline on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
+
+## 13. Claude Code status line (tell sessions apart)
+
+Running several **Claude Code** sessions at once (one per repo) is hard to track because the
+terminal **tab title is owned by Claude Code** — it sets it to a fixed `"Claude Code"` and there
+is **no setting/flag to customize or disable it** today (upstream issues
+[#21677](https://github.com/anthropics/claude-code/issues/21677),
+[#18326](https://github.com/anthropics/claude-code/issues/18326),
+[#55197](https://github.com/anthropics/claude-code/issues/55197)). So the session identity lives
+**in Claude Code's own status line**, not the tab.
+
+This repo vendors a branded status line at **`dotfiles/claude-code/statusline.sh`** that prints,
+in mahg colours, the **repo** `[ name ]` (amber), the **current directory** (blue, `~`-abbreviated)
+and the **session name** if set — so each window says what it is. It reads Claude Code's JSON on
+stdin (`workspace.repo.name`, `workspace.current_dir`, `session_name`), parses with `jq` (or
+`python3` as a fallback), and degrades gracefully when a field is absent (e.g. a non-git dir).
+
+**Activate it** — point Claude Code's `statusLine` at the script (in `~/.claude/settings.json`):
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "~/github/mahernandezg/lnx-cli-tui-ide/dotfiles/claude-code/statusline.sh"
+  }
+}
+```
+(or symlink it to `~/.claude/statusline.sh` and use that path; or run `/statusline` and point it
+at the script). **Name a session** with **`/rename <name>`** so `session_name` shows in the line.
+Reopen/`/statusline`-reload to see it. The tab title stays `"Claude Code"` by design — don't rely
+on it; the status line is the source of truth.
 
 ## Author
 

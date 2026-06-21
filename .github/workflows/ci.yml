@@ -31,3 +31,6 @@ jobs:
 
       - name: GNOME Terminal profile suite
         run: bash tests/test_gnome_profile.sh
+
+      - name: Claude Code statusline suite
+        run: bash tests/test_statusline.sh

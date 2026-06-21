@@ -15,7 +15,7 @@ rc=0
 
 echo "== shellcheck (hard gate when installed) =="
 if command -v shellcheck >/dev/null 2>&1; then
-  if shellcheck -x -S style "$ROOT"/install.sh "$ROOT"/lib/*.sh "$ROOT"/modules/*.sh "$ROOT"/tests/*.sh; then
+  if shellcheck -x -S style "$ROOT"/install.sh "$ROOT"/lib/*.sh "$ROOT"/modules/*.sh "$ROOT"/tests/*.sh "$ROOT"/dotfiles/claude-code/statusline.sh; then
     echo "  shellcheck: clean"
   else
     echo "  shellcheck: FAILED"; rc=1
@@ -50,6 +50,13 @@ if bash "$HERE/test_gnome_profile.sh"; then
   echo "  test_gnome_profile: PASS"
 else
   echo "  test_gnome_profile: FAIL"; rc=1
+fi
+
+echo "== tests/test_statusline.sh (HARD gate: Claude Code statusline) =="
+if bash "$HERE/test_statusline.sh"; then
+  echo "  test_statusline: PASS"
+else
+  echo "  test_statusline: FAIL"; rc=1
 fi
 
 echo "== tests/validate.sh (SOFT: tool checks, may skip on a bare box) =="
