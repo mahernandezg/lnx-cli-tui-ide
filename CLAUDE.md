@@ -2,6 +2,12 @@
 
 Guidance for AI assistants and contributors working in this repo.
 
+## Postoffice (canal con el agente de estrategia)
+Al inicio de cada run, lee `.postoffice/thread.md` entero. Si hay una entrada
+`status:open` dirigida `strategy→executor`, ejecútala. Al final, añade tu reporte
+como entrada `executor→strategy`. Reglas en `.postoffice/PROTOCOL.md`. Append-only:
+nunca edites ni borres entradas previas.
+
 ## Author
 Manuel Hernández Giuliani (GitHub: mahernandezg)
 
