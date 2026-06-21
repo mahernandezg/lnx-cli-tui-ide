@@ -10,6 +10,12 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **`mahg-help`** (`bin/mahg-help` + `modules/95-mahg-help.sh`): a branded, dynamic
+  cheatsheet of the environment — AI agents (present/absent + version), installed
+  CLI/TUI tools, tmux shortcuts, `~/Templates`, and a config/paths map. Brand colours
+  degrade to plain text when piped or under `NO_COLOR`. Sections selectable
+  (`mahg-help agents|tools|shortcuts|templates|paths`). Hermetic, mutation-verified
+  test (`tests/test_mahg_help.sh`).
 - **AI-agents protection module** (`modules/05-ai-agents.sh` + `docs/ai-agents.md`):
   verifies the Professor's AI coding agents by their real binary names (`pi`, `codex`,
   `claude`, `agy`, `grok`, `copilot`) on every run, restores a missing one from its

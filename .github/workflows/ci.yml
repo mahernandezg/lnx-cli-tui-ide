@@ -12,7 +12,7 @@ jobs:
 
       # shellcheck is preinstalled on the ubuntu-latest runner.
       - name: shellcheck
-        run: shellcheck -x -S style install.sh lib/*.sh modules/*.sh tests/*.sh
+        run: shellcheck -x -S style install.sh lib/*.sh modules/*.sh tests/*.sh bin/mahg-help dotfiles/claude-code/statusline.sh
 
       - name: set -e regression suite
         run: bash tests/test_sete.sh
@@ -44,3 +44,6 @@ jobs:
 
       - name: tmux mahg config suite
         run: bash tests/test_tmux.sh
+
+      - name: mahg-help cheatsheet suite
+        run: bash tests/test_mahg_help.sh

@@ -29,6 +29,7 @@ The desktop is only a fallback.
 12. [Repository layout](#12-repository-layout)
 13. [Claude Code status line (tell sessions apart)](#13-claude-code-status-line-tell-sessions-apart)
 14. [AI coding agents (verified & protected)](#14-ai-coding-agents-verified--protected)
+15. [`mahg-help` — your environment at a glance](#15-mahg-help--your-environment-at-a-glance)
 
 ---
 
@@ -115,8 +116,8 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | `-h`, `--help` | Usage. |
 
 Module names: `00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
-50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium`.
-Every run writes
+50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium
+95-mahg-help`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
 ---
@@ -583,11 +584,12 @@ Actions (`.github/workflows/ci.yml`).
 
 ```
 install.sh            entrypoint: flags, detection, module dispatch, validation
+bin/                  mahg-help (environment cheatsheet, symlinked to ~/.local/bin)
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 modules/              00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie
                       40-helix 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
-                      80-gnome-terminal-profile 90-vscodium (gated)
+                      80-gnome-terminal-profile 90-vscodium (gated) 95-mahg-help
 dotfiles/             helix/ (config.toml languages.toml
                       themes/mahg-{dark,light}.toml — branded dark/light pair)
                       starship/ tmux/ yazi/ claude-code/
@@ -596,10 +598,10 @@ profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, l
 docs/                 ai-agents.md (verify/restore/protect the AI coding agents)
 tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_pypi.sh ·
                       test_tab_title.sh · test_gnome_profile.sh · test_statusline.sh ·
-                      test_tmux.sh · validate.sh + sample.md/py/ipynb
+                      test_tmux.sh · test_mahg_help.sh · validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_pypi +
-                      test_tab_title + test_gnome_profile + test_statusline + test_tmux
-                      on push)
+                      test_tab_title + test_gnome_profile + test_statusline + test_tmux +
+                      test_mahg_help on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 
@@ -653,6 +655,26 @@ binaries, installers and data locations: **[`docs/ai-agents.md`](docs/ai-agents.
 > **Protected zone:** the six agent binaries plus `/usr/local/bin` and `~/.local/bin` must
 > never be removed by the desktop debloat (which lives in `lnx-gui-ide`). That allowlist is a
 > separate GUI task; this CLI module only verifies, restores, and documents.
+
+## 15. `mahg-help` — your environment at a glance
+
+One command prints a **branded cheatsheet of what's installed and configured right now** —
+detected dynamically, so it never goes stale. `modules/95-mahg-help.sh` symlinks the vendored
+`bin/mahg-help` to `~/.local/bin/mahg-help`.
+
+```bash
+mahg-help                 # everything
+mahg-help agents          # just the AI agents + versions
+mahg-help tools           # just the CLI/TUI tools
+mahg-help shortcuts       # the tmux cheatsheet
+mahg-help --version
+```
+
+Sections: **AI coding agents** (present/absent + version), **CLI/TUI tools** (the installed
+ones + version), **tmux shortcuts** (prefix `C-a`, layouts `1`–`4`, splits, panes), **Nautilus
+templates** (read from `~/Templates`), and a **config & paths** map (terminal, editors, browser,
+prompt, brand palette, repos, agent data locations). Colours degrade to plain text when piped or
+under `NO_COLOR`/`--no-color`. *(An interactive TUI launcher is planned for a later version.)*
 
 ## Author
 

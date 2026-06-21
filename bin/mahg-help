@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+# bin/mahg-help — one-glance cheatsheet of the Professor's terminal environment.
+#
+# Prints, in mahg brand colours, what is installed/configured RIGHT NOW: AI coding
+# agents, CLI/TUI tools, key tmux shortcuts, Nautilus templates, and the config map.
+# Principle: DYNAMIC over hardcoded — presence and versions are detected at runtime
+# (command -v + --version); only the curated cheatsheet text (shortcuts, brand
+# decisions) is static, and it is flagged to stay in sync with the real configs.
+#
+# Vendored in the repo and symlinked to ~/.local/bin/mahg-help by modules/95-mahg-help.sh.
+# The interactive TUI launcher is a NEXT-version item; this is just the help dump.
+set -uo pipefail
+
+MAHG_HELP_VERSION="0.1.0"
+
+# ---- Args -------------------------------------------------------------------
+use_color=1
+section="all"
+for arg in "$@"; do
+  case "$arg" in
+    --no-color)      use_color=0 ;;
+    -V|--version)    printf 'mahg-help %s\n' "$MAHG_HELP_VERSION"; exit 0 ;;
+    -h|--help)
+      printf 'Usage: mahg-help [section] [--no-color]\n'
+      printf '  sections: all (default) | agents | tools | shortcuts | templates | paths\n'
+      printf '  --version   print version\n'
+      exit 0 ;;
+    agents|tools|shortcuts|templates|paths|all) section="$arg" ;;
+    *) printf 'mahg-help: unknown argument: %s (try -h)\n' "$arg" >&2; exit 2 ;;
+  esac
+done
+
+# Colour off when piped/redirected, when NO_COLOR is set, or on --no-color.
+[[ -n "${NO_COLOR:-}" ]] && use_color=0
+[[ -t 1 ]] || use_color=0
+if [[ "$use_color" -eq 1 ]]; then
+  AMBER=$'\033[1;38;2;255;191;71m'; BLUE=$'\033[38;2;76;134;255m'
+  TEXT=$'\033[38;2;237;242;255m';   DIM=$'\033[38;2;169;180;204m'
+  GREEN=$'\033[38;2;51;209;122m';   RED=$'\033[38;2;246;97;81m'
+  RESET=$'\033[0m'
+else
+  AMBER=""; BLUE=""; TEXT=""; DIM=""; GREEN=""; RED=""; RESET=""
+fi
+
+_hdr() { printf '\n%s== %s ==%s\n' "$AMBER" "$1" "$RESET"; }
+
+# Best-effort version string: non-interactive, never hangs (EOF on stdin + timeout).
+# Tries --version then -V (tmux and friends); trims a too-long first line.
+_ver() {
+  local bin="$1" v flag
+  for flag in --version -V; do
+    v="$(timeout 5 "$bin" "$flag" </dev/null 2>/dev/null | head -1 || true)"
+    [[ -n "$v" ]] && break
+  done
+  [[ "${#v}" -gt 48 ]] && v="${v:0:47}..."
+  printf '%s' "$v"
+}
+
+# _have <bin>... -> prints the first binary found on PATH (or nothing).
+_have() {
+  local b
+  for b in "$@"; do
+    if command -v "$b" >/dev/null 2>&1; then printf '%s' "$b"; return 0; fi
+  done
+  return 1
+}
+
+# Row that ALWAYS shows status (present + absent). Args: label bin [altbin...]
+_row_status() {
+  local label="$1"; shift
+  local found v
+  if found="$(_have "$@")"; then
+    v="$(_ver "$found")"
+    printf '  %s✓%s %s%-11s%s %s%s%s\n' "$GREEN" "$RESET" "$TEXT" "$label" "$RESET" "$DIM" "${v:-present}" "$RESET"
+  else
+    printf '  %s✗ %-11s not installed%s\n' "$RED" "$label" "$RESET"
+  fi
+}
+
+# Row that prints ONLY when present. Args: label bin [altbin...]
+_row_present() {
+  local label="$1"; shift
+  local found v
+  if found="$(_have "$@")"; then
+    v="$(_ver "$found")"
+    printf '  %s✓%s %s%-11s%s %s%s%s\n' "$GREEN" "$RESET" "$TEXT" "$label" "$RESET" "$DIM" "${v:-present}" "$RESET"
+  fi
+}
+
+sec_agents() {
+  _hdr "AI coding agents"
+  _row_status pi      pi
+  _row_status codex   codex
+  _row_status claude  claude
+  _row_status agy     agy
+  _row_status grok    grok
+  _row_status copilot copilot
+}
+
+sec_tools() {
+  _hdr "CLI / TUI tools"
+  _row_present Helix      hx
+  _row_present yazi       yazi
+  _row_present lazygit    lazygit
+  _row_present lazydocker lazydocker
+  _row_present euporie    euporie
+  _row_present starship   starship
+  _row_present tmux       tmux
+  _row_present uv         uv
+  _row_present ripgrep    rg
+  _row_present bat        bat batcat
+  _row_present fd         fd fdfind
+  printf '  %s(only installed tools are shown)%s\n' "$DIM" "$RESET"
+}
+
+# Static cheatsheet — KEEP IN SYNC with dotfiles/tmux/tmux.conf if you change binds.
+sec_shortcuts() {
+  _hdr "Key shortcuts — tmux (prefix C-a)"
+  printf '  %s%-14s%s %s%s%s\n' "$BLUE" "C-a 1/2/3/4" "$RESET" "$TEXT" "layouts: 2-col · 3-col · main-vertical · 2x2 grid" "$RESET"
+  printf '  %s%-14s%s %s%s%s\n' "$BLUE" "C-a | / -"   "$RESET" "$TEXT" "split vertical / horizontal (path-aware)" "$RESET"
+  printf '  %s%-14s%s %s%s%s\n' "$BLUE" "C-a h/j/k/l" "$RESET" "$TEXT" "move between panes (H/J/K/L resize)" "$RESET"
+  printf '  %s%-14s%s %s%s%s\n' "$BLUE" "C-a c / w"   "$RESET" "$TEXT" "new window / list windows" "$RESET"
+  printf '  %s%-14s%s %s%s%s\n' "$BLUE" "C-a d / r"   "$RESET" "$TEXT" "detach session / reload config" "$RESET"
+  printf '  %s%-14s%s %s%s%s\n' "$BLUE" "mouse"       "$RESET" "$TEXT" "on — click panes/windows, drag borders" "$RESET"
+  printf '  %s(tmux is launched manually; GNOME Terminal tabs: Ctrl+Shift+T, Ctrl+PgUp/PgDn)%s\n' "$DIM" "$RESET"
+}
+
+sec_templates() {
+  _hdr "Nautilus templates (~/Templates → right-click ▸ New Document)"
+  local tdir="$HOME/Templates" f any=0
+  if [[ -d "$tdir" ]]; then
+    for f in "$tdir"/*; do
+      [[ -e "$f" ]] || continue
+      printf '  %s•%s %s%s%s\n' "$BLUE" "$RESET" "$TEXT" "$(basename "$f")" "$RESET"
+      any=1
+    done
+  fi
+  [[ "$any" -eq 0 ]] && printf '  %s(no templates in %s)%s\n' "$DIM" "$tdir" "$RESET"
+}
+
+sec_paths() {
+  _hdr "Config & paths"
+  printf '  %sTerminal%s  GNOME Terminal — profile %smahg-dark%s (always dark), white block cursor\n' "$BLUE" "$RESET" "$AMBER" "$RESET"
+  printf '  %sMultiplex%s tmux (prefix C-a, manual) for splits/sessions; GNOME Terminal tabs\n' "$BLUE" "$RESET"
+  printf '  %sEditors%s   Helix (hx, theme mahg-dark) · gnome-text-editor (scheme mahg-dark)\n' "$BLUE" "$RESET"
+  printf '  %sBrowser%s   Firefox (mahg theme, signed .xpi)\n' "$BLUE" "$RESET"
+  printf '  %sPrompt%s    Starship — full path, [ branch ] amber, ╰─❯ blue connector\n' "$BLUE" "$RESET"
+  printf '  %sBrand%s     navy #070b16 · blue #4c86ff · amber #ffbf47 · text #edf2ff\n' "$BLUE" "$RESET"
+  printf '             (palette config: mahg-brand-palette.conf, in the lnx-gui-ide repo)\n'
+  printf '  %sRepos%s     ~/github/mahernandezg/lnx-cli-tui-ide · ~/github/mahg-es/araya (+ lnx-gui-ide)\n' "$BLUE" "$RESET"
+  printf '  %sAgent data%s pi ~/.pi · claude ~/.local/share/claude + ~/.claude · codex ~/.codex\n' "$BLUE" "$RESET"
+  printf '             agy ~/.gemini/antigravity-cli (+keyring) · grok ~/.grok · copilot ~/.config\n'
+}
+
+sec_footer() {
+  printf '\n%sTip:%s mahg-help [agents|tools|shortcuts|templates|paths] · mahg-help --version\n' "$DIM" "$RESET"
+  printf '%s     the interactive TUI launcher arrives in the next version.%s\n' "$DIM" "$RESET"
+}
+
+printf '%smahg-help%s %s— your environment at a glance%s\n' "$AMBER" "$RESET" "$DIM" "$RESET"
+case "$section" in
+  agents)    sec_agents ;;
+  tools)     sec_tools ;;
+  shortcuts) sec_shortcuts ;;
+  templates) sec_templates ;;
+  paths)     sec_paths ;;
+  all)       sec_agents; sec_tools; sec_shortcuts; sec_templates; sec_paths; sec_footer ;;
+esac
