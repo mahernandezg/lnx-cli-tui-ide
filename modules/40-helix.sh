@@ -138,12 +138,16 @@ _install_lsps
 link_dotfile "$REPO_ROOT/dotfiles/helix/config.toml"    "$HOME/.config/helix/config.toml"
 link_dotfile "$REPO_ROOT/dotfiles/helix/languages.toml" "$HOME/.config/helix/languages.toml"
 
-# Branded theme "mahg-dark": symlink into the runtime themes dir Helix searches.
-# config.toml already selects theme = "mahg-dark" (managed via the symlink above),
-# so this just makes the theme file resolvable. link_dotfile creates the dir and
-# backs up any pre-existing file, and is idempotent.
+# Branded themes "mahg-dark" / "mahg-light": symlink both into the runtime themes
+# dir Helix searches. config.toml selects theme = "mahg-dark" by default (managed
+# via the symlink above); the light mirror is resolvable so it can be selected at
+# runtime with `:theme mahg-light` (or by editing config.toml + `pkill -USR1 hx`).
+# Helix has no native desktop color-scheme follow — see README §3. link_dotfile
+# creates the dir, backs up any pre-existing file, and is idempotent.
 link_dotfile "$REPO_ROOT/dotfiles/helix/themes/mahg-dark.toml" \
   "$HOME/.config/helix/runtime/themes/mahg-dark.toml"
+link_dotfile "$REPO_ROOT/dotfiles/helix/themes/mahg-light.toml" \
+  "$HOME/.config/helix/runtime/themes/mahg-light.toml"
 
 # Surface LSP attachment readiness (full check is in tests/validate.sh).
 if _hx_present; then

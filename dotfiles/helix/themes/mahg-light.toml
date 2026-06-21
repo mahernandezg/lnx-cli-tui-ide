@@ -1,0 +1,12 @@
+inherits = "base16_terminal"
+"ui.linenr" = { fg = "#6b7aa3", bg = "#e2e8f6" }
+"ui.linenr.selected" = { fg = "#2f6bff", bg = "#e2e8f6", modifiers = ["bold"] }
+"ui.gutter" = { bg = "#e2e8f6" }
+"ui.menu" = { fg = "#0b1020", bg = "#e2e8f6" }
+"ui.menu.selected" = { fg = "#ffffff", bg = "#2f6bff" }
+"ui.popup" = { fg = "#0b1020", bg = "#e2e8f6" }
+"ui.help" = { fg = "#0b1020", bg = "#e2e8f6" }
+"ui.window" = { fg = "#c7d0e6" }
+"ui.statusline.inactive" = { fg = "#6b7aa3", bg = "#e2e8f6" }
+"comment" = { fg = "#6b7aa3", modifiers = ["italic"] }
+[palette]

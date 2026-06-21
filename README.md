@@ -279,6 +279,11 @@ use it** — including the exact command to start it.
   run it.
   **Enable types per project:** drop a `.helix/languages.toml` in the repo adding
   `"basedpyright"` to the Python `language-servers` list.
+- **Theme (dark/light):** ships a branded pair — **`mahg-dark`** (default) and **`mahg-light`**
+  (light chrome, dark text, same blue accent) — both symlinked into Helix's runtime themes dir.
+  Helix has **no native OS color-scheme follow** (there's no theme-by-mode key), so switch by
+  hand: type **`:theme mahg-light`** (or `:theme mahg-dark`) at runtime, or edit `theme =` in
+  `~/.config/helix/config.toml` and reload config in place with **`pkill -USR1 hx`**.
 
 ### lazygit — Git TUI · [📖 Docs](https://github.com/jesseduffield/lazygit)
 - **What:** a full-screen UI for Git.
@@ -555,7 +560,8 @@ lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
 modules/              00-uv 10-terminal 20-viewers 30-euporie 40-helix
                       50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
                       80-gnome-terminal-profile 90-vscodium (gated)
-dotfiles/             kitty/ helix/ (config.toml languages.toml themes/mahg-dark.toml)
+dotfiles/             kitty/ helix/ (config.toml languages.toml
+                      themes/mahg-{dark,light}.toml — branded dark/light pair)
                       wezterm/ starship/ yazi/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
                       into fresh UUIDs; not symlinked; mahg-dark is the default)
