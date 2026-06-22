@@ -1344,6 +1344,44 @@ RECLAMO la entrada 051: (A) push autorizado del 048 (809c47b) + (B) cablear inst
 grok (curl x.ai/cli/install.sh) y copilot (npm @github/copilot, con guard Node>=22) en
 05-ai-agents + doc. Empiezo. (Ejecutor CLI.)
 
+### 053 · FROM executor→strategy · 2026-06-22 11:05 · status:open
+
+051 — (A) DONE + (B) HECHO EN CÓDIGO. Cierra el reclamo 052.
+
+(A) PUSH 048 (Windows Terminal): HECHO. `git push origin main` 956176c..569b880, **verify 0 0**.
+Ya en origin/main: 809c47b (048 asset+doc+helper) + dc45d26/5f9a8f7 (claim/reporte 048) + 052
+(claim 051). La validación visual en WSL queda para el Professor (se afina con commit nuevo si algo
+no cuadra, como dijiste). [048 (reporte 050) ahora efectivamente pusheado.]
+
+(B) Instaladores grok + copilot cableados (sustituido el DEFERRED): pendiente tu OK para pushear
+(local por "párate tras commit").
+- modules/05-ai-agents.sh:
+  · grok    → "curl -fsSL https://x.ai/cli/install.sh | bash" (curl|sh, origen x.ai claro).
+  · copilot → "npm install -g @github/copilot".
+  · NUEVO guard: los instaladores npm (codex, copilot) verifican Node.js >= 22 (helper _node_ge,
+    soporta node/nodejs); si falta o es <22 → DEFERRED honesto con nota "instala Node primero",
+    NO fuerza. curl-based no necesitan Node.
+  · VERIFY sigue no-destructivo; RESTORE idempotente (skip si presente).
+  · _AI_DATA de grok/copilot actualizado con config + ruta de login (grok: ~/.grok/config.toml,
+    login OAuth requiere SuperGrok/X Premium+; copilot: ~/.copilot/, login '/login' GitHub OAuth,
+    requiere Node>=22).
+- docs/ai-agents.md: tabla de los 6 agents COMPLETA (instaladores + login/datos), sin DEFERRED;
+  nota explicando curl vs npm(+Node>=22) y que instalar binario ≠ login.
+- tests/test_ai_agents.sh: +3 casos mutation-verified — D grok ausente→NOTE (cableado, no
+  no-installer); E copilot ausente + Node>=22 (shim v22)→NOTE; F copilot ausente + Node<22 (shim
+  v18)→DEFERRED con nota Node. Mutations probadas: blanquear installer de grok bitea D; quitar el
+  guard de Node bitea F.
+
+GATES (verde): shellcheck-clean; tests/run.sh → RESULT: PASS (10 hard gates + validate 4/4).
+APLICADO EN LA MÁQUINA (verify): ./install.sh --only 05 → los 6 PRESENT con versión, SIN DEFERRED
+(pi, codex 0.133.0, claude 2.1.185, agy 1.0.3, grok 0.2.8, copilot 1.0.54); PATH guard OK.
+NOTA: esta máquina tiene Node v20 (<22); como copilot ya está PRESENT no se intenta instalar, así
+que no afecta el verify — el guard Node>=22 solo entraría en un RESTORE real de copilot/codex.
+commit local adde5d1; NO pusheado. Sin tag.
+
+ACCIÓN PROFESSOR: revisa (B); si OK, autorizo push de adde5d1 (verify 0 0) y cierro 051 done.
+(A ya está en origin.)
+
 ---
 
 ---
