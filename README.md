@@ -30,6 +30,7 @@ The desktop is only a fallback.
 13. [Claude Code status line (tell sessions apart)](#13-claude-code-status-line-tell-sessions-apart)
 14. [AI coding agents (verified & protected)](#14-ai-coding-agents-verified--protected)
 15. [`mahg-help` — your environment at a glance](#15-mahg-help--your-environment-at-a-glance)
+16. [WSL: Windows Terminal mahg scheme](#16-wsl-windows-terminal-mahg-scheme)
 
 ---
 
@@ -117,7 +118,7 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 
 Module names: `00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium
-95-mahg-help`. Every run writes
+95-mahg-help 96-mahg-wt`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
 ---
@@ -584,24 +585,27 @@ Actions (`.github/workflows/ci.yml`).
 
 ```
 install.sh            entrypoint: flags, detection, module dispatch, validation
-bin/                  mahg-help (environment cheatsheet, symlinked to ~/.local/bin)
+bin/                  mahg-help (environment cheatsheet) · mahg-wt-apply (WSL: Windows
+                      Terminal mahg scheme) — symlinked to ~/.local/bin
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 modules/              00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie
                       40-helix 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
-                      80-gnome-terminal-profile 90-vscodium (gated) 95-mahg-help
+                      80-gnome-terminal-profile 90-vscodium (gated) 95-mahg-help 96-mahg-wt
 dotfiles/             helix/ (config.toml languages.toml
                       themes/mahg-{dark,light}.toml — branded dark/light pair)
                       starship/ tmux/ yazi/ claude-code/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
-                      into fresh UUIDs; not symlinked; mahg-dark is the default)
-docs/                 ai-agents.md (verify/restore/protect the AI coding agents)
+                      into fresh UUIDs; not symlinked; mahg-dark is the default) ·
+                      windows-terminal/mahg-dark.json (WT scheme asset)
+docs/                 ai-agents.md · windows-terminal.md (WSL mahg scheme)
 tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_pypi.sh ·
                       test_tab_title.sh · test_gnome_profile.sh · test_statusline.sh ·
-                      test_tmux.sh · test_mahg_help.sh · validate.sh + sample.md/py/ipynb
+                      test_tmux.sh · test_mahg_help.sh · test_mahg_wt.sh · validate.sh
+                      + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_pypi +
                       test_tab_title + test_gnome_profile + test_statusline + test_tmux +
-                      test_mahg_help on push)
+                      test_mahg_help + test_mahg_wt on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 
@@ -675,6 +679,29 @@ ones + version), **tmux shortcuts** (prefix `C-a`, layouts `1`–`4`, splits, pa
 templates** (read from `~/Templates`), and a **config & paths** map (terminal, editors, browser,
 prompt, brand palette, repos, agent data locations). Colours degrade to plain text when piped or
 under `NO_COLOR`/`--no-color`. *(An interactive TUI launcher is planned for a later version.)*
+
+## 16. WSL: Windows Terminal mahg scheme
+
+On **WSL**, the terminal host is **Windows Terminal** (not GNOME Terminal), which paints its own
+colours. To keep both ecosystems identical, the repo vendors the brand scheme at
+**`profiles/windows-terminal/mahg-dark.json`** — the same navy/hex values as the GNOME Terminal
+`mahg-dark` profile.
+
+- **Manual (robust):** Windows Terminal ▸ Settings ▸ *Open JSON* → paste the scheme into
+  `"schemes"`, then set `"colorScheme": "mahg-dark"` and `"cursorShape": "filledBox"` on your
+  WSL/Debian profile. Full steps: **[`docs/windows-terminal.md`](docs/windows-terminal.md)**.
+- **Optional helper (from WSL):** `mahg-wt-apply` does it for you — `jq`-based, **backs up**
+  `settings.json` first, idempotent, and **DEFERS to the manual steps** on any doubt (not WSL,
+  no `jq`, file missing/invalid/unexpected). It never risks corrupting Windows' `settings.json`.
+  `modules/96-mahg-wt.sh` puts it on `PATH` only under WSL.
+
+  ```bash
+  mahg-wt-apply --dry-run     # preview; writes nothing
+  mahg-wt-apply               # apply (then restart Windows Terminal)
+  ```
+
+The shell layer (Starship, tmux, Helix, the agents) is already identical in both ecosystems —
+this covers only the Windows Terminal host's colours.
 
 ## Author
 

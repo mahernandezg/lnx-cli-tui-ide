@@ -1,0 +1,23 @@
+{
+  "name": "mahg-dark",
+  "background": "#070B16",
+  "foreground": "#EDF2FF",
+  "cursorColor": "#EDF2FF",
+  "selectionBackground": "#2F6BFF",
+  "black": "#171421",
+  "red": "#C01C28",
+  "green": "#26A269",
+  "yellow": "#A2734C",
+  "blue": "#12488B",
+  "purple": "#A347BA",
+  "cyan": "#2AA1B3",
+  "white": "#D0CFCC",
+  "brightBlack": "#5E5C64",
+  "brightRed": "#F66151",
+  "brightGreen": "#33D17A",
+  "brightYellow": "#E9AD0C",
+  "brightBlue": "#2A7BDE",
+  "brightPurple": "#C061CB",
+  "brightCyan": "#33C7DE",
+  "brightWhite": "#FFFFFF"
+}

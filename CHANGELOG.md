@@ -10,6 +10,12 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **Windows Terminal mahg scheme (WSL parity)** — `profiles/windows-terminal/mahg-dark.json`
+  (the brand navy scheme, same hex as GNOME Terminal `mahg-dark`), documented manual install
+  (`docs/windows-terminal.md`), and an optional, safe helper `bin/mahg-wt-apply` (run from WSL):
+  `jq`-based, backs up `settings.json` before writing, idempotent, and DEFERS to the manual
+  steps on any doubt. `modules/96-mahg-wt.sh` installs the helper on PATH only under WSL.
+  Hermetic, mutation-verified test (`tests/test_mahg_wt.sh`).
 - **`mahg-help`** (`bin/mahg-help` + `modules/95-mahg-help.sh`): a branded, dynamic
   cheatsheet of the environment — AI agents (present/absent + version), installed
   CLI/TUI tools, tmux shortcuts, `~/Templates`, and a config/paths map. Brand colours

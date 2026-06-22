@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+# bin/mahg-wt-apply — apply the mahg-dark scheme to Windows Terminal, from WSL.
+#
+# SAFE BY DESIGN. It is jq-based (never sed), ALWAYS backs up settings.json with a
+# timestamp before writing, is idempotent, and DEFERS to the manual steps (see
+# docs/windows-terminal.md) whenever anything is uncertain — a missing file, invalid
+# JSON, an unexpected structure, or not running under WSL. It must NEVER risk
+# corrupting the Professor's Windows settings.json.
+#
+# What it does when it CAN run: injects the "mahg-dark" scheme into .schemes[]
+# (idempotent), and on every WSL profile (.source == "Windows.Terminal.Wsl") sets
+# "colorScheme": "mahg-dark" and "cursorShape": "filledBox" (the block cursor).
+set -uo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: mahg-wt-apply [--dry-run] [--settings PATH] [--scheme PATH]
+  --dry-run      show what would change; write nothing
+  --settings P   operate on this settings.json (skips WSL auto-detection)
+  --scheme P     use this scheme asset (default: repo profiles/windows-terminal/mahg-dark.json)
+Applies the mahg-dark Windows Terminal scheme. Safe: backs up first, DEFERS on any doubt.
+EOF
+}
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd -P)"
+SCHEME="$(cd -- "$SCRIPT_DIR/.." >/dev/null 2>&1 && pwd -P)/profiles/windows-terminal/mahg-dark.json"
+DRY=0
+SETTINGS=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run)  DRY=1 ;;
+    --settings) SETTINGS="${2:-}"; shift ;;
+    --scheme)   SCHEME="${2:-}"; shift ;;
+    -h|--help)  usage; exit 0 ;;
+    *) printf 'mahg-wt-apply: unknown argument: %s (try -h)\n' "$1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+_info()  { printf '%s\n' "$*"; }
+_warn()  { printf 'mahg-wt-apply: %s\n' "$*" >&2; }
+# DEFER = could not safely auto-apply; point at the manual route and exit 0 (non-fatal).
+defer() {
+  _warn "DEFER: $*"
+  _warn "Apply it by hand instead — see docs/windows-terminal.md (Settings ▸ Open JSON):"
+  _warn "  • add the scheme from profiles/windows-terminal/mahg-dark.json to \"schemes\": [ ... ]"
+  _warn "  • on your WSL/Debian profile set \"colorScheme\": \"mahg-dark\" and \"cursorShape\": \"filledBox\""
+  exit 0
+}
+
+# ---- Preconditions ----------------------------------------------------------
+command -v jq >/dev/null 2>&1 || defer "jq is not installed (needed to edit JSON safely)"
+[[ -f "$SCHEME" ]] || { _warn "scheme asset not found: $SCHEME"; exit 1; }
+jq -e . "$SCHEME" >/dev/null 2>&1 || { _warn "scheme asset is not valid JSON: $SCHEME"; exit 1; }
+
+# ---- Locate settings.json ---------------------------------------------------
+if [[ -z "$SETTINGS" ]]; then
+  grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null || defer "not running under WSL (no Windows Terminal here)"
+  shopt -s nullglob
+  candidates=(
+    /mnt/c/Users/*/AppData/Local/Packages/Microsoft.WindowsTerminal_*/LocalState/settings.json
+    /mnt/c/Users/*/AppData/Local/Packages/Microsoft.WindowsTerminalPreview_*/LocalState/settings.json
+    "/mnt/c/Users/"*"/AppData/Local/Microsoft/Windows Terminal/settings.json"
+  )
+  shopt -u nullglob
+  if [[ "${#candidates[@]}" -eq 0 ]]; then
+    defer "could not find Windows Terminal settings.json under /mnt/c"
+  elif [[ "${#candidates[@]}" -gt 1 ]]; then
+    _warn "multiple Windows Terminal settings.json found:"
+    printf '  %s\n' "${candidates[@]}" >&2
+    defer "ambiguous — re-run with --settings <path> to pick one"
+  fi
+  SETTINGS="${candidates[0]}"
+fi
+
+[[ -f "$SETTINGS" ]] || defer "settings.json not found at: $SETTINGS"
+jq -e . "$SETTINGS" >/dev/null 2>&1 || defer "settings.json is not valid JSON (will not touch it): $SETTINGS"
+_info "Target: $SETTINGS"
+
+# ---- Build the updated content (jq; structure-aware, additive) --------------
+# Inject/refresh the scheme; set colorScheme + cursorShape on WSL profiles only.
+# If .profiles.list isn't an array (unexpected schema), leave profiles untouched
+# (the scheme still lands; the profile step is deferred to manual).
+new="$(jq --slurpfile s "$SCHEME" '
+  ($s[0]) as $scheme
+  | .schemes = ((.schemes // []) | map(select(.name != $scheme.name)) + [$scheme])
+  | if (.profiles.list | type) == "array"
+    then .profiles.list = (.profiles.list
+      | map(if (.source? == "Windows.Terminal.Wsl")
+            then (.colorScheme = $scheme.name | .cursorShape = "filledBox")
+            else . end))
+    else . end
+' "$SETTINGS" 2>/dev/null)" || defer "jq could not transform settings.json (unexpected structure)"
+
+[[ -n "$new" ]] || defer "transform produced empty output (aborting to stay safe)"
+printf '%s' "$new" | jq -e . >/dev/null 2>&1 || defer "transformed result was not valid JSON (aborting)"
+
+wsl_profiles="$(printf '%s' "$new" | jq -r '[.profiles.list[]? | select(.source? == "Windows.Terminal.Wsl") | .name] | join(", ")' 2>/dev/null)"
+
+# ---- Idempotency / dry-run / write ------------------------------------------
+if [[ "$new" == "$(cat "$SETTINGS")" ]]; then
+  _info "Already applied — mahg-dark scheme present and WSL profiles set. Nothing to change."
+  exit 0
+fi
+
+if [[ "$DRY" -eq 1 ]]; then
+  _info "[DRY] would inject the 'mahg-dark' scheme and set colorScheme/cursorShape on WSL profiles: ${wsl_profiles:-（none found）}"
+  _info "[DRY] would back up settings.json before writing. No changes made."
+  exit 0
+fi
+
+backup="$SETTINGS.mahg.bak.$(date +%Y%m%d-%H%M%S)"
+cp -- "$SETTINGS" "$backup" || { _warn "could not create backup; aborting without changes"; exit 1; }
+_info "Backup: $backup"
+
+tmp="$(mktemp)"
+printf '%s\n' "$new" >"$tmp"
+if ! jq -e . "$tmp" >/dev/null 2>&1; then
+  _warn "internal check failed (temp not valid JSON); leaving settings.json untouched"
+  rm -f "$tmp"
+  exit 1
+fi
+mv -- "$tmp" "$SETTINGS"
+_info "Applied: 'mahg-dark' scheme injected; WSL profiles set to it (${wsl_profiles:-none found}) with a block cursor."
+_info "Restart Windows Terminal to see the navy mahg scheme. Revert: cp \"$backup\" \"$SETTINGS\""
