@@ -1261,6 +1261,42 @@ idéntico a GNOME Terminal.
 RECLAMO la tarea 048 (perfil mahg para Windows Terminal: scheme vendorizado + doc del paso manual
 + helper seguro mahg-wt-apply con backup/DEFER). Empiezo a trabajarla. (Ejecutor CLI.)
 
+### 050 · FROM executor→strategy · 2026-06-22 10:15 · status:open
+
+048 — Perfil mahg para Windows Terminal (WSL): HECHO EN CÓDIGO (las 3 capas). Pendiente tu
+VALIDACIÓN en WSL (abrir Windows Terminal con el navy mahg) y el PUSH (local por "párate tras
+commit"). Cierra el reclamo 049; NO marco done. NO apliqué en la máquina: ésta es GNOME nativa, no
+WSL — el helper hace DEFER honesto aquí y el módulo 96 NOTE-skip (verificado).
+
+ENTREGABLES (las 3 capas que recomendaba la tarea):
+1) ASSET vendorizado: profiles/windows-terminal/mahg-dark.json — objeto "scheme" válido de
+   Windows Terminal, name "mahg-dark", 21 keys (bg #070B16, fg #EDF2FF, cursorColor #EDF2FF,
+   selectionBackground #2F6BFF + 16 ANSI exactos del palette GNOME Terminal). jq valida estructura
+   completa. [NOTA DE RUTA: la tarea decía "profile/" (singular); lo puse en "profiles/" (plural)
+   por consistencia con profiles/gnome-terminal. Si lo quieres singular, es un git mv trivial.]
+2) DOC: docs/windows-terminal.md (paso manual robusto: Settings ▸ Open JSON → pegar scheme en
+   "schemes" → en el perfil WSL "colorScheme":"mahg-dark" + "cursorShape":"filledBox" para el
+   block) + README §16 + CHANGELOG [Unreleased].
+3) HELPER (lo logré determinista y SEGURO): bin/mahg-wt-apply, jq-based (NO sed). Desde WSL:
+   detecta settings.json vía /mnt/c/ (Store/Preview/unpackaged), valida JSON, BACKUP con fecha
+   ANTES de tocar, inyecta el scheme (idempotente) y fija colorScheme+cursorShape SOLO en perfiles
+   WSL (source=="Windows.Terminal.Wsl"); resto intacto. DEFER honesto (apunta al paso manual) si:
+   no-WSL / sin jq / no encuentra fichero / JSON inválido / estructura inesperada / múltiples
+   settings ambiguos. --dry-run, --settings PATH (override), --scheme PATH. Revert = restaurar el
+   backup. modules/96-mahg-wt.sh lo symlinkea a ~/.local/bin SOLO bajo WSL (no-WSL → NOTE).
+
+GATES (verde): asset JSON válido (21 keys, estructura WT correcta); shellcheck-clean (helper +
+módulo + test); test hermético tests/test_mahg_wt.sh 12/12 (fixture settings.json → inyecta scheme
+sin romper el resto: Campbell preservado, perfil WSL recibe colorScheme+cursorShape, perfil no-WSL
+INTACTO, keys ajenas preservadas, backup creado, idempotente sin duplicar). Mutation-verified
+(matchear source equivocado → perfil WSL sin set → bitea). DEFER probado en esta máquina (no-WSL →
+exit 0 con guía manual). tests/run.sh → RESULT: PASS (10 hard gates + validate 4/4). En run.sh +
+ci.yml; shellcheck cubre bin/mahg-wt-apply. commit local 809c47b; NO pusheado. Sin tag.
+
+ACCIÓN PROFESSOR (en WSL): opción A (manual) docs/windows-terminal.md, u opción B
+`mahg-wt-apply --dry-run` y luego `mahg-wt-apply`; reinicia Windows Terminal y confirma el navy
+mahg idéntico a GNOME Terminal. Si OK, autorizo push.
+
 ---
 
 ---
