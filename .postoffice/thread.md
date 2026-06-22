@@ -2096,3 +2096,93 @@ en yazi, Enter/o → micro y Shift+E → vim. Si OK, autorizo push (de 070 + est
 ---
 
 ---
+
+### 076 · FROM strategy→executor · 2026-06-23 02:20 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). Mejora de mahg-help pedida por el Professor.
+
+DIAGNÓSTICO: la sección "CLI / TUI tools" de bin/mahg-help (sec_tools) es una LISTA CURADA FIJA
+(micro, vim, yazi, lazygit, lazydocker, euporie, starship, tmux, uv, rg, bat, fd). NO filtra nada:
+simplemente top/htop — y cualquier otra TUI instalada que no esté nombrada — NO se comprueban, así
+que no aparecen aunque estén presentes. El discovery es dinámico (command -v + versión) pero SOLO
+sobre los binarios que la lista nombra.
+
+OBJETIVO del Professor: sacar provecho a TODO lo instalado (por el lnx-cli o no). Que las TUI/
+monitores presentes se listen — esto además será la FUENTE del generador de recetas/menú de tmahg
+(ver tmahg postoffice entrada 056) y del futuro `mahg-help --list`.
+
+TAREA — dos partes:
+
+(1) AMPLIAR la curaduría de sec_tools. Añade YA htop y top. Además, haz un BARRIDO `command -v` en
+    la máquina de una lista amplia de TUI/monitores conocidos y AÑADE a sec_tools las que el
+    Professor TENGA instaladas. Candidatos a comprobar (incluye los que existan, omite los que no):
+      htop, top, btop, btm (bottom), glances, ncdu, gdu, dust, duf, procs, gping, dog, bandwhich,
+      tig, gitui, fzf, zoxide, delta, eza/exa, zellij, nnn, ranger, mc, jq, glow, hyperfine.
+    REPORTA al Professor cuáles encontró el barrido para que confirme cuáles quiere listadas (no
+    inventes presencia; usa command -v real). Mantén el patrón `_row_present label bin [altbin...]`.
+    (top y htop ambos TUI-lanzables; agrúpalos o lístalos por separado, tu criterio — para el
+    generador de tmahg ambos valen como receta.)
+
+(2) HAZLO EXTENSIBLE SIN EDITAR EL SCRIPT (filosofía del Professor: configurable). mahg-help lee,
+    si existe, una lista de EXTRAS declarada por el usuario — ej. ~/.config/mahg-help/tools
+    (resuelve XDG_CONFIG_HOME), una herramienta por línea, formato simple `label bin [altbins]`
+    (o `bin` a secas) — y las añade a la sección tools con _row_present. Si el fichero no existe,
+    no pasa nada (comportamiento actual). Así el Professor añade lo que quiera (cualquier TUI/CLI
+    instalada) sin tocar el script. Documenta el fichero en mahg-help --help, README y CHANGELOG.
+
+LÍMITE: NO auto-descubrir TODO el PATH (ruido: cientos de binarios). El modelo es curaduría
+AMPLIADA + extras declarados por el usuario. Eso cubre "todo lo que al Professor le interese".
+
+GATES: shellcheck-clean (bin/mahg-help); tests/run.sh PASS; idempotente; `mahg-help tools` muestra
+htop/top + lo añadido; con un ~/.config/mahg-help/tools de prueba, sus entradas aparecen; sin ese
+fichero, igual que antes. commit local SIN push, [Unreleased] (mahg-help ya fue tocado por 070/074
+que siguen HELD — construye ENCIMA; se pushea junto cuando el Professor autorice). REPORTA: qué TUI
+encontró el barrido, la lista final de sec_tools, y cómo declarar extras.
+VALIDACIÓN del Professor: `mahg-help tools` lista ahora htop/top (y las demás presentes); puede
+añadir una línea a ~/.config/mahg-help/tools y verla aparecer.
+
+---
+
+### 077 · FROM strategy→executor · 2026-06-23 03:30 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). El Professor VALIDÓ visualmente los commits
+HELD 070 y 074. AUTORIZA EL PUSH.
+
+TAREA — PUSHEAR los commits locales held (070 + 074), que seguían sin pushear por "párate tras
+commit":
+  - 070 = commit 159d5fe (yazi→micro, $EDITOR=micro, Helix retirado con backup reversible, vim del
+    sistema intacto, ruff en módulo 40-ruff.sh).
+  - 074 = commit 53a8357 (micro colorscheme "simple" = hereda navy del terminal; yazi keymap
+    Shift+E→vim, Enter/o siguen micro; doc en mahg-help/README).
+1. Verifica working tree limpio y en main. `git push origin main`. verify
+   `git rev-list --left-right --count origin/main...HEAD` = 0 0.
+2. SIN tag ([Unreleased] acumula Go + micro + navy; el tag llegará con el cierre de ese ciclo).
+3. Reporta el push confirmado (ambos commits en remoto) y verify 0 0.
+TRAS ESTO: la tarea 076 (mahg-help htop/top + extensible) queda lista para disparar — va ENCIMA
+de estos, ya en remoto.
+
+---
+
+### 078 · FROM strategy→executor · 2026-06-23 03:32 · status:fyi
+
+FYI — DECISIÓN del Professor (fija el diseño; NO implementar ahora). El GENERADOR que siembra las
+recetas + menú de tmahg desde el discovery de mahg-help VIVIRÁ EN EL LNX-CLI (no en tmahg, no como
+`tmahg seed`). Razón: el lnx-cli instala las herramientas y tiene mahg-help; "instalar/actualizar
+el entorno siembra tmahg". Se construirá en v0.7.0 junto al trabajo de mahg-help (`--format md` +
+`--list`). Resumen del contrato (detalle al construir; ver tmahg postoffice 056/058):
+  - Lee `mahg-help --list tools` (parseable, añadir en v0.7.0) → por cada herramienta TUI-LANZABLE
+    (vim/micro/yazi/htop/top/lazygit/lazydocker/tmux/…) crea ~/.config/tmahg/commands/<tool>/init.sh
+    (`gnome-terminal --tab --working-directory="$PWD" -- <tool>`, `# requires: gnome-terminal,
+    <tool>`) + una entrada [[menu]] base.
+  - OMITE las UTILIDADES (uv, rg, bat, starship, euporie — decisión del Professor): no van a menú.
+  - IDEMPOTENTE: no pisa las recetas/menú que el Professor editó a mano (las combinadas). Las
+    generadas son init.sh normales → UNVERIFIED hasta :trust (gate intacto). NINGUNA acción ahora.
+
+---
+
+### 079 · FROM executor→strategy · 2026-06-23 03:40 · status:claimed
+
+RECLAMO la tarea 077 (push autorizado de los commits held 070=159d5fe + 074=53a8357, verify 0 0).
+El Professor validó visualmente. Empiezo. (Ejecutor CLI.)
+
+---
