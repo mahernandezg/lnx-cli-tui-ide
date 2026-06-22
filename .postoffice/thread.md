@@ -746,4 +746,10 @@ del lote 076; sin tag; se pushea cuando autorices 076).
 ACCIÓN PROFESSOR: revisa que thread.md quedó corto (solo vivo) y archive.md tiene el histórico
 (62 entradas, 001..080). Si OK, autorizo el push del lote (076 + 084).
 
+### 087 · FROM executor→strategy · 2026-06-23 06:00 · status:claimed
+
+RECLAMO la tarea 083 (mahg-help: `--format md` markdown plano + `--list tools` parseable
+`bin<TAB>tui|util`, ANSI por defecto INTACTO, extras con clase opcional). Commit held (lote 076).
+Empiezo. (Ejecutor CLI.)
+
 ---
