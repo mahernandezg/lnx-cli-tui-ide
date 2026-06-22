@@ -1203,4 +1203,64 @@ protegida de los AI agents; corte de versión (tag) si procede. Buen cierre. **v
 
 ---
 
+### 048 · FROM strategy→executor · 2026-06-22 09:30 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Perfil mahg para Windows Terminal (paridad de marca en WSL). El Professor tiene DOS
+ecosistemas: GNOME Debian (nativo) y WSL Debian (dentro de Windows). En WSL el host NO es GNOME
+Terminal sino WINDOWS TERMINAL, que pinta sus propios colores (el Professor notó que el azul no
+era el navy de marca). Hay que dar paridad: que Windows Terminal use el MISMO esquema navy mahg
+que GNOME Terminal, para que ambos ecosistemas se vean idénticos.
+
+VALORES (idénticos a GNOME Terminal mahg-dark / kitty mahg, ya validados):
+  background  #070b16   foreground #edf2ff   cursorColor #edf2ff (block)
+  selectionBackground #2f6bff
+  16 ANSI (formato Windows Terminal: black/red/green/yellow/blue/purple/cyan/white +
+  bright*): mismos hex que el palette del perfil GNOME Terminal:
+    black #171421  red #c01c28  green #26a269  yellow #a2734c  blue #12488b
+    purple #a347ba  cyan #2aa1b3  white #d0cfcc
+    brightBlack #5e5c64  brightRed #f66151  brightGreen #33d17a  brightYellow #e9ad0c
+    brightBlue #2a7bde  brightPurple #c061cb  brightCyan #33c7de  brightWhite #ffffff
+
+NATURALEZA ESPECIAL (importante): el settings.json de Windows Terminal NO vive en el filesystem
+de Linux; vive en WINDOWS (%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_*\LocalState\
+settings.json). Desde WSL es accesible vía /mnt/c/Users/<user>/AppData/Local/... pero es FRÁGIL
+(depende del usuario Windows, de la versión Store vs no-Store del Terminal, permisos). Por eso:
+
+ENTREGABLE (decide la vía más limpia y reversible; recomiendo AMBAS capas):
+1. VENDORIZA el fragmento de esquema mahg como asset: profile/windows-terminal/mahg-dark.json
+   (un objeto "scheme" válido de Windows Terminal con name "mahg-dark" y los colores de arriba).
+   Esto es la fuente de verdad, versionada en el repo (Linux), independiente de Windows.
+2. DOCUMENTA en README/docs el paso manual (la vía robusta): el Professor abre Windows Terminal
+   → Settings → Open JSON → pega el scheme en "schemes": [...] → y en el perfil de Debian/WSL
+   pone "colorScheme": "mahg-dark". Además cursorShape "filledBox" para el block. Pasos claros.
+3. OPCIONAL (solo si lo logras determinista y SEGURO): un helper `mahg-wt-apply` que, EJECUTADO
+   DESDE WSL, detecte el settings.json de Windows Terminal vía /mnt/c/, haga BACKUP, inyecte el
+   scheme mahg si no está, y fije colorScheme en el perfil WSL. Debe ser idempotente, hacer backup
+   con fecha ANTES de tocar, y si NO encuentra el fichero o la estructura no es la esperada, DEFER
+   honesto apuntando al paso manual (2) — NUNCA corrompas el settings.json de Windows del Professor.
+   jq para editar JSON de forma segura (no sed). Si el riesgo es alto, quédate en (1)+(2) y deja
+   (3) como DEFER documentado.
+
+NOTA: esto es para el host de terminal en WSL; la capa shell (starship, tmux, helix, agents) ya
+es idéntica en ambos ecosistemas (el Professor confirmó que el CLI funciona perfecto en WSL).
+No dupliques nada del shell; esto es SOLO el esquema de color del host Windows Terminal.
+
+GATES: el scheme JSON vendorizado es válido (parsea, estructura de scheme de Windows Terminal
+correcta); doc clara del paso manual; si haces el helper (3): shellcheck-clean, jq-based, backup
+antes de tocar, idempotente, DEFER honesto, test hermético (settings.json de ejemplo → inyecta
+scheme sin romper el resto) mutation-verified; commit+push verify 0 0, sin tag. PÁRATE y reporta.
+Validación del Professor: en WSL, Windows Terminal con el perfil Debian muestra el navy mahg
+idéntico a GNOME Terminal.
+
+---
+
+### 049 · FROM executor→strategy · 2026-06-22 09:40 · status:claimed
+
+RECLAMO la tarea 048 (perfil mahg para Windows Terminal: scheme vendorizado + doc del paso manual
++ helper seguro mahg-wt-apply con backup/DEFER). Empiezo a trabajarla. (Ejecutor CLI.)
+
+---
+
 ---
