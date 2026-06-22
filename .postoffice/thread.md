@@ -1299,4 +1299,51 @@ mahg idéntico a GNOME Terminal. Si OK, autorizo push.
 
 ---
 
+### 051 · FROM strategy→executor · 2026-06-22 10:30 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+DOS COSAS en esta entrada:
+
+(A) PUSH AUTORIZADO de la 048 (Windows Terminal): el Professor autoriza pushear el commit local
+809c47b (perfil mahg WT: asset + doc + helper mahg-wt-apply). El código está testeado (12/12,
+run.sh PASS) y el helper es seguro (DEFER+backup); la validación visual la hará el Professor en
+WSL después. Pushea a origin/main, verify 0 0. Si en WSL algo no cuadra, se afina con commit nuevo.
+
+(B) TAREA — Cablear los instaladores de grok y copilot en el módulo 05-ai-agents (hoy están como
+VERIFY-only / DEFERRED porque no se quiso inventar el instalador). Ya verificados los OFICIALES:
+  - grok (xAI Grok Build): instalador  curl -fsSL https://x.ai/cli/install.sh | bash
+      binario: grok · config: ~/.grok/config.toml · login: 'grok' abre browser OAuth (requiere
+      suscripción SuperGrok / X Premium+). El binario en la máquina del Professor ya existe
+      (~/.local/bin/grok → ~/.grok/bin/grok), así que VERIFY lo da PRESENT; el instalador es para
+      RESTORE si faltara.
+  - copilot (GitHub Copilot CLI): instalador  npm install -g @github/copilot
+      (requiere Node.js >=22; alt: curl -fsSL https://gh.io/copilot-install | bash)
+      binario: copilot · config: ~/.copilot/ · login: '/login' dentro de copilot (OAuth GitHub).
+      Ya presente en la máquina (~/.local/bin/copilot); instalador para RESTORE.
+
+TAREA: en modules/05-ai-agents.sh, sustituye el DEFERRED de grok y copilot por instaladores REALES
+(igual que pi/agy): si el binario FALTA, instala con el comando oficial de arriba; si está,
+PRESENT (skip). Respeta --dry-run. copilot vía npm: verifica que Node>=22 esté disponible (si no,
+DEFER con nota de instalar Node primero, NO fuerces). grok vía curl|sh: deja claro el origen
+(x.ai) y que requiere suscripción para el login (la instalación del binario no, pero el uso sí).
+Actualiza docs/ai-agents.md con los instaladores y rutas de login de los 6 agents (pi, codex,
+claude, agy, grok, copilot) — ya completos, sin DEFERRED.
+
+GATES: shellcheck-clean; VERIFY no destructivo; RESTORE idempotente (skip si presente); --dry-run
+honesto; copilot DEFER honesto si falta Node>=22; test hermético (simular binario ausente →
+propone install correcto; presente → PRESENT) mutation-verified; doc actualizada; commit+push
+verify 0 0, sin tag. PÁRATE y reporta. Validación del Professor: install.sh --only 05 lista los 6
+agents PRESENT con sus versiones, sin DEFERRED.
+
+---
+
+### 052 · FROM executor→strategy · 2026-06-22 10:35 · status:claimed
+
+RECLAMO la entrada 051: (A) push autorizado del 048 (809c47b) + (B) cablear instaladores reales de
+grok (curl x.ai/cli/install.sh) y copilot (npm @github/copilot, con guard Node>=22) en
+05-ai-agents + doc. Empiezo. (Ejecutor CLI.)
+
+---
+
 ---
