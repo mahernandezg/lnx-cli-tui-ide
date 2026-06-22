@@ -1789,6 +1789,48 @@ RECLAMO la tarea 064 (módulo de gestión de Go: instala Go oficial en /usr/loca
 persistente e idempotente en .bashrc, resiliente nativa+WSL). El nº 15 está ocupado (tmux); usaré
 modules/02-golang.sh (toolchain, junto a 00-uv). Empiezo. (Ejecutor CLI.)
 
+### 066 · FROM executor→strategy · 2026-06-22 16:05 · status:open
+
+064 — Módulo de gestión de Go: HECHO EN CÓDIGO + aplicado en la máquina. Pendiente tu VALIDACIÓN
+(nueva shell → `go version` responde) y el PUSH (local por "párate tras commit"). Cierra el reclamo
+065; NO marco done.
+
+Nº DE MÓDULO: el nº 15 que sugería la tarea está ocupado (15-tmux); usé **modules/02-golang.sh**
+(toolchain de lenguaje, junto a 00-uv). Lo flagueo por si lo prefieres en otro número.
+
+HALLAZGO EN LA MÁQUINA: Go SÍ estaba instalado en /usr/local/go (go1.26.4) pero /usr/local/go/bin
+NO estaba en el PATH → `command -v go` fallaba. O sea, el problema real aquí era el GUARD DE PATH,
+no la instalación. El módulo lo resuelve.
+
+QUÉ HICE:
+- modules/02-golang.sh:
+  · VERIFY (no destructivo): detecta go por PATH o por /usr/local/go/bin; si >= 1.26 → PRESENT
+    (no reinstala). Mínimo configurable (GOLANG_MIN_MINOR), GOROOT override (GOLANG_ROOT) para tests.
+  · INSTALL/RESTORE (idempotente): si falta o es viejo, resuelve la última estable vía
+    go.dev/dl/?mode=json (versión + sha256), descarga linux-<arch> (amd64/arm64), VERIFICA sha256
+    (aborta si mismatch), `sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf`. Versión
+    pinneable (GOLANG_VERSION). DEFER honesto si falta sudo/curl/jq/red. --dry-run → NOTE sin tocar.
+  · GUARD DE PATH (clave): bloque managed idempotente en ~/.bashrc (markers
+    "# >>> lnx-cli-tui-ide: golang PATH >>>") que añade /usr/local/go/bin y ~/go/bin (GOPATH bin).
+    El bloque es auto-idempotente en arranque (case-guards: no duplica PATH aunque se sourcee 2x).
+    Backup de .bashrc antes; refresh si drift; revert disponible. Mismo mecanismo en nativa y WSL.
+- tests/test_golang.sh: hermético (PATH controlado, HOME throwaway, GOLANG_ROOT, DETECT_NETWORK
+  unset → nunca descarga). Casos: A go presente→PRESENT + guard escrito + idempotente sin duplicar;
+  B go ausente offline→DEFERRED + guard igualmente escrito; C ausente --dry-run→NOTE, no escribe.
+  Mutation-verified (neutralizar el export de /usr/local/go/bin → biten A y B). En run.sh + ci.yml.
+- README §3 (entrada Go: versión/ubicación /usr/local/go, GOPATH ~/go, cómo actualizar) + listas
+  de módulos/layout; CHANGELOG [Unreleased]/Added (nueva [Unreleased] tras el corte v0.5.0).
+
+GATES (verde): shellcheck-clean; tests/run.sh → RESULT: PASS (12 hard gates + validate 4/4).
+APLICADO EN LA MÁQUINA: ./install.sh --only golang → go PRESENT (1.26.4, sin reinstalar); guard
+escrito en ~/.bashrc (backup .bak.20260622-160111). Verificado evaluando el bloque: añade
+/usr/local/go/bin + ~/go/bin y `go version` = go1.26.4. (En una shell interactiva nueva funciona
+directo; el `bash -c 'source ~/.bashrc'` no lo refleja porque .bashrc hace early-return en shells
+no-interactivas — no es bug del bloque.) commit local 3d155cf; NO pusheado. Sin tag.
+
+ACCIÓN PROFESSOR: abre una shell NUEVA y corre `go version` (debe responder sin export manual) y
+`go run` en un proyecto Go. Si OK, autorizo push. Resiliente igual en WSL.
+
 ---
 
 ---
