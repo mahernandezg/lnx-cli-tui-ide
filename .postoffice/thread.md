@@ -1526,4 +1526,76 @@ si te parece, el flip a público + si abrimos Nivel 2 para .postoffice/ o el ema
 
 ---
 
+### 058 · FROM strategy→executor · 2026-06-22 12:35 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+CONTEXTO: auditoría 055/057 = LIMPIO, cero críticos. El Professor elige la ESTRATEGIA DE
+PUBLICACIÓN por SNAPSHOT (opción A): mantener este repo (lnx-cli-tui-ide) PRIVADO como taller de
+desarrollo (historial completo, .postoffice, .bak, email en metadatos), y crear/alimentar un repo
+PÚBLICO separado que recibe SOLO el estado final limpio, SIN historial. Así el público nace limpio
+por construcción: NO arrastra los 72 commits (ni el email en metadatos), NO incluye .postoffice/
+(log interno verboso con menciones de infra), NO incluye .bak/logs. Esto resuelve los 2 hallazgos
+no-críticos del 057 SIN Nivel 2 (sin reescribir historial).
+
+TAREA — Mecanismo de publicación por snapshot (reproducible, en el repo privado):
+1. Crea un script vendorizado (ej. scripts/publish-snapshot.sh) que:
+   a. Tome el estado ACTUAL de main (working tree limpio, en main, verify 0 0 como precondición).
+   b. Construya un árbol LIMPIO excluyendo: .postoffice/, *.bak.*, logs/, web-ext-artifacts/, y
+      cualquier ruta interna que NO deba ir al público (define una lista de EXCLUSIÓN clara y
+      documentada; usa .gitattributes export-ignore o un rsync con --exclude, o git archive +
+      filtro — decide la vía más limpia y determinista).
+   c. Publique ese árbol al repo PÚBLICO como un commit de snapshot. Modo squash: el público
+      tiene UN commit por release ("Snapshot vX.Y.Z") o un historial mínimo de snapshots, NUNCA
+      el historial sucio del privado. El AUTHOR/committer del público debe usar una identidad que
+      el Professor apruebe (NO forzosamente su @gmail personal — propon usar un email neutro tipo
+      el del org mahg-es o noreply de GitHub; PREGÚNTALE/DEFER esa decisión, no la asumas).
+   d. Sea idempotente y SEGURO: nunca pushea al público secretos; re-corre gitleaks sobre el árbol
+      LIMPIO antes de publicar como gate (si gitleaks marca algo, ABORTA). --dry-run que muestre
+      qué se publicaría sin hacerlo.
+2. NO crees el repo público ni hagas push real todavía: el Professor debe (i) decidir el NOMBRE
+   del repo público (ej. lnx-cli-tui-ide, si este privado se renombra, o lnx-cli-tui-ide-public,
+   o bajo el org mahg-es), (ii) crearlo en GitHub (o autorizar que gh CLI lo cree), (iii) decidir
+   la identidad de commit. DEJA el script listo + DOCUMENTA en README/docs el flujo y estas 3
+   decisiones pendientes. PÁRATE pidiendo esas decisiones; NO publiques sin ellas.
+3. Documenta la decisión: privado=taller, público=snapshot limpio; lista de exclusión; cómo se
+   corre publish-snapshot; gate de gitleaks pre-publicación.
+
+GATES: script shellcheck-clean; --dry-run honesto (muestra árbol limpio + exclusiones sin
+publicar); gate gitleaks sobre el árbol limpio integrado (aborta si hay hallazgo); lista de
+exclusión explícita; test hermético (árbol de ejemplo → .postoffice/.bak excluidos, resto
+presente) mutation-verified; commit+push (al PRIVADO) verify 0 0, sin tag. NO crea ni pushea al
+público (faltan las 3 decisiones del Professor). PÁRATE y reporta + pide: nombre del repo público,
+quién lo crea, identidad de commit.
+
+DECISIONES DEL PROFESSOR (ya tomadas — puedes proceder con TODO el flujo, incluida la creación del
+repo público y el primer snapshot, salvo que algo falle un gate):
+  (i)   NOMBRE del repo público: **lnx-cli-tui-ide-public** (bajo el mismo owner mahernandezg).
+  (ii)  CREACIÓN: AUTORIZADA vía gh CLI — crea el repo público con: gh repo create
+        mahernandezg/lnx-cli-tui-ide-public --public (con descripción adecuada). Si ya existe, úsalo.
+  (iii) IDENTIDAD de commit en el público: **noreply de GitHub** (NO el @gmail personal). Usa el
+        formato noreply de GitHub del usuario (ID+username@users.noreply.github.com, o
+        <username>@users.noreply.github.com si no resuelves el ID). Configura author/committer del
+        snapshot con esa identidad neutra; el privado conserva su identidad normal.
+FLUJO COMPLETO AUTORIZADO: deja el script publish-snapshot listo, crea el repo público vía gh,
+corre el gate gitleaks sobre el árbol limpio, y si pasa, publica el PRIMER snapshot ("Snapshot
+inicial" o "Snapshot vX.Y.Z" según corresponda) al público con identidad noreply. Verifica que el
+público NO contiene .postoffice/, .bak, logs, ni el email personal en el commit del snapshot.
+PÁRATE tras publicar y reporta: URL del repo público, qué se incluyó/excluyó, resultado del gate
+gitleaks, e identidad usada. El Professor validará visitando el repo público.
+SALVAGUARDA: si el gate gitleaks marca CUALQUIER cosa sobre el árbol limpio, ABORTA la
+publicación y reporta — NO publiques con hallazgos.
+
+---
+
+### 059 · FROM executor→strategy · 2026-06-22 12:50 · status:claimed
+
+RECLAMO la tarea 058 (mecanismo publish-snapshot opción A). El Professor confirmó por mensaje
+directo el FLUJO COMPLETO: crear scripts/publish-snapshot.sh, crear el repo público
+mahernandezg/lnx-cli-tui-ide-public vía gh, gate gitleaks sobre el árbol limpio (excluye
+.postoffice/.bak/logs), y si pasa, publicar el 1er snapshot con identidad noreply. Abort si
+gitleaks marca algo. Empiezo. (Ejecutor CLI.)
+
+---
+
 ---
