@@ -1690,6 +1690,48 @@ RECLAMO la tarea 061 (corte de versión v0.5.0: CHANGELOG + tag anotado en priva
 snapshot público versionado vía publish-snapshot con gate gitleaks e identidad noreply). Empiezo.
 (Ejecutor CLI.)
 
+### 063 · FROM executor→strategy · 2026-06-22 14:05 · status:done
+
+061 — Corte de versión v0.5.0 + snapshot público versionado: HECHO. Cierra el reclamo 062. ÚLTIMA
+tarea del CLI por hoy; el CLI queda cerrado.
+
+VERSIÓN: **v0.5.0** (minor, SemVer 0.x). Justificación: último tag v0.4.0; desde entonces, lote
+GRANDE de funcionalidad NUEVA (kitty/WezTerm fuera → GNOME Terminal del sistema; tmux + layouts
+numéricos C-a 1/2/3/4; mahg-help; módulo AI agents de 6 con installers + zona protegida; Windows
+Terminal mahg + mahg-wt-apply; publish-snapshot). Funcionalidad nueva sustancial, sin breaking de
+API de usuario → bump de MINOR, no patch. Confirmado.
+
+CHANGELOG: [Unreleased] convertido a [0.5.0] — 2026-06-22 (intro + Added + Removed: kitty/WezTerm),
+compare link v0.4.0...v0.5.0 añadido.
+
+TAG (privado): anotado v0.5.0 (-m "v0.5.0 — GNOME Terminal-only stack: tmux (+ numeric layouts),
+mahg-help, AI-agents (6), Windows Terminal scheme, gitleaks-gated snapshot publishing; kitty/WezTerm
+removed") en 1d6e270 (= CHANGELOG commit). `git push origin v0.5.0` OK. Verificado: cat-file -t =
+tag (anotado); rev-list -n1 v0.5.0 == HEAD del corte.
+
+SNAPSHOT PÚBLICO VERSIONADO: publicado vía scripts/publish-snapshot.sh --publish --message
+"Snapshot v0.5.0".
+- URL: **https://github.com/mahernandezg/lnx-cli-tui-ide-public** · commit **9a00bef "Snapshot
+  v0.5.0"** (encima del inicial 4966aac → UN COMMIT POR RELEASE; el público tiene ahora 2 commits).
+- GATE gitleaks: **PASS** sobre el árbol limpio ANTES de publicar (8.30.1). Salvaguarda activa.
+- Identidad: noreply (5350981+mahernandezg@users.noreply.github.com); verificado 0 gmail en
+  metadatos del público.
+- Verificado: el público sigue SIN .postoffice/security-audit/.bak/config.env real (64 blobs);
+  CHANGELOG del público muestra [0.5.0] — 2026-06-22.
+
+GATES (verde): suite COMPLETA antes del tag → tests/run.sh RESULT: PASS (11 hard gates + validate
+4/4); working tree limpio, en main, verify 0 0 antes de tagear; tag anotado; push del tag
+confirmado; snapshot público con gate PASS; identidad noreply. Privado: CHANGELOG commit 1d6e270 +
+tag + este 063 en origin, verify 0 0.
+
+GitHub Release (paso 5, opcional): NO creado — lib/release.sh es instalador de binarios de terceros,
+no publicador de releases; el privado es el taller. Si se quiere, `gh release create v0.5.0` aparte.
+
+NOTA: launcher TUI de mahg-help aplazado a la próxima versión (fuera de este corte, como pediste).
+
+ACCIÓN PROFESSOR: valida el tag v0.5.0 en el privado y el commit "Snapshot v0.5.0" (9a00bef) en
+https://github.com/mahernandezg/lnx-cli-tui-ide-public. CLI cerrado por hoy.
+
 ---
 
 ---
