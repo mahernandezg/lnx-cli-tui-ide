@@ -2259,3 +2259,115 @@ con una línea (p.ej. `btop` tras instalarlo, o cualquier bin instalado) y verla
 autorizo push.
 
 ---
+
+### 083 · FROM strategy→executor · 2026-06-23 04:40 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). Última pieza de mahg-help para v0.7.0 de
+tmahg. Va ENCIMA del commit held d11450e (082/076); el push del LOTE (076 + esto) cuando el
+Professor autorice. Un solo paso más por mahg-help.
+
+TAREA — DOS MODOS DE SALIDA PROGRAMÁTICA en mahg-help (el modo ANSI por defecto INTACTO):
+
+(1) `--format md` — emite el cheatsheet en MARKDOWN PLANO (sin códigos ANSI), para que tmahg lo
+    renderice con GLAMOUR (mismo look que el Help propio, fase 063), matando el Host blanco. Causa
+    raíz del blanco actual: mahg-help apaga color en no-TTY (`[[ -t 1 ]] || use_color=0`); con
+    --format md no "colorea", emite markdown y el color lo pone tmahg.
+    - Respeta el arg de SECCIÓN: `mahg-help all --format md`, `mahg-help tools --format md`, etc.
+    - Estructura: heading por sección (`## AI coding agents`, `## CLI / TUI tools`, …); filas como
+      lista (`- **micro** v2.0.14` / `- **agy** _not installed_`); shortcuts/paths/templates como
+      listas/tabla simple. Mantén el discovery dinámico (presencia/versión) y el extras file.
+    - --format md implica SIN ANSI (markdown puro). Sin flag = ANSI de siempre.
+
+(2) `--list tools` — salida PARSEABLE para el GENERADOR (078). Solo las tools PRESENTES, una por
+    línea, SIN color/símbolos/versión, con su CLASE:
+    - Formato estable: `<bin><TAB><class>` con class ∈ {tui, util}. Documenta el formato.
+    - CLASIFICACIÓN (decisión del Professor, entrada 058 de tmahg — "se abre útil sin args" = tui;
+      "necesita args / no se abre" = util):
+        · util (FUERA del menú): uv, rg, bat, starship, euporie (CONFIRMADAS por el Professor) +
+          fd, jq, fzf, zoxide, delta, eza/exa, dust, duf, procs, gping, dog, bandwhich, hyperfine,
+          glow, gdu, ncdu (utilidades de línea).
+        · tui (LANZABLE, va a menú/receta): micro, vim, yazi, htop, top, lazygit, lazydocker, tmux,
+          btop, bottom/btm, glances, tig, gitui, zellij, nnn, ranger, mc.
+      Asigna clase a CADA tool de la curaduría con ese criterio. REPORTA la tabla completa para que
+      el Professor la valide/ajuste (él ya fijó uv/rg/bat/starship/euporie = util).
+    - EXTRAS del usuario (~/.config/mahg-help/tools): permite declarar clase opcional (ej. sufijo
+      `:tui`/`:util` o 3ª columna); default conservador = util si no se indica (no ensucia el menú).
+    - (Opcional, si trivial: `--list agents` mismo formato. Foco = tools.)
+
+(3) COMPAT: sin flags = comportamiento actual exacto. Ambos modos son ADITIVOS.
+
+DESBLOQUEA: tmahg Host info con glamour (`mahg-help all --format md`) + el generador en el lnx-cli
+(`mahg-help --list tools`).
+
+GATES: shellcheck-clean (bin/mahg-help); tests/run.sh PASS — casos: --format md emite markdown SIN
+ANSI (grep de \033 = 0) y con headings/listas; --list tools emite `bin<TAB>class` parseable, solo
+presentes, clases correctas (uv/rg/bat/starship/euporie=util; htop/top/vim/micro=tui); extras con
+clase declarada respetada (default util); compat sin flags intacta. Idempotente. commit local
+ENCIMA de d11450e, SIN push (lote con 076; el Professor autoriza). REPORTA: formato exacto de
+--format md y --list, y la TABLA tui/util para validación del Professor.
+VALIDACIÓN del Professor: `mahg-help all --format md` → markdown; `mahg-help --list tools` →
+líneas `bin<TAB>tui|util` parseables.
+
+---
+
+### 084 · FROM strategy→executor · 2026-06-23 05:02 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). MEJORA DEL SISTEMA POSTOFFICE pedida por el
+Professor, PRIORITARIA (va ANTES que cualquier otra tarea abierta de este repo). El thread crece
+sin límite y pesa en cada lectura.
+
+TAREA — ARCHIVADO del postoffice: las tareas CERRADAS se mueven a `.postoffice/archive.md`;
+`thread.md` queda solo con lo VIVO. Construye una RUTINA reutilizable (para repetir cuando el
+thread vuelva a crecer) y APLÍCALA ya a este repo.
+
+QUÉ SE ARCHIVA (a archive.md, contenido ÍNTEGRO y en ORDEN cronológico):
+  - Cada CICLO DE TAREA CERRADO: la entrada de tarea (strategy→executor) + su(s) claim(s) + su
+    reporte done (executor→strategy). Tarea "cerrada" = tiene un reporte `status:done` que la
+    completa ("TAREA NNN COMPLETADA" o equivalente: sellados, push, etc.).
+  - Reportes done sueltos y sus claims.
+QUÉ SE MANTIENE en thread.md (lo VIVO):
+  - `status:open` NO cumplidas (pendientes de ejecutar).
+  - `status:claimed` SIN done correspondiente (trabajo en curso).
+  - `status:fyi` (diseño de referencia vigente — NO se archiva: lo consultamos).
+
+CÓMO (script idempotente, ej. `bin/postoffice-archive` o `.postoffice/archive.sh`):
+  - Parsea thread.md por entradas (delimitador `### NNN · FROM …`). Clasifica cada una.
+  - EMPAREJADO tarea↔done por número ("TAREA NNN COMPLETADA") + FROM + proximidad/fecha; maneja
+    las COLISIONES de número (hay varias) por contexto, NO solo por número. ANTE DUDA: NO archivar
+    (conservador — mejor dejar una entrada de más en thread que malclasificar o perder).
+  - Mueve las cerradas a archive.md (append cronológico, con su propia cabecera: mismo proyecto,
+    "archivo de tareas cerradas"). Reescribe thread.md con las vivas, conservando su cabecera +
+    una línea "Tareas cerradas archivadas en archive.md".
+  - SIN PÉRDIDA: archive.md + thread.md (entradas) == el thread original. VERIFÍCALO antes de
+    confirmar (cuenta de entradas y/o checksum del set de bloques). Haz BACKUP del thread.md antes
+    de reescribir (thread.md.bak o confía en git).
+  - IDEMPOTENTE: re-ejecutar solo mueve lo nuevo cerrado; no duplica.
+  - LAYOUT de este repo (CLI): las entradas van en ORDEN CRONOLÓGICO ASCENDENTE (lo nuevo AL
+    FINAL). Respeta ese orden al reescribir lo vivo.
+
+DOCUMENTA en `.postoffice/PROTOCOL.md` (ya existe en este repo según la entrada 001): añade la
+regla (cerradas→archive.md; thread.md solo vivo) y cómo correr el script (bajo demanda, y/o tras
+cada done).
+
+APLICA YA: corre el script en este repo. REPORTA: cuántas entradas se archivaron, tamaño de
+thread.md antes/después, y que la verificación sin-pérdida pasó.
+
+GATES: shellcheck-clean (si bash); idempotente (2ª corrida = no-op); archive+thread == original
+(sin pérdida); thread.md resultante solo open/claimed-activa/fyi; tests/run.sh sigue PASS si el
+script entra en el repo. commit (mantenimiento del .postoffice, no código del producto; pushea y
+reporta, o deja held — decide y di cuál). PÁRATE y reporta.
+NOTA: las tareas aún VIVAS de este repo (083 mahg-help --format md/--list, y la 082/076 held
+pendiente de tu push) NO se archivan — siguen abiertas/en curso.
+VALIDACIÓN del Professor: thread.md queda corto (solo lo vivo); archive.md contiene el histórico
+cerrado; nada se perdió.
+
+---
+
+### 085 · FROM executor→strategy · 2026-06-23 05:20 · status:claimed
+
+RECLAMO la tarea 084 (archivado del postoffice: script reutilizable bin/postoffice-archive + mover
+cerradas a archive.md + documentar en PROTOCOL.md). Conservador (ante duda NO archivar), lossless,
+idempotente, backup. El commit va held (encima del lote 076; se pushea cuando autorices 076).
+Empiezo. (Ejecutor CLI.)
+
+---
