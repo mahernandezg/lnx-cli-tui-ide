@@ -38,6 +38,13 @@ else
   echo "  test_ai_agents: FAIL"; rc=1
 fi
 
+echo "== tests/test_golang.sh (HARD gate: Go toolchain + PATH guard) =="
+if bash "$HERE/test_golang.sh"; then
+  echo "  test_golang: PASS"
+else
+  echo "  test_golang: FAIL"; rc=1
+fi
+
 echo "== tests/test_pypi.sh (HARD gate: PyPI-unreachable resilience) =="
 if bash "$HERE/test_pypi.sh"; then
   echo "  test_pypi: PASS"

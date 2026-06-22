@@ -117,7 +117,7 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | `--verbose` | Verbose/debug logging. |
 | `-h`, `--help` | Usage. |
 
-Module names: `00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
+Module names: `00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium
 95-mahg-help 96-mahg-wt`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
@@ -166,6 +166,22 @@ use it** — including the exact command to start it.
   uv venv && source .venv/bin/activate   # a project venv, the uv way
   uv self update                 # keep uv current
   ```
+
+### Go — the Go toolchain · [📖 Docs](https://go.dev/doc/)
+- **What:** the official **stable Go** (go.dev tarball, not apt's stale build), installed by
+  `modules/02-golang.sh` into **`/usr/local/go`**, with **`GOPATH=~/go`** (so `go install` lands
+  in `~/go/bin`).
+- **Advantage:** a current toolchain for building/running Go projects, the same on native Debian
+  and WSL. The module **guarantees PATH**: a managed, idempotent block in `~/.bashrc` adds
+  `/usr/local/go/bin` and `~/go/bin` — no manual `export` needed.
+- **How:**
+  ```bash
+  go version                     # confirm (after a new shell / `source ~/.bashrc`)
+  go run .                       # build & run the module in the current dir
+  go install ./cmd/foo@latest    # installs into ~/go/bin (on PATH)
+  ```
+  **Update Go:** re-run `./install.sh --only golang` (installs the latest stable), or pin a
+  version with `GOLANG_VERSION=go1.26.4 ./install.sh --only golang`.
 
 ### Terminal — GNOME Terminal (+ tmux) · [📖 GNOME Terminal](https://help.gnome.org/users/gnome-terminal/stable/)
 - **What:** the stack uses the system's **GNOME Terminal** (VTE). The installer does **not**
@@ -591,9 +607,10 @@ bin/                  mahg-help (environment cheatsheet) · mahg-wt-apply (WSL: 
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 scripts/              publish-snapshot.sh (clean public snapshot; gitleaks-gated)
-modules/              00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie
-                      40-helix 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
-                      80-gnome-terminal-profile 90-vscodium (gated) 95-mahg-help 96-mahg-wt
+modules/              00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers
+                      30-euporie 40-helix 50-git-docker-tui 60-ssh-alias 70-starship
+                      75-tab-title 80-gnome-terminal-profile 90-vscodium (gated)
+                      95-mahg-help 96-mahg-wt
 dotfiles/             helix/ (config.toml languages.toml
                       themes/mahg-{dark,light}.toml — branded dark/light pair)
                       starship/ tmux/ yazi/ claude-code/
@@ -601,13 +618,14 @@ profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, l
                       into fresh UUIDs; not symlinked; mahg-dark is the default) ·
                       windows-terminal/mahg-dark.json (WT scheme asset)
 docs/                 ai-agents.md · windows-terminal.md · publish-snapshot.md
-tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_pypi.sh ·
-                      test_tab_title.sh · test_gnome_profile.sh · test_statusline.sh ·
-                      test_tmux.sh · test_mahg_help.sh · test_mahg_wt.sh ·
-                      test_publish_snapshot.sh · validate.sh + sample.md/py/ipynb
-.github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_pypi +
-                      test_tab_title + test_gnome_profile + test_statusline + test_tmux +
-                      test_mahg_help + test_mahg_wt + test_publish_snapshot on push)
+tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_golang.sh ·
+                      test_pypi.sh · test_tab_title.sh · test_gnome_profile.sh ·
+                      test_statusline.sh · test_tmux.sh · test_mahg_help.sh ·
+                      test_mahg_wt.sh · test_publish_snapshot.sh · validate.sh
+                      + sample.md/py/ipynb
+.github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_golang +
+                      test_pypi + test_tab_title + test_gnome_profile + test_statusline +
+                      test_tmux + test_mahg_help + test_mahg_wt + test_publish_snapshot)
 config.env.example    template for your (git-ignored) local config.env
 ```
 

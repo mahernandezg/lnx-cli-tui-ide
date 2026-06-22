@@ -20,6 +20,9 @@ jobs:
       - name: AI-agents verify/restore suite
         run: bash tests/test_ai_agents.sh
 
+      - name: Go toolchain + PATH guard suite
+        run: bash tests/test_golang.sh
+
       - name: PyPI-unreachable resilience suite
         run: bash tests/test_pypi.sh
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 While on `0.x`, a **minor** bump means substantial new functionality and a **patch**
 bump means fixes only.
 
+## [Unreleased]
+
+### Added
+- **Go toolchain module** (`modules/02-golang.sh`): installs the official stable Go
+  (go.dev tarball, sha256-verified) into `/usr/local/go`, and a **persistent, idempotent
+  PATH guard** in `~/.bashrc` putting `/usr/local/go/bin` and `~/go/bin` (GOPATH bin) on
+  PATH for every shell — native Debian and WSL. VERIFY keeps an existing Go ≥ 1.26
+  (PRESENT) and only (re)applies the PATH guard; honest `--dry-run`/DEFER (no sudo, curl,
+  jq, or network). Hermetic, mutation-verified test (`tests/test_golang.sh`).
+
 ## [0.5.0] — 2026-06-22
 
 Post‑v0.4.0 batch: the bundled terminal emulator is dropped in favour of the system **GNOME
