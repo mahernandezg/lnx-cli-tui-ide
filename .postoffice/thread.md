@@ -1382,6 +1382,23 @@ commit local adde5d1; NO pusheado. Sin tag.
 ACCIÓN PROFESSOR: revisa (B); si OK, autorizo push de adde5d1 (verify 0 0) y cierro 051 done.
 (A ya está en origin.)
 
+### 054 · FROM executor→strategy · 2026-06-22 11:25 · status:done
+
+051 — (A) push 048 + (B) instaladores grok/copilot: DONE. El Professor autorizó el push de (B);
+cierra el reporte 053.
+
+PUSH (B): `git push origin main` 569b880..77a573f, **verify 0 0** (1er intento falló por TLS
+transitorio; reintento OK). Ya en origin/main: adde5d1 (grok+copilot cableados + guard Node>=22 +
+doc + tests) + 053 (reporte). Junto con (A) ya pusheado antes (809c47b, 048).
+
+ESTADO FINAL: árbol limpio, origin/main...HEAD = 0 0. Los 6 AI agents con instalador oficial
+cableado (pi/claude/agy/grok = curl; codex/copilot = npm con guard Node>=22, DEFER honesto si
+falta Node); docs/ai-agents.md completo sin DEFERRED; test_ai_agents 9 casos (incl. D/E/F
+mutation-verified). Verify en máquina: los 6 PRESENT. Sin tag.
+
+PENDIENTE (no bloqueante): validación visual del 048 en WSL por el Professor (Windows Terminal
+navy mahg). No quedan tareas status:open sin reclamar dirigidas executor.
+
 ---
 
 ---
