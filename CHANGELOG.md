@@ -11,7 +11,9 @@ bump means fixes only.
 
 ### Changed
 - **Default editor is now micro.** `EDITOR`/`VISUAL=micro` (managed `~/.bashrc` block),
-  and yazi opens text/code files with micro. vim handles the heavy lifting.
+  and yazi opens text/code files with micro (`Enter`/`o`); **`Shift+E`** opens with vim.
+  micro uses the stock **`simple`** colorscheme so it inherits the terminal's navy background
+  (no own background). vim handles the heavy lifting.
 
 ### Removed
 - **Helix.** The Helix editor, its config/themes (`dotfiles/helix/`), and the

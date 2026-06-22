@@ -124,6 +124,7 @@ sec_shortcuts() {
   printf '  %s%-14s%s %s%s%s\n' "$BLUE" "C-a d / r"   "$RESET" "$TEXT" "detach session / reload config" "$RESET"
   printf '  %s%-14s%s %s%s%s\n' "$BLUE" "mouse"       "$RESET" "$TEXT" "on — click panes/windows, drag borders" "$RESET"
   printf '  %s(tmux is launched manually; GNOME Terminal tabs: Ctrl+Shift+T, Ctrl+PgUp/PgDn)%s\n' "$DIM" "$RESET"
+  printf '  %syazi open%s    %s%s%s\n' "$BLUE" "$RESET" "$TEXT" "Enter / o → micro · Shift+E → vim" "$RESET"
 }
 
 sec_templates() {

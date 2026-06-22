@@ -221,10 +221,10 @@ use it** — including the exact command to start it.
   | Key | Action | Key | Action |
   |-----|--------|-----|--------|
   | `h` `j` `k` `l` | move (parent/down/up/enter) | `y` / `x` / `p` | copy / cut / paste |
-  | `Enter` | open | `d` | delete (to trash) |
+  | `Enter` / `o` | open (text → **micro**) | `Shift+E` | open with **vim** |
   | `Space` | toggle selection | `a` / `r` | create / rename |
-  | `/` | filter, `s` search | `.` | toggle hidden files |
-  | `q` | quit | `~` | help |
+  | `d` | delete (to trash) | `/` `s` | filter / search |
+  | `.` | toggle hidden files | `q` / `~` | quit / help |
 
 ### ripgrep (`rg`) — search · [📖 Docs](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md)
 - **What:** a recursive code search tool.

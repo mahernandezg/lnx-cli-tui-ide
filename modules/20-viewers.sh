@@ -96,7 +96,8 @@ try_methods "yazi"    method_yazi_present method_yazi_release method_yazi_apt me
 
 # yazi config: show hidden files/folders by default and tint them so they stand out
 # (backed up then symlinked by the shared helper).
-link_dotfile "$REPO_ROOT/dotfiles/yazi/yazi.toml"  "$HOME/.config/yazi/yazi.toml"
-link_dotfile "$REPO_ROOT/dotfiles/yazi/theme.toml" "$HOME/.config/yazi/theme.toml"
+link_dotfile "$REPO_ROOT/dotfiles/yazi/yazi.toml"   "$HOME/.config/yazi/yazi.toml"
+link_dotfile "$REPO_ROOT/dotfiles/yazi/theme.toml"  "$HOME/.config/yazi/theme.toml"
+link_dotfile "$REPO_ROOT/dotfiles/yazi/keymap.toml" "$HOME/.config/yazi/keymap.toml"
 
 log_ok "viewers module done"

@@ -1,0 +1,9 @@
+# keymap.toml — lnx-cli-tui-ide
+# yazi keymaps. By default Enter / o open the hovered file with micro (the stack's
+# default editor — see the [opener] in yazi.toml). This adds Shift+E to open it
+# with vim instead, for heavier editing. prepend_keymap so our binding wins.
+
+[[mgr.prepend_keymap]]
+on   = "E"
+run  = 'shell "vim \"$@\"" --block'
+desc = "Open with vim"
