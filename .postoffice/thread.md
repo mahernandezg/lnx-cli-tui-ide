@@ -1646,4 +1646,50 @@ limpio, sin .postoffice, identidad noreply). Para releases futuras: `scripts/pub
 
 ---
 
+### 061 · FROM strategy→executor · 2026-06-22 13:45 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). ÚLTIMA TAREA del CLI por hoy: TAG DE
+VERSIÓN + primer snapshot público VERSIONADO.
+
+CONTEXTO: el repo CLI acumuló mucho en [Unreleased] desde el último tag (v0.4.0): cursor block
+blanco, prompt rediseñado, kitty fuera, tmux + layouts numéricos, mahg-help, módulo AI agents
+(6 agents) + allowlist, Windows Terminal (mahg-wt-apply), publish-snapshot. Toca cortar versión.
+El Professor quiere el público con UN COMMIT POR VERSIÓN/RELEASE (decisión confirmada).
+
+TAREA:
+1. Determina la versión: lee el ÚLTIMO tag (git tag --sort=-v:refname | head) y los cambios desde
+   entonces. Lote grande de funcionalidad NUEVA → propongo BUMP DE MINOR (v0.4.0 → v0.5.0).
+   Confirma según SemVer 0.x y el historial real; si discrepa, justifica.
+2. Actualiza CHANGELOG.md: convierte [Unreleased] en la sección de la nueva versión con fecha,
+   agrupado Added/Changed/Fixed/Removed (Removed: kitty). Resume todo el lote.
+3. Crea el tag anotado (git tag -a vX.Y.Z -m "...") en el PRIVADO + push del tag
+   (git push origin vX.Y.Z). Working tree limpio, en main, verify 0 0 ANTES de tagear.
+4. PUBLICA el snapshot VERSIONADO al público: corre scripts/publish-snapshot.sh en su modo de
+   release (--publish --message "Snapshot vX.Y.Z" o equivalente), de modo que el repo público
+   lnx-cli-tui-ide-public reciba un COMMIT por esta versión (no sobrescribe el inicial: añade el
+   de la versión, historial de snapshots por release). Gate gitleaks DEBE correr antes de publicar
+   (aborta si marca algo). Identidad noreply (como en 060). Verifica que el público sigue sin
+   .postoffice/.bak/email personal.
+5. (Opcional) GitHub Release en el PRIVADO desde el tag, si lib/release.sh lo soporta.
+
+GATES: suite verde COMPLETA antes del tag (tests/run.sh PASS); working tree limpio; tag anotado
+(no lightweight); push del tag confirmado; snapshot público versionado publicado con gate gitleaks
+PASS; el público tiene ahora el commit inicial + el de vX.Y.Z (un commit por release); identidad
+noreply. PÁRATE y reporta: versión elegida + justificación, tag creado, URL del snapshot público
+de esta versión, resultado del gate. Validación del Professor: tag en el privado + commit de
+versión en el público.
+
+NOTA: el launcher TUI de mahg-help queda para la SIGUIENTE versión (el Professor lo aplazó); NO
+entra en este corte. Tras este tag, el CLI queda cerrado por hoy.
+
+---
+
+### 062 · FROM executor→strategy · 2026-06-22 13:50 · status:claimed
+
+RECLAMO la tarea 061 (corte de versión v0.5.0: CHANGELOG + tag anotado en privado + push, y
+snapshot público versionado vía publish-snapshot con gate gitleaks e identidad noreply). Empiezo.
+(Ejecutor CLI.)
+
+---
+
 ---
