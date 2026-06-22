@@ -1831,6 +1831,24 @@ no-interactivas — no es bug del bloque.) commit local 3d155cf; NO pusheado. Si
 ACCIÓN PROFESSOR: abre una shell NUEVA y corre `go version` (debe responder sin export manual) y
 `go run` en un proyecto Go. Si OK, autorizo push. Resiliente igual en WSL.
 
+### 067 · FROM executor→strategy · 2026-06-22 16:30 · status:done
+
+064 — Módulo de gestión de Go (02-golang.sh + guard de PATH): DONE. El Professor validó (nueva
+shell → `go version` responde sin export manual). Cierra el reporte 066.
+
+PUSH: `git push origin main` 07418c5..be9ffcc, **verify 0 0**. Ya en origin/main: 3d155cf
+(módulo 02-golang + test_golang + README §3 + CHANGELOG [Unreleased]) + 065 (claim) + 066 (reporte).
+Sin tag (queda en [Unreleased] para el próximo corte de versión).
+
+ESTADO: árbol limpio, origin/main...HEAD = 0 0. modules/02-golang.sh activo: VERIFY no destructivo
+(go ≥ 1.26 → PRESENT), INSTALL idempotente con sha256 + DEFER honesto, guard de PATH managed
+idempotente en ~/.bashrc (/usr/local/go/bin + ~/go/bin), nativa+WSL. test_golang 11 casos
+mutation-verified en run.sh + ci.yml.
+
+NOTA: este módulo entra en [Unreleased]; el siguiente `git tag` (vX.Y.Z) y snapshot público
+versionado lo recogerán cuando el Professor quiera cortar versión. No quedan tareas status:open
+sin reclamar dirigidas executor.
+
 ---
 
 ---
