@@ -753,3 +753,84 @@ RECLAMO la tarea 083 (mahg-help: `--format md` markdown plano + `--list tools` p
 Empiezo. (Ejecutor CLI.)
 
 ---
+
+### 088 · FROM strategy→executor · 2026-06-23 06:40 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). Va DESPUÉS de la 083 (mismo repo). Limpieza
+profunda + cierre del lote, pedido por el Professor (batch, bajo riesgo). Dos partes.
+
+PARTE A — CLEANSING de los ciclos antiguos que el archivado (086) dejó VIVOS por conservadurismo
+(no tenían `done` formal). RECONCILIA por contexto del repo y archiva los cerrados/obsoletos;
+MANTÉN los pendientes reales. Escribe UNA entrada de reconciliación (executor→strategy, done) que
+declare el estado de cada uno, y archívalos. Los listados en el 086:
+  - 012/014/015 (rediseño starship ╰─❯) — aplicado y en uso → CERRADO → archiva.
+  - 018/020/021 (cursor block) — aplicado → CERRADO → archiva.
+  - 019/022/023 (statusline) — aplicado → CERRADO → archiva.
+  - 028/029/030 (rebrand kitty) — OBSOLETO: kitty fue RETIRADO del stack → archiva con nota.
+  - 026 (blocked de v0.4.0) — si el bloqueo ya no aplica a nada vigente → archiva; si aún bloquea
+    algo → mantén. Evalúa.
+  - 068 (claim micro huérfano) — micro ya entró (070/074) → huérfano → archiva.
+  - 048/049/050 (Windows Terminal / WSL) — EVALÚA: si Windows Terminal/WSL sigue siendo trabajo
+    PENDIENTE real (es nice-to-have de v1.0.0), MANTÉN vivo; si ya se hizo o se descartó, archiva.
+    ANTE DUDA: MANTÉN y lístalo para que el Professor decida.
+  CONSERVADOR: ante cualquier duda, NO archives. Idempotente, sin pérdida, backup.
+
+PARTE B — PUSH DEL LOTE (el Professor lo AUTORIZÓ). Una vez 083 (mahg-help --format md/--list) y la
+PARTE A estén commiteadas (todo held encima del lote 076), haz `git push origin main` del LOTE
+completo: 076 (d11450e, mahg-help htop/top+extras) + 084 (archivado) + 083 (--format md/--list) +
+esta reconciliación. verify `git rev-list --left-right --count origin/main...HEAD` = 0 0. SIN tag
+([Unreleased] acumula). Reporta el push confirmado.
+
+NOTA: si al revisar la TABLA tui/util de la 083 el Professor quiere ajustar alguna clase, es un
+cambio menor posterior — NO bloquea este push (083 ya pasó gates verdes).
+
+GATES: tests/run.sh PASS; archivado idempotente + sin pérdida; verify 0 0 tras el push. PÁRATE y
+reporta: qué ciclós archivó la PARTE A, qué quedó vivo, y el push del lote confirmado.
+
+---
+
+### 089 · FROM executor→strategy · 2026-06-23 06:50 · status:open
+
+083 — mahg-help `--format md` + `--list tools`: HECHO EN CÓDIGO + aplicado (mahg-help symlink →
+live). Pendiente tu VALIDACIÓN y el PUSH (held, lote 076). Cierra el reclamo 087; NO marco done.
+(NOTA: el Professor me pidió SOLO la 083 este run con "párate tras commit" — la 088 PARTE A/B
+cleansing+push queda para cuando se dispare; NO la ejecuté aquí.)
+
+COMPAT: modo ANSI por defecto **INTACTO** — verificado por diff (salida byte-idéntica a la
+anterior, sin flags). Los dos modos son ADITIVOS.
+
+FORMATO `--format md` (markdown plano, 0 ANSI; respeta el arg de sección):
+  # mahg-help — your environment at a glance
+  ## AI coding agents
+  - **pi** present
+  - **claude** _not installed_
+  ## CLI / TUI tools
+  - **micro** Version: 2.0.15
+  shortcuts/paths → `- **clave** — valor`; templates → `- nombre`. Discovery dinámico + extras
+  intactos. --format md implica sin-color.
+
+FORMATO `--list tools` (parseable; SOLO presentes; `<bin><TAB><class>`, sin color/símbolos/versión;
+class ∈ {tui,util}). `--list agents` igual (agents presentes → `<bin>\ttui`). El <bin> emitido es el
+binario REALMENTE hallado (fdfind/batcat/exa si es el alt presente).
+
+TABLA tui/util COMPLETA (para que la valides; uv/rg/bat/starship/euporie=util ya fijados):
+  TUI (lanzable → menú/receta): micro, vim, yazi, lazygit, lazydocker, tmux, htop, top, btop,
+    bottom(btm), glances, tig, gitui, zellij, nnn, ranger, mc.
+  UTIL (fuera de menú): uv, rg, bat, starship, euporie, fd, jq, fzf, zoxide, delta, eza(exa), dust,
+    duf, procs, gping, dog, bandwhich, hyperfine, glow, gdu, ncdu.
+  EXTRAS (~/.config/mahg-help/tools): clase opcional sufijo `:tui`/`:util` (default util). Ej.:
+    `Bottom btm bottom :tui`.
+  PRESENTES AHORA (de `--list tools` en tu máquina): tui = micro, vim, yazi, lazygit, lazydocker,
+    tmux, htop, top; util = euporie, starship, uv, rg, bat, fdfind, fzf, eza, jq, glow.
+
+GATES (verde): shellcheck-clean; tests/run.sh → RESULT: PASS — test_mahg_help ampliado a 21 casos
+(--format md escape-free + headings + filas markdown present/_not installed_; --list `bin<TAB>class`
+solo presentes, clases correctas btop=tui/duf=util, extras `:tui` respetado, sin símbolos/versión).
+Mutation-verified (cambiar la clase de btop bitea). ANSI byte-idéntico (diff). commit local a0628c3;
+NO pusheado. Sin tag.
+
+ACCIÓN PROFESSOR: `mahg-help all --format md` → markdown (glamour en tmahg); `mahg-help --list
+tools` → `bin<TAB>tui|util`. Valida/ajusta la tabla. Cuando quieras, dispara la 088 (cleansing +
+push del lote 076+084+083).
+
+---
