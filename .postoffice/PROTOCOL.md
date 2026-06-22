@@ -42,3 +42,20 @@ Al INICIO de cada run: lee `.postoffice/thread.md` entero. Toma SOLO la primera 
 `status:open` dirigida `strategy→executor` que NO esté ya reclamada (ver EXCLUSIÓN MUTUA).
 Recláma­la (push inmediato), trabájala, y al FINAL añade tu reporte `executor→strategy` con
 su status.
+
+## ARCHIVADO — thread.md solo VIVO; cerradas → archive.md
+El thread crece sin límite. Para que cada lectura sea ligera, las tareas CERRADAS se mueven a
+`.postoffice/archive.md`; `thread.md` queda solo con lo VIVO.
+
+- **Se MANTIENE en thread.md (vivo):** `status:open` no cumplidas (pendientes), `status:claimed`
+  sin su `done`, y `status:fyi` (referencia vigente — nunca se archiva).
+- **Se ARCHIVA (a archive.md, íntegro y en orden cronológico):** cada ciclo de tarea CERRADO —
+  la tarea + su(s) claim(s) + su reporte `status:done`. Una tarea está "cerrada" cuando un reporte
+  `status:done` la completa.
+- **Herramienta:** `bin/postoffice-archive` (idempotente). `--dry-run` muestra el plan sin tocar
+  nada; sin flag aplica (hace BACKUP `thread.md.bak.<ts>` antes de reescribir). Verifica SIN
+  PÉRDIDA (el conjunto de bloques thread+archive es invariante; aborta si no cuadra). Es
+  CONSERVADOR: ante duda NO archiva (mejor una entrada de más en thread que perder/malclasificar).
+  Por eso un ciclo "hecho en código" pero sin reporte `done` formal se mantiene hasta que se cierre.
+- **Cuándo correrlo:** bajo demanda cuando el thread crezca, y/o tras cerrar tareas (`done`). En
+  este repo el orden es cronológico ASCENDENTE (lo nuevo al final); el script lo respeta.

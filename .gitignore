@@ -21,3 +21,7 @@ known_hosts
 *~
 .idea/
 .vscode/
+
+# Python bytecode cache (e.g. from bin/postoffice-archive)
+__pycache__/
+*.pyc

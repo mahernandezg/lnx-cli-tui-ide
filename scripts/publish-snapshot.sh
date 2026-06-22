@@ -18,9 +18,10 @@ set -uo pipefail
 # appear in `git archive HEAD` — they cannot leak here. These EXCLUDES remove TRACKED
 # paths (and prefixes) that must stay private.
 EXCLUDES=(
-  ".postoffice"           # internal strategy<->executor coordination log
-  "docs/security-audit-"  # internal security-audit reports (prefix match)
-  "web-ext-artifacts"     # build artifacts (defensive; not in this repo)
+  ".postoffice"             # internal strategy<->executor coordination log
+  "bin/postoffice-archive"  # internal postoffice maintenance tool (operates on .postoffice/)
+  "docs/security-audit-"    # internal security-audit reports (prefix match)
+  "web-ext-artifacts"       # build artifacts (defensive; not in this repo)
 )
 
 PUBLIC_REMOTE="${SNAPSHOT_REMOTE:-https://github.com/mahernandezg/lnx-cli-tui-ide-public.git}"

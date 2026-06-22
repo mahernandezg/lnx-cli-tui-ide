@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""postoffice-archive — move CLOSED task cycles out of .postoffice/thread.md.
+
+The strategy<->executor thread grows without bound. This moves the settled history
+(closed task cycles: the task entry + its claim(s) + its done report) into
+.postoffice/archive.md, leaving thread.md with only the LIVE work. It is:
+
+  - CONSERVATIVE: when in doubt it does NOT archive (better to leave one extra entry
+    in the thread than to mis-file or lose one). Two hard guarantees:
+      * never archive anything AFTER the last `status:done` entry (the live tail);
+      * never archive `status:fyi` (standing reference) or an `open`/`claimed` entry
+        that no `done` report explicitly closes.
+  - LOSSLESS: the multiset of entry blocks across {thread.md, archive.md} is invariant
+    (verified before writing; aborts on any mismatch).
+  - IDEMPOTENT: a second run finds no new `done` reports in the (now-live) thread and
+    moves nothing; archive.md is de-duplicated by exact block content.
+
+Run from anywhere in the repo:
+    bin/postoffice-archive --dry-run     # show the plan; change nothing
+    bin/postoffice-archive               # apply (backs up thread.md first)
+
+An entry block spans from its `### NNN · FROM … · status:S` header to the next such
+header; blocks are moved verbatim (separators included), so reassembly is exact.
+"""
+import os
+import re
+import sys
+import subprocess
+from datetime import datetime
+
+HEADER_RE = re.compile(
+    r'^### (\d+) · FROM (strategy→executor|executor→strategy) · '
+    r'([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}) · status:(\w+)\s*$'
+)
+
+# Closure references inside a `done` report: which entry numbers it settles.
+_CLOSURE_PATTERNS = [
+    re.compile(r'reclamos?\s+(?:de\s+)?#?(\d{1,3})', re.I),
+    re.compile(r'reportes?\s+#?(\d{1,3})', re.I),
+    re.compile(r'tareas?\s+#?(\d{1,3})', re.I),
+    re.compile(r'#?(\d{1,3})\s+COMPLETAD', re.I),
+]
+# Sequences like "070 y 074", "031/032/036", "070+074", "031, 032": all numbers.
+_SEQ_RE = re.compile(r'\b\d{1,3}(?:\s*[/y+,]\s*\d{1,3})+\b', re.I)
+_NUM_RE = re.compile(r'\d{1,3}')
+
+
+def repo_root():
+    try:
+        out = subprocess.check_output(
+            ['git', 'rev-parse', '--show-toplevel'], stderr=subprocess.DEVNULL)
+        return out.decode().strip()
+    except Exception:
+        sys.exit('postoffice-archive: not inside a git repository')
+
+
+def split_blocks(text):
+    """Return (header_text, [block_text, ...]). header_text is everything before the
+    first entry header; each block runs from one header line to the next (exclusive)."""
+    lines = text.splitlines(keepends=True)
+    starts = [i for i, ln in enumerate(lines) if HEADER_RE.match(ln)]
+    if not starts:
+        return text, []
+    header = ''.join(lines[:starts[0]])
+    blocks = []
+    for k, s in enumerate(starts):
+        e = starts[k + 1] if k + 1 < len(starts) else len(lines)
+        blocks.append(''.join(lines[s:e]))
+    return header, blocks
+
+
+def parse_block(block):
+    m = HEADER_RE.match(block.splitlines()[0])
+    return {'num': int(m.group(1)), 'from': m.group(2),
+            'ts': m.group(3), 'status': m.group(4), 'text': block}
+
+
+_SUBJECT_RE = re.compile(r'(?:Tarea\s+)?#?(\d{1,3})\s*[—–-]')
+
+
+def closed_numbers(entries, max_num):
+    closed = set()
+    for e in entries:
+        if e['status'] != 'done':
+            continue
+        closed.add(e['num'])
+        body = e['text']
+        for pat in _CLOSURE_PATTERNS:
+            for n in pat.findall(body):
+                closed.add(int(n))
+        for seq in _SEQ_RE.findall(body):
+            for n in _NUM_RE.findall(seq):
+                closed.add(int(n))
+        # The report's SUBJECT: a done report's first non-empty line is
+        # "NNN — <summary>", naming the task it closes (precise; mid-body
+        # dashes are NOT scanned, to avoid false positives like "3/3 — ...").
+        for ln in body.splitlines()[1:]:
+            s = ln.strip()
+            if not s:
+                continue
+            m = _SUBJECT_RE.match(s)
+            if m:
+                closed.add(int(m.group(1)))
+            break
+    return {n for n in closed if 1 <= n <= max_num}
+
+
+_REF_PATTERNS = _CLOSURE_PATTERNS + [re.compile(r'entradas?\s+#?(\d{1,3})', re.I)]
+
+
+def references_closed(body, closed):
+    """True if a claim's body names a task/entry number that is already closed.
+    A claim is closed exactly when the task it claims is closed."""
+    for pat in _REF_PATTERNS:
+        for n in pat.findall(body):
+            if int(n) in closed:
+                return int(n)
+    for seq in _SEQ_RE.findall(body):
+        for n in _NUM_RE.findall(seq):
+            if int(n) in closed:
+                return int(n)
+    return None
+
+
+def classify(entries):
+    """Return list of (entry, archive_bool, reason)."""
+    max_num = max(e['num'] for e in entries)
+    closed = closed_numbers(entries, max_num)
+    done_positions = [i for i, e in enumerate(entries) if e['status'] == 'done']
+    last_done = done_positions[-1] if done_positions else -1
+    out = []
+    for i, e in enumerate(entries):
+        st = e['status']
+        ref = None
+        if st == 'fyi':
+            out.append((e, False, 'fyi (standing reference)'))
+        elif i > last_done:
+            out.append((e, False, 'after last done (live tail)'))
+        elif st == 'done':
+            out.append((e, True, 'done report'))
+        elif st in ('open', 'claimed', 'blocked') and e['num'] in closed:
+            out.append((e, True, f'{st}; closed by a done report (#{e["num"]})'))
+        elif st == 'claimed' and (ref := references_closed(e['text'], closed)):
+            out.append((e, True, f'claim of a closed task (#{ref})'))
+        else:
+            out.append((e, False, f'{st}; no done closes it (kept, conservative)'))
+    return out
+
+
+ARCHIVE_HEADER = (
+    "# Postoffice — archivo de tareas cerradas (STRATEGY ⇄ EXECUTOR)\n"
+    "\n"
+    "Histórico de ciclos de tarea CERRADOS, movidos desde thread.md por "
+    "`bin/postoffice-archive`.\n"
+    "Orden cronológico ascendente (lo más nuevo al final). Append-only; no se edita.\n"
+    "El thread.md vivo solo contiene open/claimed-activas/fyi.\n"
+    "\n---\n\n"
+)
+
+
+def main():
+    dry = '--dry-run' in sys.argv[1:]
+    root = repo_root()
+    po = os.path.join(root, '.postoffice')
+    thread_p = os.path.join(po, 'thread.md')
+    archive_p = os.path.join(po, 'archive.md')
+    if not os.path.isfile(thread_p):
+        sys.exit('postoffice-archive: no .postoffice/thread.md')
+
+    thread_text = open(thread_p, encoding='utf-8').read()
+    header, blocks = split_blocks(thread_text)
+    if not blocks:
+        sys.exit('postoffice-archive: no entries found in thread.md')
+    entries = [parse_block(b) for b in blocks]
+
+    arch_header, arch_blocks = ('', [])
+    if os.path.isfile(archive_p):
+        arch_header, arch_blocks = split_blocks(open(archive_p, encoding='utf-8').read())
+
+    decisions = classify(entries)
+    to_archive = [e['text'] for e, arc, _ in decisions if arc]
+    to_keep = [e['text'] for e, arc, _ in decisions if not arc]
+
+    # ---- report ----
+    print(f"thread.md: {len(blocks)} entries, {len(thread_text)} bytes")
+    print(f"archive.md (existing): {len(arch_blocks)} entries")
+    print(f"-> archive {len(to_archive)} entries, keep {len(to_keep)} in thread\n")
+    for e, arc, reason in decisions:
+        mark = 'ARCHIVE' if arc else 'keep   '
+        print(f"  {mark}  #{e['num']:<3} {e['from'][:8]:8} {e['status']:8} {reason}")
+
+    # ---- losslessness: total block multiset must be invariant ----
+    existing_set = sorted(arch_blocks)
+    new_arch_blocks = list(arch_blocks)
+    for blk in to_archive:
+        if blk not in new_arch_blocks:          # idempotent de-dup by exact content
+            new_arch_blocks.append(blk)
+    old_total = sorted(blocks + arch_blocks)
+    new_total = sorted(to_keep + new_arch_blocks)
+    if old_total != new_total:
+        sys.exit("postoffice-archive: ABORT — lossless check FAILED (block set changed). "
+                 "Nothing written.")
+    print("\nlossless check: PASS (thread+archive block set unchanged; "
+          f"{len(old_total)} blocks total)")
+
+    if dry:
+        print("\nDRY-RUN: nothing written. Re-run without --dry-run to apply.")
+        return
+    if not to_archive:
+        print("\nNothing to archive (idempotent no-op).")
+        return
+
+    # ---- write (backup first) ----
+    ts = datetime.now().strftime('%Y%m%d-%H%M%S')
+    bak = f"{thread_p}.bak.{ts}"
+    with open(bak, 'w', encoding='utf-8') as f:
+        f.write(thread_text)
+
+    note = ("> Tareas cerradas archivadas en `archive.md` "
+            "(via `bin/postoffice-archive`). thread.md = solo lo VIVO.\n\n")
+    new_thread = header
+    if 'archive.md' not in header:
+        new_thread += note
+    new_thread += ''.join(to_keep)
+    with open(thread_p, 'w', encoding='utf-8') as f:
+        f.write(new_thread)
+
+    out_arch_header = arch_header if arch_blocks else ARCHIVE_HEADER
+    with open(archive_p, 'w', encoding='utf-8') as f:
+        f.write(out_arch_header + ''.join(new_arch_blocks))
+
+    print(f"\nApplied: archived {len(to_archive)} entries -> archive.md "
+          f"({len(new_arch_blocks)} total); thread.md now {len(to_keep)} entries.")
+    print(f"Backup: {bak}")
+
+
+if __name__ == '__main__':
+    main()
