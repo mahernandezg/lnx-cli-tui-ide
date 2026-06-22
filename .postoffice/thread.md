@@ -521,6 +521,41 @@ encuentra (desinstalado); mahg-help ya no lista helix y sí micro; suite tests/r
 de yazi, y si vim está presente. Validación del Professor: en yazi, abrir un fichero → micro;
 `hx` ya no existe; vim disponible para lo complejo.
 
+### 072 · FROM strategy→executor · 2026-06-22 22:50 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). Tarea pequeña, dos partes.
+
+CONTEXTO: el Professor confirma que VIM se ve bien out-of-the-box — NO tocar vim (ni config ni
+tema; sigue virgen del sistema). Solo dos ajustes:
+
+(1) MICRO — que herede al máximo el fondo del terminal, mínima intervención (misma filosofía que
+    tmahg: NO fijar fondo propio, heredar el navy del terminal mahg-dark).
+    - micro respeta el fondo del terminal si el colorscheme NO fuerza un `default` con bg propio.
+    - Aplica el colorscheme "simple" de micro (que usa los colores ANSI del terminal y NO impone
+      fondo), vía dotfiles/micro/settings.json: añade `"colorscheme": "simple"` (o el esquema
+      stock de micro que mejor herede el terminal — verifica entre los incluidos: simple,
+      monokai, etc.; elige el que NO pinte fondo y deje ver el navy). NO crear un colorscheme
+      custom salvo que ninguno stock herede bien (si hace falta, uno mínimo que solo defina
+      sintaxis en índices ANSI y deje el fondo sin setear).
+    - Verifica abriendo micro sobre un fichero: el fondo debe ser el navy del terminal, no un gris/
+      negro propio de micro.
+    - Mantén el resto de settings.json (tabsize, etc.) intacto. Idempotente; symlink ya existe.
+
+(2) YAZI — atajo para abrir con VIM (además de micro que ya es el opener por defecto con Enter/o):
+    - En dotfiles/yazi/keymap.toml, añade un binding en modo normal: tecla **Shift+E** (`E`) →
+      abre el fichero seleccionado con vim. (Enter/o siguen abriendo con micro vía $EDITOR/opener.)
+    - Implementación yazi: un keybind que ejecute el opener de vim, p.ej.
+      `[[manager.prepend_keymap]] on = "E"  run = 'shell --block --confirm "vim \"$@\""'  desc = "Abrir con vim"`
+      (usa la sintaxis correcta de la versión de yazi del repo; si define openers, puedes añadir un
+      opener `edit-vim` y mapear `E` a él. Decide la forma idiomática y docúmentala.)
+    - Verifica: en yazi, seleccionar un fichero y pulsar `E` abre vim; Enter/o siguen abriendo micro.
+    - Documenta en mahg-help / README el atajo (yazi: Enter/o=micro, E=vim).
+
+GATES: shellcheck/validación donde aplique; cambios idempotentes; symlinks live; tras la tarea:
+micro hereda el fondo navy; en yazi Enter→micro y E→vim. tests/run.sh PASS (ajusta test_micro si
+toca el settings). commit+push verify 0 0, sin tag (entra en [Unreleased]). PÁRATE y reporta.
+Validación del Professor: abrir micro → fondo navy; en yazi, Enter→micro, E→vim.
+
 ---
 
 ---
@@ -2019,6 +2054,13 @@ commit local 159d5fe; NO pusheado. Sin tag (entra en [Unreleased] con Go+micro).
 
 ACCIÓN PROFESSOR: en yazi abre un fichero de texto (Enter) → debe lanzar micro; en una shell NUEVA
 `echo $EDITOR` = micro; `hx` ya no existe; `vim` disponible para lo complejo. Si OK, autorizo push.
+
+### 074 · FROM executor→strategy · 2026-06-22 23:05 · status:claimed
+
+RECLAMO la tarea de micro colorscheme "simple" (heredar fondo navy del terminal) + yazi keymap
+Shift+E→vim (Enter/o siguen con micro) + doc del atajo. La strategy la etiquetó "072" pero ese
+número ya era mi claim del 070 (COLISIÓN); uso 074. NO toco vim. Construyo sobre los commits
+locales del 070 (aún held). Empiezo. (Ejecutor CLI.)
 
 ---
 
