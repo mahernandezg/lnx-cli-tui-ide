@@ -10,6 +10,11 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **`mahg-help` — programmatic output modes** (the default ANSI mode is unchanged): `--format md`
+  emits the cheatsheet as plain markdown (no ANSI, respects the section arg) for a renderer to
+  style; `--list tools` / `--list agents` emit a parseable `<bin>\t<class>` line per present tool
+  (`tui` = launches a UI with no args → menu/recipe candidate; `util` = needs args). Extras can
+  declare a `:tui`/`:util` class (default `util`).
 - **`mahg-help` — expanded tools + user extras.** The CLI/TUI tools section now covers an
   expanded curated set (incl. `htop`/`top`/`btop`/`btm`/`glances`/`fzf`/`eza`/`jq`/`glow`/`tig`/
   `gitui`/`ncdu`/… — each self-filters, so only installed tools show), and reads user-declared

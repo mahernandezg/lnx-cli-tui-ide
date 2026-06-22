@@ -81,5 +81,24 @@ else
   _fail "no extras file: tools section broke"
 fi
 
+# --format md: plain markdown, NO ANSI, with headings + list rows.
+MD="$(PATH="$BIN:/usr/bin:/bin" HOME="$TMP/home" "$HELP" all --format md 2>/dev/null)"
+if printf '%s' "$MD" | grep -q $'\033'; then _fail "--format md emitted ANSI escapes"; else _pass "--format md is escape-free"; fi
+if printf '%s\n' "$MD" | grep -q '^## CLI / TUI tools$'; then _pass "--format md has section headings"; else _fail "--format md missing headings"; fi
+if printf '%s\n' "$MD" | grep -qE '^- \*\*pi\*\* '; then _pass "--format md present row is a markdown list item"; else _fail "--format md present row wrong"; fi
+if printf '%s\n' "$MD" | grep -qE '^- \*\*claude\*\* _not installed_$'; then _pass "--format md absent row uses _not installed_"; else _fail "--format md absent row wrong"; fi
+
+# --list tools: "<bin>\t<class>" for PRESENT tools; correct classes; absent omitted.
+printf '#!/bin/sh\necho btop\n' >"$BIN/btop"; chmod +x "$BIN/btop"     # btop -> tui (registry)
+printf '#!/bin/sh\necho duf\n'  >"$BIN/duf";  chmod +x "$BIN/duf"      # duf  -> util (registry)
+printf '#!/bin/sh\necho mytui\n' >"$BIN/mytui"; chmod +x "$BIN/mytui"  # extras-declared :tui
+printf 'MyTui mytui :tui\n' >>"$TMP/home/.config/mahg-help/tools"
+LT="$(PATH="$BIN:/usr/bin:/bin" HOME="$TMP/home" "$HELP" --list tools 2>/dev/null)"
+if printf '%s\n' "$LT" | grep -qP '^btop\ttui$'; then _pass "--list: btop -> tui"; else _fail "--list: btop class wrong"; fi
+if printf '%s\n' "$LT" | grep -qP '^duf\tutil$'; then _pass "--list: duf -> util"; else _fail "--list: duf class wrong"; fi
+if printf '%s\n' "$LT" | grep -qP '^mytui\ttui$'; then _pass "--list: extras :tui class honoured"; else _fail "--list: extras class wrong"; fi
+if printf '%s\n' "$LT" | grep -qvP '\t'; then _fail "--list line without a TAB class"; else _pass "--list lines are bin<TAB>class"; fi
+if printf '%s\n' "$LT" | grep -qP 'not installed|✓|✗'; then _fail "--list leaked symbols/status"; else _pass "--list has no symbols/versions"; fi
+
 printf '\ntest_mahg_help: %d passed, %d failed\n' "$PASS" "$FAIL"
 [[ "$FAIL" -eq 0 ]]

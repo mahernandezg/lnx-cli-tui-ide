@@ -665,10 +665,12 @@ detected dynamically, so it never goes stale. `modules/95-mahg-help.sh` symlinks
 `bin/mahg-help` to `~/.local/bin/mahg-help`.
 
 ```bash
-mahg-help                 # everything
+mahg-help                 # everything (ANSI cheatsheet)
 mahg-help agents          # just the AI agents + versions
 mahg-help tools           # just the CLI/TUI tools
 mahg-help shortcuts       # the tmux cheatsheet
+mahg-help all --format md # plain markdown (no ANSI) for a renderer to style
+mahg-help --list tools    # parseable "<bin>\t<class>" per present tool (class: tui|util)
 mahg-help --version
 ```
 
@@ -680,9 +682,17 @@ and a **config & paths** map. Colours degrade to plain text when piped or under
 `NO_COLOR`/`--no-color`. *(An interactive TUI launcher is planned for a later version.)*
 
 **Add your own tools without editing the script:** drop lines in
-`~/.config/mahg-help/tools` (honours `XDG_CONFIG_HOME`) — one per line, `label bin [altbins…]`
-(or just `bin`). They appear in the **tools** section if installed. Lines starting with `#` are
-ignored; no file means the default behaviour.
+`~/.config/mahg-help/tools` (honours `XDG_CONFIG_HOME`) — one per line,
+`label bin [altbins…] [:tui|:util]` (or just `bin`). They appear in the **tools** section if
+installed; the optional `:class` (default `util`) sets the class in `--list`. Lines starting with
+`#` are ignored; no file means the default behaviour.
+
+**Programmatic output (additive; the default ANSI mode is unchanged):**
+- `--format md` emits the cheatsheet as **plain markdown** (no ANSI) so another tool can render
+  it; it respects the section argument (`mahg-help tools --format md`).
+- `--list tools` (and `--list agents`) emits one `<bin>\t<class>` line per **present** tool — no
+  colour, symbols, or version — where **`tui`** = opens a useful UI with no args (menu/recipe
+  candidate) and **`util`** = a command-line utility that needs args.
 
 ## 16. WSL: Windows Terminal mahg scheme
 
