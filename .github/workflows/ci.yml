@@ -12,7 +12,7 @@ jobs:
 
       # shellcheck is preinstalled on the ubuntu-latest runner.
       - name: shellcheck
-        run: shellcheck -x -S style install.sh lib/*.sh modules/*.sh tests/*.sh bin/mahg-help bin/mahg-wt-apply dotfiles/claude-code/statusline.sh
+        run: shellcheck -x -S style install.sh lib/*.sh modules/*.sh tests/*.sh scripts/*.sh bin/mahg-help bin/mahg-wt-apply dotfiles/claude-code/statusline.sh
 
       - name: set -e regression suite
         run: bash tests/test_sete.sh
@@ -50,3 +50,6 @@ jobs:
 
       - name: Windows Terminal scheme helper suite
         run: bash tests/test_mahg_wt.sh
+
+      - name: publish-snapshot exclusion suite
+        run: bash tests/test_publish_snapshot.sh

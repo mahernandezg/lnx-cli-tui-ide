@@ -15,7 +15,7 @@ rc=0
 
 echo "== shellcheck (hard gate when installed) =="
 if command -v shellcheck >/dev/null 2>&1; then
-  if shellcheck -x -S style "$ROOT"/install.sh "$ROOT"/lib/*.sh "$ROOT"/modules/*.sh "$ROOT"/tests/*.sh "$ROOT"/dotfiles/claude-code/statusline.sh "$ROOT"/bin/mahg-help "$ROOT"/bin/mahg-wt-apply; then
+  if shellcheck -x -S style "$ROOT"/install.sh "$ROOT"/lib/*.sh "$ROOT"/modules/*.sh "$ROOT"/tests/*.sh "$ROOT"/scripts/*.sh "$ROOT"/dotfiles/claude-code/statusline.sh "$ROOT"/bin/mahg-help "$ROOT"/bin/mahg-wt-apply; then
     echo "  shellcheck: clean"
   else
     echo "  shellcheck: FAILED"; rc=1
@@ -85,6 +85,13 @@ if bash "$HERE/test_mahg_wt.sh"; then
   echo "  test_mahg_wt: PASS"
 else
   echo "  test_mahg_wt: FAIL"; rc=1
+fi
+
+echo "== tests/test_publish_snapshot.sh (HARD gate: clean-snapshot exclusions) =="
+if bash "$HERE/test_publish_snapshot.sh"; then
+  echo "  test_publish_snapshot: PASS"
+else
+  echo "  test_publish_snapshot: FAIL"; rc=1
 fi
 
 echo "== tests/validate.sh (SOFT: tool checks, may skip on a bare box) =="

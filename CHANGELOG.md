@@ -10,6 +10,11 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **Snapshot publishing** (`scripts/publish-snapshot.sh` + `docs/publish-snapshot.md`): publishes
+  a clean tree to a separate public repo with NO private history — excludes `.postoffice/`,
+  `docs/security-audit-*`, and `web-ext-artifacts/`; commits with a neutral GitHub-noreply
+  identity; and runs **gitleaks as a pre-publish gate that ABORTS on any finding**. `--dry-run`
+  by default. Hermetic, mutation-verified test (`tests/test_publish_snapshot.sh`).
 - **Windows Terminal mahg scheme (WSL parity)** — `profiles/windows-terminal/mahg-dark.json`
   (the brand navy scheme, same hex as GNOME Terminal `mahg-dark`), documented manual install
   (`docs/windows-terminal.md`), and an optional, safe helper `bin/mahg-wt-apply` (run from WSL):

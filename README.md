@@ -31,6 +31,7 @@ The desktop is only a fallback.
 14. [AI coding agents (verified & protected)](#14-ai-coding-agents-verified--protected)
 15. [`mahg-help` — your environment at a glance](#15-mahg-help--your-environment-at-a-glance)
 16. [WSL: Windows Terminal mahg scheme](#16-wsl-windows-terminal-mahg-scheme)
+17. [Publishing: private workshop → clean public snapshot](#17-publishing-private-workshop--clean-public-snapshot)
 
 ---
 
@@ -589,6 +590,7 @@ bin/                  mahg-help (environment cheatsheet) · mahg-wt-apply (WSL: 
                       Terminal mahg scheme) — symlinked to ~/.local/bin
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
+scripts/              publish-snapshot.sh (clean public snapshot; gitleaks-gated)
 modules/              00-uv 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie
                       40-helix 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
                       80-gnome-terminal-profile 90-vscodium (gated) 95-mahg-help 96-mahg-wt
@@ -598,14 +600,14 @@ dotfiles/             helix/ (config.toml languages.toml
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
                       into fresh UUIDs; not symlinked; mahg-dark is the default) ·
                       windows-terminal/mahg-dark.json (WT scheme asset)
-docs/                 ai-agents.md · windows-terminal.md (WSL mahg scheme)
+docs/                 ai-agents.md · windows-terminal.md · publish-snapshot.md
 tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_pypi.sh ·
                       test_tab_title.sh · test_gnome_profile.sh · test_statusline.sh ·
-                      test_tmux.sh · test_mahg_help.sh · test_mahg_wt.sh · validate.sh
-                      + sample.md/py/ipynb
+                      test_tmux.sh · test_mahg_help.sh · test_mahg_wt.sh ·
+                      test_publish_snapshot.sh · validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_pypi +
                       test_tab_title + test_gnome_profile + test_statusline + test_tmux +
-                      test_mahg_help + test_mahg_wt on push)
+                      test_mahg_help + test_mahg_wt + test_publish_snapshot on push)
 config.env.example    template for your (git-ignored) local config.env
 ```
 
@@ -702,6 +704,23 @@ colours. To keep both ecosystems identical, the repo vendors the brand scheme at
 
 The shell layer (Starship, tmux, Helix, the agents) is already identical in both ecosystems —
 this covers only the Windows Terminal host's colours.
+
+## 17. Publishing: private workshop → clean public snapshot
+
+This repo is the **private workshop** (full history, the internal `.postoffice/` log, personal
+email in commit metadata). It is published to a **separate public repo by snapshot** — only the
+final clean tree, internal files excluded, a neutral (GitHub noreply) commit identity, and a
+minimal snapshot-only history. So the public repo is **clean by construction**, no history rewrite.
+
+```bash
+scripts/publish-snapshot.sh --dry-run                       # preview the clean tree + run the gate
+scripts/publish-snapshot.sh --publish --message "Snapshot v0.5.0"
+```
+
+`scripts/publish-snapshot.sh` builds the tree from `git archive HEAD` (so gitignored files can't
+leak), removes the documented internal paths (`.postoffice/`, `docs/security-audit-*`,
+`web-ext-artifacts/`), then runs **gitleaks as a pre-publish gate and ABORTS on any finding**.
+Full details and the exclusion table: **[`docs/publish-snapshot.md`](docs/publish-snapshot.md)**.
 
 ## Author
 
