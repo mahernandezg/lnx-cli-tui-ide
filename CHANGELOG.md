@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 While on `0.x`, a **minor** bump means substantial new functionality and a **patch**
 bump means fixes only.
 
-## [Unreleased]
+## [0.5.0] — 2026-06-22
+
+Post‑v0.4.0 batch: the bundled terminal emulator is dropped in favour of the system **GNOME
+Terminal**, **tmux** (with numeric layouts) becomes the multiplexer, plus the **mahg‑help**
+environment cheatsheet, an **AI‑agents protection module** (six agents), **Windows Terminal**
+brand parity for WSL, and a gitleaks‑gated **snapshot‑publishing** mechanism for a clean public
+repo.
 
 ### Added
 - **Snapshot publishing** (`scripts/publish-snapshot.sh` + `docs/publish-snapshot.md`): publishes
@@ -101,6 +107,7 @@ validated by the Professor before tagging.
 ### Added
 - First release.
 
+[0.5.0]: https://github.com/mahernandezg/lnx-cli-tui-ide/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mahernandezg/lnx-cli-tui-ide/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/mahernandezg/lnx-cli-tui-ide/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mahernandezg/lnx-cli-tui-ide/compare/v0.1.0...v0.2.0
