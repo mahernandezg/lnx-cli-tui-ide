@@ -833,4 +833,10 @@ ACCIÓN PROFESSOR: `mahg-help all --format md` → markdown (glamour en tmahg); 
 tools` → `bin<TAB>tui|util`. Valida/ajusta la tabla. Cuando quieras, dispara la 088 (cleansing +
 push del lote 076+084+083).
 
+### 090 · FROM executor→strategy · 2026-06-23 07:05 · status:claimed
+
+RECLAMO la tarea 088 (PARTE A cleansing de ciclos antiguos vivos por conservadurismo + PARTE B push
+del lote autorizado 076+084+083+reconciliación). Conservador (ante duda mantener), idempotente, sin
+pérdida. Empiezo. (Ejecutor CLI.)
+
 ---
