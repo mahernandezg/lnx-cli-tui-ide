@@ -118,8 +118,8 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | `-h`, `--help` | Usage. |
 
 Module names: `00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
-50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium
-95-mahg-help 96-mahg-wt`. Every run writes
+45-micro 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile
+90-vscodium 95-mahg-help 96-mahg-wt`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
 ---
@@ -303,6 +303,18 @@ use it** — including the exact command to start it.
   it is **not** used by default and nothing switches it by `color-scheme`. Helix has no
   theme-by-mode key anyway. If you ever want light for a single session you can `:theme
   mahg-light` at runtime, but the shipped policy keeps Helix dark like the terminal.
+
+### micro — quick, modeless editor · [📖 Docs](https://micro-editor.github.io/)
+- **What:** a simple terminal editor that behaves like a GUI one — **no modes**. Installed by
+  `modules/45-micro.sh` (official latest-stable binary into `~/.local/bin`, apt fallback).
+- **Advantage:** for *fast* edits with familiar keys, complementing Helix (still the main, powerful
+  editor): **`Ctrl+S`** save · **`Ctrl+Q`** quit · **`Ctrl+C`/`Ctrl+V`** copy/paste · **`Ctrl+Z`**
+  undo. A tiny QoL config (`dotfiles/micro/settings.json`) is linked to `~/.config/micro/`.
+- **How:**
+  ```bash
+  micro file.py        # open (creates the file if missing)
+  micro                # scratch buffer
+  ```
 
 ### lazygit — Git TUI · [📖 Docs](https://github.com/jesseduffield/lazygit)
 - **What:** a full-screen UI for Git.
@@ -608,24 +620,25 @@ lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 scripts/              publish-snapshot.sh (clean public snapshot; gitleaks-gated)
 modules/              00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers
-                      30-euporie 40-helix 50-git-docker-tui 60-ssh-alias 70-starship
-                      75-tab-title 80-gnome-terminal-profile 90-vscodium (gated)
-                      95-mahg-help 96-mahg-wt
+                      30-euporie 40-helix 45-micro 50-git-docker-tui 60-ssh-alias
+                      70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium
+                      (gated) 95-mahg-help 96-mahg-wt
 dotfiles/             helix/ (config.toml languages.toml
                       themes/mahg-{dark,light}.toml — branded dark/light pair)
-                      starship/ tmux/ yazi/ claude-code/
+                      micro/ starship/ tmux/ yazi/ claude-code/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
                       into fresh UUIDs; not symlinked; mahg-dark is the default) ·
                       windows-terminal/mahg-dark.json (WT scheme asset)
 docs/                 ai-agents.md · windows-terminal.md · publish-snapshot.md
 tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_golang.sh ·
-                      test_pypi.sh · test_tab_title.sh · test_gnome_profile.sh ·
-                      test_statusline.sh · test_tmux.sh · test_mahg_help.sh ·
-                      test_mahg_wt.sh · test_publish_snapshot.sh · validate.sh
-                      + sample.md/py/ipynb
+                      test_micro.sh · test_pypi.sh · test_tab_title.sh ·
+                      test_gnome_profile.sh · test_statusline.sh · test_tmux.sh ·
+                      test_mahg_help.sh · test_mahg_wt.sh · test_publish_snapshot.sh ·
+                      validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_golang +
-                      test_pypi + test_tab_title + test_gnome_profile + test_statusline +
-                      test_tmux + test_mahg_help + test_mahg_wt + test_publish_snapshot)
+                      test_micro + test_pypi + test_tab_title + test_gnome_profile +
+                      test_statusline + test_tmux + test_mahg_help + test_mahg_wt +
+                      test_publish_snapshot)
 config.env.example    template for your (git-ignored) local config.env
 ```
 

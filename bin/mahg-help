@@ -100,6 +100,7 @@ sec_agents() {
 sec_tools() {
   _hdr "CLI / TUI tools"
   _row_present Helix      hx
+  _row_present micro      micro
   _row_present yazi       yazi
   _row_present lazygit    lazygit
   _row_present lazydocker lazydocker

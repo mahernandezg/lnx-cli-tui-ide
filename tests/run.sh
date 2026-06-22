@@ -45,6 +45,13 @@ else
   echo "  test_golang: FAIL"; rc=1
 fi
 
+echo "== tests/test_micro.sh (HARD gate: micro editor install + config) =="
+if bash "$HERE/test_micro.sh"; then
+  echo "  test_micro: PASS"
+else
+  echo "  test_micro: FAIL"; rc=1
+fi
+
 echo "== tests/test_pypi.sh (HARD gate: PyPI-unreachable resilience) =="
 if bash "$HERE/test_pypi.sh"; then
   echo "  test_pypi: PASS"

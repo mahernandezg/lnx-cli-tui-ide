@@ -10,6 +10,11 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **micro editor** (`modules/45-micro.sh` + `dotfiles/micro/settings.json`): a simple,
+  modeless terminal editor (Ctrl+S/Q/C/V) for quick edits, complementing Helix. Installs
+  the official latest-stable binary into `~/.local/bin` (apt fallback), idempotent VERIFY,
+  honest `--dry-run`/DEFER, plus a tiny QoL config. Added to the `mahg-help` cheatsheet.
+  Hermetic, mutation-verified test (`tests/test_micro.sh`).
 - **Go toolchain module** (`modules/02-golang.sh`): installs the official stable Go
   (go.dev tarball, sha256-verified) into `/usr/local/go`, and a **persistent, idempotent
   PATH guard** in `~/.bashrc` putting `/usr/local/go/bin` and `~/go/bin` (GOPATH bin) on
