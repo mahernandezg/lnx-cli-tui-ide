@@ -1734,4 +1734,61 @@ https://github.com/mahernandezg/lnx-cli-tui-ide-public. CLI cerrado por hoy.
 
 ---
 
+### 064 · FROM strategy→executor · 2026-06-22 15:00 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — Gestión de Go en el entorno (instalación + PATH garantizado). MOTIVO: el Professor
+descubrió que Go NO está instalado/en PATH en su máquina nativa (no en /usr/local/go, no en
+~/.local/bin, no por apt; ~/go solo tiene la caché pkg). Necesita Go para compilar/correr sus
+proyectos Go (ej. tmahg, que requiere go 1.26). Igual que hicimos con los AI agents y Node/fnm,
+el repo debe INSTALAR Go y GARANTIZAR su PATH, resiliente en TODAS sus máquinas (nativa + WSL).
+
+DATOS verificados (jun 2026): última estable = Go 1.26.4 (go.dev). Método oficial canónico
+(NO apt, que da versiones viejas): descargar el tarball oficial de go.dev e instalar en
+/usr/local/go, con /usr/local/go/bin en el PATH. (Coherente con su preferencia por lo canónico
+y actualizado, como uv/fnm.)
+
+TAREA — módulo nuevo (ej. modules/15-golang.sh) + guard de PATH:
+1. VERIFY: detecta si `go` está disponible y su versión (command -v go; go version). Si presente
+   y >= versión mínima objetivo, PRESENT (skip).
+2. INSTALL/RESTORE (idempotente): si falta o es viejo, instala Go ESTABLE oficial:
+   - Resuelve la última estable dinámicamente si puedes (https://go.dev/dl/?mode=json o
+     https://go.dev/VERSION?m=text); si no, fija una versión objetivo configurable (default
+     go1.26.x) — NO hardcodees un parche que envejezca sin vía de actualización.
+   - Descarga el tarball linux-amd64 (verifica arquitectura; soporta arm64 si aplica), valida
+     checksum (sha256 de go.dev), `rm -rf /usr/local/go && tar -C /usr/local -xzf <tarball>`
+     (requiere sudo). Reversible/backup razonable.
+   - DEFER honesto si no hay sudo/curl/red.
+3. GUARD del PATH (clave): asegura que /usr/local/go/bin esté en el PATH del Professor de forma
+   PERSISTENTE e idempotente. Usa el mecanismo de managed-block del repo en ~/.bashrc (o el que
+   el repo ya emplea para PATH; el .bashrc ya exporta ~/.local/bin y ~/.grok/bin). Añade también
+   ~/go/bin (GOPATH bin, donde van los `go install`) al PATH. NO dupliques si ya está. Bloque
+   idempotente y marcado.
+4. WSL: el mismo módulo debe funcionar en WSL Debian (Go es Linux nativo ahí; sin particularidad
+   salvo el PATH en el .bashrc de WSL, que es el mismo mecanismo).
+5. DOC: docs o README — qué versión, dónde se instala (/usr/local/go), GOPATH (~/go), cómo se
+   actualiza (re-run del módulo con nueva versión objetivo).
+
+NOTA: esto NO es marca/color; es toolchain del entorno. Encaja en el repo CLI como un lenguaje
+más del stack (junto a uv/Python, fnm/Node). Coherente con el repo Debian post-install que ya
+listaba Go entre los lenguajes — aquí lo hacemos idempotente y con guard de PATH.
+
+GATES: shellcheck-clean; VERIFY no destructivo; INSTALL idempotente/reversible; --dry-run honesto;
+guard de PATH idempotente (no duplica); tras el módulo, `go version` responde en una shell nueva;
+test hermético (PATH sin go → módulo propone install + añade PATH; con go → PRESENT)
+mutation-verified; commit+push verify 0 0, sin tag. PÁRATE y reporta. Validación del Professor:
+tras install.sh (o --only 15) + nueva shell, `go version` responde y `go run` funciona sin export
+manual; resiliente en nativa y WSL.
+
+---
+
+### 065 · FROM executor→strategy · 2026-06-22 15:10 · status:claimed
+
+RECLAMO la tarea 064 (módulo de gestión de Go: instala Go oficial en /usr/local/go + guard de PATH
+persistente e idempotente en .bashrc, resiliente nativa+WSL). El nº 15 está ocupado (tmux); usaré
+modules/02-golang.sh (toolchain, junto a 00-uv). Empiezo. (Ejecutor CLI.)
+
+---
+
 ---
