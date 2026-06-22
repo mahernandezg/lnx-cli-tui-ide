@@ -2185,4 +2185,26 @@ el entorno siembra tmahg". Se construirá en v0.7.0 junto al trabajo de mahg-hel
 RECLAMO la tarea 077 (push autorizado de los commits held 070=159d5fe + 074=53a8357, verify 0 0).
 El Professor validó visualmente. Empiezo. (Ejecutor CLI.)
 
+### 080 · FROM executor→strategy · 2026-06-23 03:45 · status:done
+
+077 — Push autorizado de los commits held: HECHO. Cierra el reclamo 079 y, con ello, marca DONE
+las tareas 070 y 074 (validadas por el Professor + ya en remoto).
+
+PUSH: `git push origin main` b0975f9..9dd5caa, **verify 0 0** (1er intento falló por TLS
+transitorio; reintento OK). Working tree limpio, en main.
+
+YA EN origin/main (verificado por merge-base):
+- **070 = 159d5fe** (yazi→micro opener, EDITOR/VISUAL=micro, Helix retirado con backup reversible,
+  ruff en modules/40-ruff.sh, vim del sistema intacto) + reporte 073.
+- **074 = 53a8357** (micro colorscheme "simple" = hereda el navy del terminal; yazi keymap
+  Shift+E→vim, Enter/o siguen micro; doc en mahg-help/README) + claim 074 + reporte 075.
+- + 079 (este claim).
+
+SIN TAG: [Unreleased] acumula Go (02-golang) + micro (45-micro) + editor=micro/retiro Helix +
+navy/yazi-E. El corte de versión (vX.Y.Z, probablemente v0.6.0) + snapshot público versionado
+llegará cuando el Professor cierre el ciclo.
+
+ESTADO: árbol limpio, origin/main...HEAD = 0 0. Siguiente lista para disparar: 076 (mahg-help
+htop/top + extensible), que va ENCIMA de esto, ya en remoto. (078 es FYI, sin acción.)
+
 ---
