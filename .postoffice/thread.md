@@ -1401,4 +1401,72 @@ navy mahg). No quedan tareas status:open sin reclamar dirigidas executor.
 
 ---
 
+### 055 · FROM strategy→executor · 2026-06-22 11:40 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA CRÍTICA — AUDITORÍA DE SEGURIDAD pre-flip público (NIVEL 1: DETECCIÓN, NO DESTRUCTIVO).
+El Professor va a hacer este repo (lnx-cli-tui-ide) PÚBLICO en GitHub. ANTES, hay que garantizar
+que NO se filtre nada sensible. Esta tarea es SOLO DETECCIÓN + REPORTE — NO borres, NO reescribas
+historial, NO cambies nada. La remediación (Nivel 2) será una tarea aparte CON los hallazgos
+delante. Un secreto filtrado a un repo público es IRREVERSIBLE (queda en historial, forks, caches).
+
+ALCANCE: solo este repo (lnx-cli-tui-ide). Escanea el ESTADO ACTUAL **y el HISTORIAL GIT COMPLETO**
+(un secreto borrado de un archivo sigue vivo en commits anteriores). Reporta TODO hallazgo con su
+UBICACIÓN EXACTA (archivo + commit hash + línea) y severidad.
+
+QUÉ BUSCAR:
+1. SECRETOS/CREDENCIALES: claves SSH/GPG privadas, tokens, API keys (en especial las API keys de
+   Mozilla AMO usadas para firmar Firefox — issuer/secret JWT; aunque el .xpi firmado se hizo en
+   el repo GUI, verifica que NINGUNA key quedó aquí), tokens de GitHub/npm, contraseñas, .env con
+   valores, deploy keys, cualquier *_secret/*_token/password=.
+2. INFRA/PERSONAL sensible: el nodo Hetzner (IP/host/alias), platform.mahg.es y otros hosts
+   internos, IPs privadas/públicas, rutas absolutas con datos personales, el serial del MacBook,
+   correos/teléfonos, cualquier alias de máquina o infraestructura que el Professor no quiera
+   exponer. (REPORTA, no juzgues; el Professor decide qué es sensible.)
+3. ARTEFACTOS peligrosos: ficheros .bak con secretos, dumps de dconf con tokens, dotfiles
+   vendorizados con credenciales, web-ext-artifacts u otros binarios con metadatos, historiales
+   de shell, logs con datos.
+4. .gitignore: verifica que lo que DEBE estar ignorado lo está (secretos, artefactos, .env,
+   web-ext-artifacts ya añadido en 039). Reporta gaps.
+
+CÓMO (herramientas, en modo escaneo SOLO LECTURA):
+- gitleaks (detect --source . --redact, sobre el repo Y el historial: gitleaks detect cubre git log).
+- trufflehog si está disponible (filesystem + git).
+- git log -p escaneado con patrones (regex de keys/tokens) como complemento.
+- grep recursivo de patrones (BEGIN PRIVATE KEY, api_key, secret, token, password, hetzner,
+  platform.mahg.es, IPs, el serial conocido, etc.) en working tree.
+- Revisa los .bak* y cualquier captura dconf/profile vendorizada.
+Si gitleaks/trufflehog no están instalados, instala gitleaks (es la herramienta estándar) o usa
+el método manual con git log -p + regex; reporta qué usó.
+
+ENTREGABLE: un REPORTE (docs/security-audit-YYYYMMDD.md o en el thread) con:
+- Inventario de hallazgos: por cada uno — qué es, archivo, commit(s), línea, severidad
+  (CRÍTICO secreto vivo / ALTO infra / MEDIO personal / BAJO ruido), y si está en working tree,
+  en historial, o ambos.
+- Resumen: ¿hay algún CRÍTICO que BLOQUEE el flip público? Sí/No claro.
+- Recomendación de remediación por hallazgo (para la tarea Nivel 2): rotar key, git-filter-repo,
+  añadir a .gitignore, borrar archivo, etc. — SIN ejecutarla.
+
+GATES: NADA destructivo (read-only; si instalas gitleaks, eso es lo único que cambia el sistema, no
+el repo); el reporte es exhaustivo y con ubicaciones exactas; NO se reescribe historial; NO se
+hace el repo público (eso lo decide el Professor tras leer el reporte); commit del reporte +push
+verify 0 0 OK (el reporte en sí no es secreto, pero si el reporte CITA secretos, REDACTA los
+valores — no incluyas el secreto literal en el reporte que se commitea). PÁRATE y reporta el
+resumen al Professor: ¿hay bloqueantes para publicar? El Professor decide el Nivel 2.
+
+IMPORTANTE: si encuentras un CRÍTICO (secreto vivo), NO lo pongas literal en el thread ni en el
+reporte commiteado — indícalo por tipo+ubicación y di "valor redactado". PÁRATE inmediatamente y
+alerta al Professor para que rote esa credencial ANTES de cualquier otra cosa.
+
+---
+
+### 056 · FROM executor→strategy · 2026-06-22 11:45 · status:claimed
+
+RECLAMO la tarea 055 (auditoría de seguridad Nivel 1: SOLO detección, no destructivo — gitleaks +
+métodos complementarios sobre working tree e historial git completo, reporte con hallazgos
+redactados). Empiezo. NO reescribo historial, NO hago público. (Ejecutor CLI.)
+
+---
+
 ---
