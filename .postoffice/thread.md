@@ -1978,6 +1978,48 @@ en [Unreleased]. Sin tag. Cierra el reporte 069. Paso a la tarea 070 (transició
 RECLAMO la tarea 070 (transición de editor: EDITOR/VISUAL=micro, yazi opener→micro, RETIRAR helix
 por completo del repo + máquina, verificar vim). Idempotente y reversible. Empiezo. (Ejecutor CLI.)
 
+### 073 · FROM executor→strategy · 2026-06-22 22:30 · status:open
+
+070 — Transición de editor (micro default + vim, retirar Helix): HECHO EN CÓDIGO + aplicado en la
+máquina. Pendiente tu VALIDACIÓN (yazi abre texto con micro; `hx` ya no existe; `echo $EDITOR` en
+shell nueva = micro; vim disponible) y el PUSH (local por "párate tras commit"). Cierra el reclamo
+072; NO marco done.
+
+DECISIÓN QUE TE CONSULTÉ (pregunta directa, había entanglement no previsto en la tarea): el módulo
+40-helix instalaba TAMBIÉN los LSP ruff/basedpyright/vtsls, y test_pypi (gate duro) depende de
+ruff/basedpyright. Elegiste: **conservar ruff** (módulo propio 40-ruff.sh, standalone), **quitar
+basedpyright+vtsls** con Helix, **desinstalar solo hx** de la máquina. Ejecutado así.
+
+(1) EDITOR=micro: 45-micro escribe un managed-block "shell env" en ~/.bashrc con
+    export EDITOR=micro / VISUAL=micro (idempotente; REEMPLAZA el bloque legacy EDITOR=hx, que ya
+    no lo escribía ningún módulo). En la máquina: el bloque hx fue sustituido por micro; verificado
+    EDITOR=micro VISUAL=micro evaluando el bloque.
+(2) yazi → micro: dotfiles/yazi/yazi.toml añade [opener] edit = micro "$@" (block=true, for=unix);
+    las reglas [open] por defecto de yazi enrutan texto→edit→micro. ~/.config/yazi/yazi.toml es
+    symlink al repo → ya está LIVE.
+(3) RETIRAR Helix:
+    - Borrado modules/40-helix.sh y dotfiles/helix/ (config.toml, languages.toml, themes/mahg-*).
+      Conservado en git history. basedpyright+vtsls retirados con él.
+    - Creado modules/40-ruff.sh: ruff standalone (uv→github release, misma resiliencia PyPI que
+      test_pypi exige). test_pypi repunteado a `--only ruff` (quitadas las asserts de
+      basedpyright/vtsls); validate.sh: quitado el case Helix (3 casos motivadores ahora).
+    - De-helix en: bin/mahg-help (micro+vim; quitado Helix), README (entrada vim nueva, tablas,
+      cheat-sheet, §9, §11, §12, etc.), install.sh (lista de módulos + ejemplos), lib/github +
+      20-viewers (comentarios), test_tab_title (fixture), run.sh (comentario). CHANGELOG
+      [Unreleased]: Changed (editor=micro) + Removed (Helix/basedpyright/vtsls; ruff→40-ruff).
+      grep de helix/hx/basedpyright/vtsls en install/lib/modules/tests/bin/dotfiles = 0 (limpio).
+    - MÁQUINA: desinstalado hx de ~/.local/bin y ~/.config/helix → backup reversible en
+      ~/.local/share/lnx-cli-tui-ide-removed/helix-<ts>/. `command -v hx` ahora vacío.
+(4) VIM: PRESENTE en la máquina (/usr/bin/vim, VIM 9.1). NO lo instalé (la tarea pedía solo
+    verificar/avisar). El repo NO instala ni configura vim (se usa tal cual del sistema).
+
+GATES (verde): shellcheck-clean; tests/run.sh → RESULT: PASS (12 hard gates incl. test_pypi
+repunteado + test_micro + test_golang; validate 3/3). Idempotente; backups; --dry-run honesto.
+commit local 159d5fe; NO pusheado. Sin tag (entra en [Unreleased] con Go+micro).
+
+ACCIÓN PROFESSOR: en yazi abre un fichero de texto (Enter) → debe lanzar micro; en una shell NUEVA
+`echo $EDITOR` = micro; `hx` ya no existe; `vim` disponible para lo complejo. Si OK, autorizo push.
+
 ---
 
 ---
