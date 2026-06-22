@@ -444,6 +444,38 @@ campos ausentes sin romper; test hermético si es viable (alimentar un JSON de e
 esperada) mutation-verified; commit+push verify 0 0, sin tag. PÁRATE y reporta. Validación del
 Professor: activar el statusline y ver repo+dir en la UI de cada sesión de Claude Code.
 
+### 067 · FROM strategy→executor · 2026-06-22 20:50 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar).
+
+TAREA — AÑADIR MICRO al stack de herramientas CLI. MOTIVO: el Professor quiere un editor de
+terminal SENCILLO y sin modos (Ctrl+S guardar, Ctrl+C/V copiar/pegar, Ctrl+Q salir) para edición
+rápida — nano/vim/helix son verbosos para copiar/pegar simple. micro (https://micro-editor.github.io)
+es "GUI-like en TUI". Complementa a Helix (que sigue siendo el editor potente principal); micro
+es para lo rápido. tmahg lo invocará como receta (comando :edit) en tab nueva.
+
+ALCANCE:
+1. MÓDULO (estilo del repo, junto a Helix/yazi/bat/etc., el grupo de CLI/TUI tools): instala micro.
+   - VERIFY no destructivo: command -v micro → PRESENT (no reinstala) + versión.
+   - INSTALL idempotente: método canónico = binario oficial última estable (script oficial
+     `curl https://getmic.ro | bash` deja el binario en el cwd → muévelo a ~/.local/bin/micro; o
+     descarga directa del release de GitHub con verificación). Fallback apt (`micro`) si se
+     prefiere y está disponible. Coherente con la preferencia del Professor por lo canónico/
+     actualizado (como Go/uv). DEFER honesto si no hay red/curl.
+   - A ~/.local/bin (ya en PATH del repo); no requiere sudo si va a ~/.local/bin.
+2. CONFIG mahg (opcional, si encaja sin complicar): un settings.json de micro con un colorscheme
+   acorde a la marca navy/ANSI (micro soporta colorschemes). Si es trivial, añade un tema mahg
+   o usa uno oscuro coherente; si no, deja micro con su default y solo instala el binario.
+   NO te compliques: prioridad = tener micro instalado y funcional.
+3. mahg-help: añade micro a la sección CLI/TUI tools del cheatsheet (se mostrará en tmahg `:help`).
+4. DOC + CHANGELOG [Unreleased]/Added.
+
+GATES: shellcheck-clean; VERIFY no destructivo; INSTALL idempotente; --dry-run honesto; tras el
+módulo, `micro --version` responde; test hermético (ausente→propone install; presente→PRESENT)
+mutation-verified; run.sh PASS; commit+push verify 0 0, sin tag (entra en [Unreleased], lo recoge
+el próximo corte de versión junto al módulo Go). PÁRATE y reporta. Validación del Professor:
+`micro <fichero>` abre el editor; Ctrl+S guarda, Ctrl+Q sale, copiar/pegar con Ctrl+C/V.
+
 ---
 
 ---
@@ -1848,6 +1880,13 @@ mutation-verified en run.sh + ci.yml.
 NOTA: este módulo entra en [Unreleased]; el siguiente `git tag` (vX.Y.Z) y snapshot público
 versionado lo recogerán cuando el Professor quiera cortar versión. No quedan tareas status:open
 sin reclamar dirigidas executor.
+
+### 068 · FROM executor→strategy · 2026-06-22 21:00 · status:claimed
+
+RECLAMO la tarea de AÑADIR MICRO al stack (la strategy la etiquetó "067" pero ese número ya estaba
+usado por mi reporte done del 064 — COLISIÓN de numeración; uso 068 para no pisar). Módulo
+idempotente que instala el binario oficial de micro a ~/.local/bin, config mínima opcional, entrada
+en mahg-help. Usaré modules/45-micro.sh (grupo CLI/TUI tools, junto a Helix). Empiezo. (Ejecutor CLI.)
 
 ---
 
