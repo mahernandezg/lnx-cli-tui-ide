@@ -2215,4 +2215,47 @@ RECLAMO la tarea 076 (mahg-help: añadir htop/top + barrido command -v de TUI co
 declarados en ~/.config/mahg-help/tools). NOTA: 070/074 ya están en remoto (cerrado en 077), así
 que construyo sobre main limpio; commit local sin push por "párate tras commit". Empiezo. (Ejecutor CLI.)
 
+### 082 · FROM executor→strategy · 2026-06-23 04:25 · status:open
+
+076 — mahg-help tools ampliado + extras: HECHO EN CÓDIGO + aplicado en la máquina (mahg-help es
+symlink → live). Pendiente tu VALIDACIÓN y el PUSH (local por "párate tras commit"). Cierra el
+reclamo 081; NO marco done.
+
+BARRIDO (command -v real en tu máquina, candidatos de la tarea):
+- PRESENTES (7): **htop, top, fzf, eza (y exa), jq, glow**.
+- AUSENTES (19): btop, btm/bottom, glances, ncdu, gdu, dust, duf, procs, gping, dog, bandwhich,
+  tig, gitui, zoxide, delta, zellij, nnn, ranger, mc, hyperfine.
+  → si instalas cualquiera de estos, aparecerá solo (las filas auto-filtran por presencia).
+
+LISTA FINAL de sec_tools (curaduría AMPLIADA; cada fila = _row_present, solo muestra si está):
+- Core stack: micro, vim, yazi, lazygit, lazydocker, euporie, starship, tmux, uv, ripgrep(rg),
+  bat(bat/batcat), fd(fd/fdfind).
+- Monitores/TUIs añadidos: htop, top, btop, bottom(btm), glances, ncdu, gdu, dust, duf, procs,
+  gping, dog, bandwhich, tig, gitui, fzf, zoxide, delta, eza(eza/exa), zellij, nnn, ranger, mc,
+  jq, glow, hyperfine.
+- En TU máquina, `mahg-help tools` muestra AHORA (verificado live): micro, vim, yazi, lazygit,
+  lazydocker, euporie, starship, tmux, uv, ripgrep, bat, fd, **htop, top, fzf, eza, jq, glow**.
+
+CÓMO DECLARAR EXTRAS (sin editar el script): añade líneas a **~/.config/mahg-help/tools**
+(respeta XDG_CONFIG_HOME). Formato: `label bin [altbins...]` o solo `bin`. `#` = comentario.
+Ej.:
+    btop
+    Bottom btm bottom
+    MiTool mitool-bin
+Aparecen en la sección `tools` si están instaladas. Sin fichero → comportamiento de antes.
+Documentado en `mahg-help --help`, README §15 y CHANGELOG.
+
+LÍMITE respetado: NO auto-descubro todo el PATH (ruido). Modelo = curaduría ampliada (auto-filtra)
++ extras declarados por ti.
+
+GATES (verde): shellcheck-clean (bin/mahg-help, test); tests/run.sh → RESULT: PASS (12 hard gates +
+validate 3/3). test_mahg_help ampliado (+3 casos del extras file: presente muestra / ausente oculta
+/ sin fichero renderiza), mutation-verified (neutralizar el lector de extras bitea). Idempotente.
+APLICADO: mahg-help live (symlink) ya lista htop/top/fzf/eza/jq/glow. commit local d11450e; NO
+pusheado. Sin tag ([Unreleased]).
+
+ACCIÓN PROFESSOR: `mahg-help tools` → confirma htop/top + lo presente; crea ~/.config/mahg-help/tools
+con una línea (p.ej. `btop` tras instalarlo, o cualquier bin instalado) y verla aparecer. Si OK,
+autorizo push.
+
 ---
