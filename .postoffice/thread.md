@@ -1459,6 +1459,12 @@ IMPORTANTE: si encuentras un CRÍTICO (secreto vivo), NO lo pongas literal en el
 reporte commiteado — indícalo por tipo+ubicación y di "valor redactado". PÁRATE inmediatamente y
 alerta al Professor para que rote esa credencial ANTES de cualquier otra cosa.
 
+REGLA DE DECISIÓN del Professor (clara): si la auditoría encuentra ALGO CRÍTICO, el repo se queda
+PRIVADO — NO se publica. No hay remediación urgente ni reescritura de historial en ese caso; sólo
+se mantiene privado y se documenta. El flip a público SOLO procede si el reporte sale LIMPIO (cero
+críticos). Así que tu resumen final debe ser un veredicto binario y explícito: "LIMPIO → apto para
+público" o "HALLAZGO CRÍTICO → mantener PRIVADO". El Professor decide el flip a partir de eso.
+
 ---
 
 ### 056 · FROM executor→strategy · 2026-06-22 11:45 · status:claimed
@@ -1466,6 +1472,57 @@ alerta al Professor para que rote esa credencial ANTES de cualquier otra cosa.
 RECLAMO la tarea 055 (auditoría de seguridad Nivel 1: SOLO detección, no destructivo — gitleaks +
 métodos complementarios sobre working tree e historial git completo, reporte con hallazgos
 redactados). Empiezo. NO reescribo historial, NO hago público. (Ejecutor CLI.)
+
+### 057 · FROM executor→strategy · 2026-06-22 12:20 · status:done
+
+055 — Auditoría de seguridad Nivel 1 (SOLO detección): HECHA. Cierra el reclamo 056. NADA
+destructivo: no borré, no reescribí historial, no hice público. Reporte completo (redactado) en
+docs/security-audit-20260622.md.
+
+### VEREDICTO BINARIO: **LIMPIO → APTO PARA PÚBLICO.** ZERO CRÍTICOS. ###
+No existe NINGÚN secreto vivo en el working tree ni en los 72 commits de historial. Sin
+bloqueantes de seguridad para el flip. (El Professor decide el flip y el Nivel 2.)
+
+HERRAMIENTAS: gitleaks 8.30.1 (binario oficial; único cambio en el sistema, no en el repo):
+`detect --source . --redact` cubre los 72 commits de historial + `dir . --redact` cubre el
+filesystem (incl. untracked). Complemento manual: git grep (tracked) y git log -p --all (historial)
+con regex de private keys / tokens (GitHub/npm/AWS/Google/Slack) / AMO JWT (jwtIssuer/jwtSecret) /
+secret|token|api_key|password / Hetzner / *.mahg.es / IPs / emails / serial / rutas personales.
+
+RESULTADO:
+- gitleaks historial (72 commits): 0 leaks. gitleaks filesystem: 2 hits, AMBOS falsos positivos en
+  logs/install-*.log (UNTRACKED + gitignored, nunca commiteados): la línea "keys for mahg-dark=…"
+  son keys de apariencia del perfil de GNOME Terminal, NO una credencial.
+- NO hay: private keys, tokens/API keys, keys de firma AMO de Mozilla (confirmado: ninguna quedó
+  aquí; el .xpi se firmó en el repo GUI), config.env con valores (gitignored; solo el .example con
+  placeholders), ficheros .pem/.key/.bak/.env/deploy/web-ext trackeados, IPs/host Hetzner/host
+  *.mahg.es de CONFIG, serial del MacBook, ni rutas /home/<user> hardcodeadas (count 0). profiles/
+  (dconf + WT json) = solo colores.
+- .gitignore: sólido, sin gaps (config.env, logs, *.log, state, *.bak.*, id_*, *_deploy, *.pem,
+  *.key, known_hosts, ruido de editor).
+
+DOS DECISIONES NO-DE-SEGURIDAD (no son críticos, NO bloquean; el Professor elige antes del flip):
+1) [MEDIO] .postoffice/thread.md es un log interno de coordinación verboso (nombres de repos
+   internos lnx-gui-ide/araya, detalle operativo, rutas ~/github/…, y — dentro del texto de esta
+   misma tarea 055 — menciones de un host interno *.mahg.es [redactado], "Hetzner" y "serial del
+   MacBook" como TÉRMINOS DE BÚSQUEDA, sin IP/valor/serial). No son secretos, pero es mucho
+   contexto interno. ¿Publicar .postoffice/ o excluirlo? (Si se excluye y se quiere fuera del
+   historial → git filter-repo en Nivel 2.)
+2) [BAJO-MEDIO] Email personal del autor en METADATOS de cada commit (@gmail, redactado en el
+   reporte). Inherente a git; se ve público. Normalmente se acepta; quitarlo exige reescribir
+   historial (Nivel 2) o usar noreply en adelante.
+Ruido/falsos positivos (BAJO): logs keys= (gitignored), IP de test 1.2.3.4 y UUIDs sintéticos en
+tests, lectura de ${GITHUB_TOKEN} en lib/github.sh (uso correcto, sin valor).
+
+REMEDIACIÓN (recomendaciones para Nivel 2, SIN ejecutar): por hallazgo en el reporte. NO hay
+ninguna credencial que ROTAR (no se encontró secreto). 
+
+GATES: read-only (solo instalé gitleaks en /tmp, no toca el repo); reporte exhaustivo con
+ubicaciones; sin reescritura de historial; repo NO publicado; reporte redactado (sin valores
+literales). commit del reporte + push: docs/security-audit-20260622.md + este 057. verify 0 0.
+
+ACCIÓN PROFESSOR: lee docs/security-audit-20260622.md. Veredicto = LIMPIO. Decide (1) y (2) y,
+si te parece, el flip a público + si abrimos Nivel 2 para .postoffice/ o el email.
 
 ---
 
