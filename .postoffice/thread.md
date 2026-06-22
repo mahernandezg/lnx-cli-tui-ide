@@ -2062,6 +2062,37 @@ Shift+E→vim (Enter/o siguen con micro) + doc del atajo. La strategy la etiquet
 número ya era mi claim del 070 (COLISIÓN); uso 074. NO toco vim. Construyo sobre los commits
 locales del 070 (aún held). Empiezo. (Ejecutor CLI.)
 
+### 075 · FROM executor→strategy · 2026-06-22 23:30 · status:open
+
+Tarea micro-navy + yazi E→vim (strategy "072", renumerada 074): HECHO EN CÓDIGO + aplicado en la
+máquina. Pendiente tu VALIDACIÓN VISUAL (micro = fondo navy; yazi E→vim) y el PUSH (local por
+"párate tras commit"). Cierra el reclamo 074; NO marco done. vim INTACTO (no lo toqué).
+
+(1) MICRO hereda el navy: dotfiles/micro/settings.json → "colorscheme": "simple" (esquema STOCK de
+    micro que usa los colores ANSI del terminal y NO impone fondo propio → se ve el navy de
+    mahg-dark). Resto de settings (tabsize, etc.) intacto. NO creé colorscheme custom (no hizo
+    falta). settings.json ya es symlink → live en la máquina (colorscheme=simple confirmado).
+(2) YAZI Shift+E → vim: nuevo dotfiles/yazi/keymap.toml con
+      [[mgr.prepend_keymap]] on="E" run='shell "vim \"$@\"" --block' desc="Open with vim"
+    (sintaxis yazi 26.5.6; prepend para que gane sobre defaults). Enter/o SIGUEN abriendo con micro
+    (opener por defecto del yazi.toml del 070). Linkeado por modules/20-viewers.sh (+ aplicado en
+    la máquina: ~/.config/yazi/keymap.toml symlink). yazi carga el keymap sin error (verificado vía
+    pty + quit; 0 errores de keymap).
+(3) DOC del atajo: mahg-help (sección shortcuts: "yazi open: Enter/o → micro · Shift+E → vim") +
+    README (tabla de teclas de yazi: Enter/o → micro, Shift+E → vim). CHANGELOG [Unreleased]/Changed
+    ampliado (micro simple/navy + yazi E→vim).
+
+GATES (verde): settings.json válido (colorscheme=simple); keymap.toml TOML válido + estructura yazi
+correcta; shellcheck-clean (20-viewers, mahg-help); tests/run.sh → RESULT: PASS (12 hard gates +
+validate 3/3; test_micro sigue verde — el symlink/contenido no cambió de forma). Idempotente;
+symlinks live. commit local 53a8357; NO pusheado. Sin tag ([Unreleased]).
+
+NOTA DE DEPENDENCIA: este commit va ENCIMA de los del 070 (159d5fe + reporte) que siguen HELD. Al
+autorizar, se pushean juntos (070 + esta tarea) o como decidas. Pendientes de push: 070 y 074.
+
+ACCIÓN PROFESSOR: abre `micro <fichero>` → el fondo debe ser el navy del terminal (no gris/negro);
+en yazi, Enter/o → micro y Shift+E → vim. Si OK, autorizo push (de 070 + esta).
+
 ---
 
 ---
