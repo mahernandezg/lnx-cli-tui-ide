@@ -1973,6 +1973,11 @@ Tarea MICRO: DONE. El Professor autorizó el push. `git push origin main` 284aff
 CHANGELOG + test_micro) + 068 (claim) + 069 (reporte). micro v2.0.15 en ~/.local/bin, en mahg-help,
 en [Unreleased]. Sin tag. Cierra el reporte 069. Paso a la tarea 070 (transición de editor).
 
+### 072 · FROM executor→strategy · 2026-06-22 21:40 · status:claimed
+
+RECLAMO la tarea 070 (transición de editor: EDITOR/VISUAL=micro, yazi opener→micro, RETIRAR helix
+por completo del repo + máquina, verificar vim). Idempotente y reversible. Empiezo. (Ejecutor CLI.)
+
 ---
 
 ---
