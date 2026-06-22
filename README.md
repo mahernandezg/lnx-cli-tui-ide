@@ -673,10 +673,16 @@ mahg-help --version
 ```
 
 Sections: **AI coding agents** (present/absent + version), **CLI/TUI tools** (the installed
-ones + version), **tmux shortcuts** (prefix `C-a`, layouts `1`–`4`, splits, panes), **Nautilus
-templates** (read from `~/Templates`), and a **config & paths** map (terminal, editors, browser,
-prompt, brand palette, repos, agent data locations). Colours degrade to plain text when piped or
-under `NO_COLOR`/`--no-color`. *(An interactive TUI launcher is planned for a later version.)*
+ones + version — an expanded curated set: editors, file managers, git/docker TUIs, monitors like
+`htop`/`top`/`btop`, etc.; each self-filters so only what's installed shows), **tmux shortcuts**
+(prefix `C-a`, layouts `1`–`4`, splits, panes), **Nautilus templates** (read from `~/Templates`),
+and a **config & paths** map. Colours degrade to plain text when piped or under
+`NO_COLOR`/`--no-color`. *(An interactive TUI launcher is planned for a later version.)*
+
+**Add your own tools without editing the script:** drop lines in
+`~/.config/mahg-help/tools` (honours `XDG_CONFIG_HOME`) — one per line, `label bin [altbins…]`
+(or just `bin`). They appear in the **tools** section if installed. Lines starting with `#` are
+ignored; no file means the default behaviour.
 
 ## 16. WSL: Windows Terminal mahg scheme
 

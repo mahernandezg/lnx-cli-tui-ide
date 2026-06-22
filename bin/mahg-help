@@ -24,6 +24,8 @@ for arg in "$@"; do
       printf 'Usage: mahg-help [section] [--no-color]\n'
       printf '  sections: all (default) | agents | tools | shortcuts | templates | paths\n'
       printf '  --version   print version\n'
+      printf '\nExtra tools: add lines to %s/mahg-help/tools\n' "${XDG_CONFIG_HOME:-~/.config}"
+      printf '  one per line: "label bin [altbins...]"  (or just "bin"); they show in the tools section.\n'
       exit 0 ;;
     agents|tools|shortcuts|templates|paths|all) section="$arg" ;;
     *) printf 'mahg-help: unknown argument: %s (try -h)\n' "$arg" >&2; exit 2 ;;
@@ -99,6 +101,7 @@ sec_agents() {
 
 sec_tools() {
   _hdr "CLI / TUI tools"
+  # Core stack.
   _row_present micro      micro
   _row_present vim        vim
   _row_present yazi       yazi
@@ -111,7 +114,53 @@ sec_tools() {
   _row_present ripgrep    rg
   _row_present bat        bat batcat
   _row_present fd         fd fdfind
-  printf '  %s(only installed tools are shown)%s\n' "$DIM" "$RESET"
+  # Expanded curation — common TUIs/monitors. Each row self-filters: only the
+  # installed ones print (so this is safe to ship and future-proof per machine).
+  _row_present htop       htop
+  _row_present top        top
+  _row_present btop       btop
+  _row_present bottom     btm bottom
+  _row_present glances    glances
+  _row_present ncdu       ncdu
+  _row_present gdu        gdu
+  _row_present dust       dust
+  _row_present duf        duf
+  _row_present procs      procs
+  _row_present gping      gping
+  _row_present dog        dog
+  _row_present bandwhich  bandwhich
+  _row_present tig        tig
+  _row_present gitui      gitui
+  _row_present fzf        fzf
+  _row_present zoxide     zoxide
+  _row_present delta      delta
+  _row_present eza        eza exa
+  _row_present zellij     zellij
+  _row_present nnn        nnn
+  _row_present ranger     ranger
+  _row_present mc         mc
+  _row_present jq         jq
+  _row_present glow       glow
+  _row_present hyperfine  hyperfine
+  # User-declared extras — add tools WITHOUT editing this script. One per line in
+  # $XDG_CONFIG_HOME/mahg-help/tools (default ~/.config/mahg-help/tools):
+  # "label bin [altbins...]" or just "bin". Lines starting with # are ignored.
+  local extras="${XDG_CONFIG_HOME:-$HOME/.config}/mahg-help/tools"
+  if [[ -f "$extras" ]]; then
+    local line
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      line="${line%%#*}"
+      # shellcheck disable=SC2206  # word-split into "label bin [altbins]" fields on purpose
+      local -a f=($line)
+      [[ "${#f[@]}" -eq 0 ]] && continue
+      if [[ "${#f[@]}" -eq 1 ]]; then
+        _row_present "${f[0]}" "${f[0]}"
+      else
+        _row_present "${f[0]}" "${f[@]:1}"
+      fi
+    done < "$extras"
+  fi
+  printf '  %s(only installed tools are shown; declare extras in %s)%s\n' "$DIM" "${extras/#$HOME/\~}" "$RESET"
 }
 
 # Static cheatsheet — KEEP IN SYNC with dotfiles/tmux/tmux.conf if you change binds.

@@ -9,6 +9,13 @@ bump means fixes only.
 
 ## [Unreleased]
 
+### Added
+- **`mahg-help` — expanded tools + user extras.** The CLI/TUI tools section now covers an
+  expanded curated set (incl. `htop`/`top`/`btop`/`btm`/`glances`/`fzf`/`eza`/`jq`/`glow`/`tig`/
+  `gitui`/`ncdu`/… — each self-filters, so only installed tools show), and reads user-declared
+  extras from `~/.config/mahg-help/tools` (`XDG_CONFIG_HOME`-aware; `label bin [altbins…]` per
+  line) so tools can be added without editing the script.
+
 ### Changed
 - **Default editor is now micro.** `EDITOR`/`VISUAL=micro` (managed `~/.bashrc` block),
   and yazi opens text/code files with micro (`Enter`/`o`); **`Shift+E`** opens with vim.
