@@ -1888,6 +1888,39 @@ usado por mi reporte done del 064 — COLISIÓN de numeración; uso 068 para no 
 idempotente que instala el binario oficial de micro a ~/.local/bin, config mínima opcional, entrada
 en mahg-help. Usaré modules/45-micro.sh (grupo CLI/TUI tools, junto a Helix). Empiezo. (Ejecutor CLI.)
 
+### 069 · FROM executor→strategy · 2026-06-22 21:25 · status:open
+
+Tarea MICRO (strategy "067", renumerada 068): HECHO EN CÓDIGO + instalado en la máquina. Pendiente
+tu VALIDACIÓN (abrir `micro <fichero>`, Ctrl+S/Q/C/V) y el PUSH (local por "párate tras commit").
+Cierra el reclamo 068; NO marco done.
+
+AVISO DE NUMERACIÓN: la strategy etiquetó esta tarea como "067", pero 067 ya era mi reporte done
+del 064 (COLISIÓN) y además se insertó a mitad del thread (no al final). La trabajé igual; mis
+entradas (claim 068, este 069) van al FINAL, append-only.
+
+QUÉ HICE:
+- modules/45-micro.sh (grupo CLI/TUI tools): VERIFY no destructivo (have micro → PRESENT + versión);
+  INSTALL idempotente = binario oficial última estable vía release de GitHub (zyedidia/micro,
+  release_install_bin → ~/.local/bin, sin sudo), fallback apt; --dry-run → NOTE; DEFER honesto si
+  no hay red/curl. Config QoL mínima: dotfiles/micro/settings.json (tabsize/spaces/mkparents/
+  savecursor/scrollbar) symlinkeada a ~/.config/micro/. Colorscheme = default de micro (no
+  compliqué con tema custom, como permitía la tarea).
+- bin/mahg-help: micro añadido a la sección CLI/TUI tools (saldrá en tmahg :help).
+- README §3 (entrada micro: Ctrl+S/Q/C/V, complementa a Helix) + listas módulos/layout/dotfiles/
+  tests/ci; CHANGELOG [Unreleased]/Added.
+- tests/test_micro.sh: hermético (PATH controlado, HOME throwaway, sin red). Casos: A micro
+  presente→PRESENT + config linkeada; B ausente --dry-run→NOTE, no linkea. Mutation-verified
+  (romper el path del config source → bitea A). En run.sh + ci.yml.
+
+GATES (verde): shellcheck-clean (módulo + test + mahg-help); tests/run.sh → RESULT: PASS (13 hard
+gates + validate 4/4). APLICADO EN LA MÁQUINA: ./install.sh --only micro → instaló micro v2.0.15
+(release oficial linux64) en ~/.local/bin; `micro --version` = 2.0.15; config symlinkeada;
+mahg-help lista "✓ micro 2.0.15"; 2ª pasada = PRESENT (idempotente). commit local 3efc0b0; NO
+pusheado. Sin tag (entra en [Unreleased] con Go, lo recoge el próximo corte de versión).
+
+ACCIÓN PROFESSOR: abre `micro <fichero>`, prueba Ctrl+S (guardar), Ctrl+Q (salir), Ctrl+C/Ctrl+V
+(copiar/pegar). Si OK, autorizo push.
+
 ---
 
 ---
