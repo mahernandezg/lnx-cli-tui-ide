@@ -9,7 +9,7 @@
 # ---- helpers ----------------------------------------------------------------
 # Release-binary installs go through release_install_bin() in lib/release.sh, so
 # the fetch/extract/install logic lives in one place and is shared with the ruff
-# GitHub fallback in modules/40-helix.sh.
+# GitHub fallback in modules/40-ruff.sh.
 
 # ---- bat --------------------------------------------------------------------
 # bat: code with syntax colors + git gutter. On Debian the binary is 'batcat';

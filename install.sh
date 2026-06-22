@@ -34,7 +34,7 @@ Usage: ./install.sh [options]
 Options:
   --dry-run            Print exactly what would happen; change nothing.
   --only <module>      Run only the given module (repeatable). Match by number
-                       or name fragment, e.g. --only terminal --only 40-helix
+                       or name fragment, e.g. --only terminal --only 45-micro
   --skip <module>      Skip the given module (repeatable).
   --with-vscodium      Also install VSCodium (off by default; heavy Electron).
   --force-profile-keys Reload the vendored GNOME Terminal profile keys (e.g. the
@@ -44,8 +44,9 @@ Options:
   -h, --help           Show this help.
 
 Modules (run in this order):
-  00-uv  10-terminal  20-viewers  30-euporie  40-helix
-  50-git-docker-tui  60-ssh-alias  70-starship  90-vscodium (gated)
+  00-uv  02-golang  05-ai-agents  10-terminal  15-tmux  20-viewers  30-euporie
+  40-ruff  45-micro  50-git-docker-tui  60-ssh-alias  70-starship  75-tab-title
+  80-gnome-terminal-profile  90-vscodium (gated)  95-mahg-help  96-mahg-wt
 EOF
 }
 

@@ -2,24 +2,22 @@
 # tests/test_pypi.sh — resilience regression guard for a BLOCKED PyPI.
 #
 # Background (the motivating incident): on a corporate WSL Debian,
-# files.pythonhosted.org was blocked. euporie, ruff, and basedpyright each let
-# `uv tool install` burn ~45-50s x3 before giving up — hanging the terminal for
-# minutes — and the run still printed "without fatal errors" while three tools
-# were missing. This test encodes the fix so it cannot regress:
+# files.pythonhosted.org was blocked. euporie and ruff each let `uv tool install`
+# burn ~45-50s x3 before giving up — hanging the terminal for minutes — and the run
+# still printed "without fatal errors" while tools were missing. This test encodes
+# the fix so it cannot regress:
 #
 #   (a) the closed path is detected FAST, BEFORE uv is ever invoked (no hang),
 #   (b) ruff falls back to its GitHub release binary,
-#   (c) euporie and basedpyright are DEFERRED (not FAILED),
+#   (c) euporie is DEFERRED (not FAILED),
 #   (d) the final summary reports the pending items honestly (exit 2), never
-#       "without fatal errors",
-#   and the vtsls-without-Node case is an informational NOTE (not a deferral and
-#   not a failure), because a rerun cannot fix a missing prerequisite.
+#       "without fatal errors".
 #
 # Hermetic: a curated PATH of just the needed coreutils plus shims. The real
-# tools (euporie/ruff/basedpyright/vtsls/hx/uv) and npm are deliberately NOT on
-# this PATH, so the deferral/fallback/NOTE branches trigger deterministically on
-# any host. curl is shimmed to block files.pythonhosted.org (the incident) while
-# answering the GitHub API (so the ruff fallback can resolve a tag). Plain bash.
+# tools (euporie/ruff/uv) are deliberately NOT on this PATH, so the deferral/
+# fallback branches trigger deterministically on any host. curl is shimmed to block
+# files.pythonhosted.org (the incident) while answering the GitHub API (so the ruff
+# fallback can resolve a tag). Plain bash.
 #
 # shellcheck disable=SC2016  # the fast-fail bash -c body is single-quoted ON
 # PURPOSE: $VARS inside it must expand in the child shell (from exported env).
@@ -34,8 +32,8 @@ _pass() { printf '  [PASS] %s\n' "$1"; PASS=$((PASS + 1)); }
 _fail() { printf '  [FAIL] %s\n' "$1"; FAIL=$((FAIL + 1)); }
 
 # build_core_bin <dir> — symlink in only the real coreutils the installer needs
-# on its --dry-run path. Deliberately omitted: npm, hx, euporie, ruff,
-# basedpyright, vtsls, jq, cargo — so those read as "not installed".
+# on its --dry-run path. Deliberately omitted: euporie, ruff, uv, jq, cargo — so
+# those read as "not installed".
 build_core_bin() {
   local dir="$1" c src
   local cmds="bash sh env printf date mkdir rmdir rm cat cp mv ln install find \
@@ -128,7 +126,7 @@ OUT="$SHIM/out.txt"
 LEDGER="$SHIM/outcomes.tsv"
 PATH="$SHIM" HOME="$SHIM/home" DRY_RUN=0 VERBOSE=0 \
   OUTCOME_FILE="$LEDGER" LOG_DIR="$SHIM/logs" \
-  timeout 60 "$REPO_ROOT/install.sh" --dry-run --only euporie --only helix \
+  timeout 60 "$REPO_ROOT/install.sh" --dry-run --only euporie --only ruff \
   >"$OUT" 2>&1
 RC=$?
 echo "   exit=$RC  ledger=$(wc -l <"$LEDGER" 2>/dev/null || echo 0) lines"
@@ -143,16 +141,11 @@ else
   _fail "(b) ruff did NOT fall back to github — ledger: $(grep -P '\truff\t' "$LEDGER" | tr '\n' '|')"
 fi
 
-# (c) euporie & basedpyright DEFERRED, not FAILED.
+# (c) euporie DEFERRED, not FAILED.
 if led DEFERRED euporie && ! led FAILED euporie; then
   _pass "(c) euporie DEFERRED (not failed)"
 else
   _fail "(c) euporie not deferred-cleanly — ledger: $(grep -P '\teuporie\t' "$LEDGER" | tr '\n' '|')"
-fi
-if led DEFERRED basedpyright && ! led FAILED basedpyright; then
-  _pass "(c) basedpyright DEFERRED (not failed)"
-else
-  _fail "(c) basedpyright not deferred-cleanly — ledger: $(grep -P '\tbasedpyright\t' "$LEDGER" | tr '\n' '|')"
 fi
 
 # (d) honest summary: pending status, exit 2, and NOT "without fatal errors".
@@ -162,13 +155,6 @@ if [[ "$RC" -eq 2 ]] \
   _pass "(d) summary honest: exit 2, pending section shown, no false success line"
 else
   _fail "(d) summary dishonest (exit=$RC, pending=$(grep -c 'WITH PENDING items' "$OUT"), falseok=$(grep -c 'without fatal errors' "$OUT"))"
-fi
-
-# vtsls-without-Node is an informational NOTE — not DEFERRED, not FAILED.
-if led NOTE vtsls && ! led DEFERRED vtsls && ! led FAILED vtsls; then
-  _pass "vtsls (no Node) is a NOTE — does not gate the exit code"
-else
-  _fail "vtsls not a clean NOTE — ledger: $(grep -P '\tvtsls\t' "$LEDGER" | tr '\n' '|')"
 fi
 
 # ---- Summary ----------------------------------------------------------------

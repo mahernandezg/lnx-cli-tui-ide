@@ -99,8 +99,8 @@ sec_agents() {
 
 sec_tools() {
   _hdr "CLI / TUI tools"
-  _row_present Helix      hx
   _row_present micro      micro
+  _row_present vim        vim
   _row_present yazi       yazi
   _row_present lazygit    lazygit
   _row_present lazydocker lazydocker
@@ -143,7 +143,7 @@ sec_paths() {
   _hdr "Config & paths"
   printf '  %sTerminal%s  GNOME Terminal — profile %smahg-dark%s (always dark), white block cursor\n' "$BLUE" "$RESET" "$AMBER" "$RESET"
   printf '  %sMultiplex%s tmux (prefix C-a, manual) for splits/sessions; GNOME Terminal tabs\n' "$BLUE" "$RESET"
-  printf '  %sEditors%s   Helix (hx, theme mahg-dark) · gnome-text-editor (scheme mahg-dark)\n' "$BLUE" "$RESET"
+  printf '  %sEditors%s   micro (default editor, EDITOR/VISUAL) · vim (heavy lifting) · gnome-text-editor\n' "$BLUE" "$RESET"
   printf '  %sBrowser%s   Firefox (mahg theme, signed .xpi)\n' "$BLUE" "$RESET"
   printf '  %sPrompt%s    Starship — full path, [ branch ] amber, ╰─❯ blue connector\n' "$BLUE" "$RESET"
   printf '  %sBrand%s     navy #070b16 · blue #4c86ff · amber #ffbf47 · text #edf2ff\n' "$BLUE" "$RESET"

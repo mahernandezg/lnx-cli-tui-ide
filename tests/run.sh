@@ -5,8 +5,8 @@
 #     - shellcheck (only if installed; clean is required when present)
 #     - tests/test_sete.sh  (the set -e regression suite)
 #   SOFT (informational, never gates the result):
-#     - tests/validate.sh   (the 4 tool checks; will report skips on a bare box
-#       that doesn't have glow/bat/euporie/helix installed)
+#     - tests/validate.sh   (the 3 tool checks; will report skips on a bare box
+#       that doesn't have glow/bat/euporie installed)
 set -uo pipefail
 
 HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"

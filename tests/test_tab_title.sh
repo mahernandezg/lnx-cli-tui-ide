@@ -36,7 +36,7 @@ END_SS="# <<< lnx-cli-tui-ide: starship <<<"
 seed_starship() {
   cat >"$1" <<EOF
 # ~/.bashrc seeded by the test
-export EDITOR=hx
+export EDITOR=micro
 alias ll='ls -la'
 FOREIGN_SENTINEL=keepme
 

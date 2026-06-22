@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# tests/validate.sh — the four-case end check that motivated this whole setup.
+# tests/validate.sh — the three-case end check that motivated this whole setup.
 #
 # 1. Markdown renders with glow.
 # 2. Code shows syntax colors with bat.
 # 3. A sample notebook opens in euporie with inline plots visible.
-# 4. Helix opens and its LSP attaches.
 #
 # Reports PASS/FAIL per case and exits non-zero if any case fails. Runs both
 # standalone (`./tests/validate.sh`) and sourced at the end of install.sh.
@@ -122,44 +121,17 @@ PY
   fi
 }
 
-# ---- Case 4: Helix opens and its LSP attaches ------------------------------
-case_helix() {
-  if ! have hx; then _fail "4. Helix opens and its LSP attaches (hx not installed)"; return; fi
-  # `hx --health` reports configured languages and whether their LSP binaries are
-  # found on PATH — a reliable non-interactive proxy for "the LSP will attach".
-  local health
-  health="$(hx --health 2>/dev/null || true)"
-  if [[ -z "$health" ]]; then _fail "4. Helix opens and its LSP attaches (hx --health failed)"; return; fi
-
-  local ts_ok=0 py_ok=0
-  # vtsls for TypeScript, ruff for Python should show as found/✓.
-  have vtsls && ts_ok=1
-  have ruff  && py_ok=1
-  # Cross-check Helix actually sees them (best-effort: health lists the binary).
-  if hx --health typescript 2>/dev/null | grep -qiE 'vtsls'; then ts_ok=1; fi
-  if hx --health python 2>/dev/null | grep -qiE 'ruff'; then py_ok=1; fi
-
-  if [[ "$ts_ok" -eq 1 && "$py_ok" -eq 1 ]]; then
-    _pass "4. Helix opens; LSPs available (vtsls + ruff)"
-  elif [[ "$ts_ok" -eq 1 || "$py_ok" -eq 1 ]]; then
-    _fail "4. Helix opens but only one LSP available (vtsls=$ts_ok ruff=$py_ok)"
-  else
-    _fail "4. Helix opens but no LSP available (install vtsls/ruff)"
-  fi
-}
-
-log_step "Running validation (4 motivating cases)"
+log_step "Running validation (3 motivating cases)"
 case_markdown
 case_bat
 case_euporie
-case_helix
 
 printf '\n'
 log_step "Validation results:"
 for r in "${RESULTS[@]}"; do
   if [[ "$r" == PASS* ]]; then log_ok "$r"; else log_error "$r"; fi
 done
-log_info "Summary: ${PASS_COUNT} passed, ${FAIL_COUNT} failed (of 4)"
+log_info "Summary: ${PASS_COUNT} passed, ${FAIL_COUNT} failed (of 3)"
 
 # Exit/return non-zero if any case failed.
 [[ "$FAIL_COUNT" -eq 0 ]]

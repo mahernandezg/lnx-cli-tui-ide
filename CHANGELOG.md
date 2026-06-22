@@ -9,6 +9,16 @@ bump means fixes only.
 
 ## [Unreleased]
 
+### Changed
+- **Default editor is now micro.** `EDITOR`/`VISUAL=micro` (managed `~/.bashrc` block),
+  and yazi opens text/code files with micro. vim handles the heavy lifting.
+
+### Removed
+- **Helix.** The Helix editor, its config/themes (`dotfiles/helix/`), and the
+  `basedpyright`/`vtsls` language servers are no longer installed. **ruff** survives as a
+  standalone Python linter/formatter in its own module (`modules/40-ruff.sh`). The
+  `validate.sh` Helix check is dropped (3 motivating cases now).
+
 ### Added
 - **micro editor** (`modules/45-micro.sh` + `dotfiles/micro/settings.json`): a simple,
   modeless terminal editor (Ctrl+S/Q/C/V) for quick edits, complementing Helix. Installs

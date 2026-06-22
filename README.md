@@ -6,7 +6,7 @@ prompt — and **adapts to each laptop's hardware** instead of assuming one prof
 detects the GPU's OpenGL level, available RAM, and network, then installs the best tool
 for that machine and falls back automatically when something isn't available.
 
-The philosophy: **live in the terminal.** Edit with Helix, manage files with yazi, read
+The philosophy: **live in the terminal.** Edit with micro (and vim), manage files with yazi, read
 code with bat, render Markdown with glow, drive Git/Docker with lazygit/lazydocker, view
 notebooks with euporie, and multiplex with GNOME Terminal's tabs plus **tmux** for splits.
 The desktop is only a fallback.
@@ -97,12 +97,12 @@ You should now see the two-line **Starship** prompt.
 ```bash
 ./tests/validate.sh
 ```
-This reports PASS/FAIL for the four things that motivate the whole setup (glow, bat,
-euporie, Helix+LSP). Re-running `./install.sh` any time is safe — it's idempotent.
+This reports PASS/FAIL for the three things that motivate the whole setup (glow, bat,
+euporie). Re-running `./install.sh` any time is safe — it's idempotent.
 
 **Step 7 — Start using your tools.** Each app is launched by typing its command. See
 [§3](#3-daily-use--every-tool-explained) for the exact command, what you'll see, and how to
-quit each one — for example, open the editor with **`hx`** (not `helix`).
+quit each one — for example, open the editor with **`micro`**.
 
 ---
 
@@ -111,13 +111,13 @@ quit each one — for example, open the editor with **`hx`** (not `helix`).
 | Flag | Effect |
 |------|--------|
 | `--dry-run` | Print exactly what would happen; change nothing. **Always safe to run first.** |
-| `--only <module>` | Run only matching module(s). Repeatable. Match by number or name, e.g. `--only terminal`, `--only 40-helix`. |
+| `--only <module>` | Run only matching module(s). Repeatable. Match by number or name, e.g. `--only terminal`, `--only 45-micro`. |
 | `--skip <module>` | Skip matching module(s). Repeatable. |
 | `--with-vscodium` | Also install VSCodium (off by default; heavy Electron, emergencies only). |
 | `--verbose` | Verbose/debug logging. |
 | `-h`, `--help` | Usage. |
 
-Module names: `00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-helix
+Module names: `00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-ruff
 45-micro 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile
 90-vscodium 95-mahg-help 96-mahg-wt`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
@@ -127,14 +127,15 @@ a timestamped log to `logs/install-<timestamp>.log`.
 ## 3. Daily use — every tool explained
 
 After the install finishes, you use each tool by **typing its command into the terminal and
-pressing Enter.** The command name is not always the tool's name — for example **Helix is
-launched with `hx`, not `helix`** (typing `helix` gives `command not found`).
+pressing Enter.** The default editor is **`micro`** (simple, modeless); **`vim`** is there for
+heavier work.
 
 ### Quick cheat sheet — what to type, and how to quit
 
 | Tool | Type this and press Enter | What happens | How to quit it |
 |------|---------------------------|--------------|----------------|
-| **Helix** (editor) | `hx` *(not `helix`)* — or `hx file.py`, or `hx .` | opens the editor | press `Esc`, type `:q`, Enter |
+| **micro** (editor) | `micro` — or `micro file.py` | opens the editor | `Ctrl+Q` |
+| **vim** (heavy editor) | `vim file.py` | opens the editor | `Esc`, type `:q`, Enter |
 | **yazi** (files) | `yazi` | opens the file manager | press `q` |
 | **euporie** (notebooks) | `euporie notebook file.ipynb` | opens the notebook | press `Ctrl+q` |
 | **lazygit** (git) | `lazygit` *(inside a git repo)* | opens the Git UI | press `q` |
@@ -243,7 +244,7 @@ use it** — including the exact command to start it.
 - **Advantage:** pick a file/branch/line interactively instead of typing exact names.
 - **How:**
   ```bash
-  hx "$(rg --files | fzf)"       # fuzzy-pick a file and open it in Helix
+  micro "$(rg --files | fzf)"    # fuzzy-pick a file and open it in micro
   git switch "$(git branch --format='%(refname:short)' | fzf)"
   ```
   To get the shell keybindings (`Ctrl-R` history, `Ctrl-T` files, `Alt-C` cd), add this to
@@ -262,54 +263,24 @@ use it** — including the exact command to start it.
   ```
   Inside the notebook: `Shift+Enter` runs the selected cell; **quit with `Ctrl+q`.**
 
-### Helix (`hx`) — the editor · [📖 Docs](https://docs.helix-editor.com/) · [keymap](https://docs.helix-editor.com/keymap.html)
-- **What:** a modal text editor with **built-in LSP** (no plugin setup). Pre-wired here with
-  **[vtsls](https://github.com/yioneko/vtsls)** (TypeScript) and
-  **[ruff](https://docs.astral.sh/ruff/)** (Python).
-  [`basedpyright`](https://docs.basedpyright.com/) is installed but **off by default** to
-  save RAM — enable it per project when you need types.
-- **Advantage:** selection-first editing, multiple cursors, tree-sitter highlighting, and
-  language servers that "just work" out of the box.
-- **Start it:** the command is **`hx`** (not `helix`):
-  ```bash
-  hx              # open an empty editor
-  hx app.ts       # open a file
-  hx .            # open a file picker for the current folder
-  ```
-- **First time — it's *modal*, so this trips everyone up:** when Helix opens you're in
-  **NORMAL** mode and typing letters runs commands, it does **not** insert text. To actually
-  type, press **`i`** (insert mode); press **`Esc`** to go back to NORMAL mode.
-  - **Save:** `Esc`, then `:w`, Enter.
-  - **Quit:** `Esc`, then `:q`, Enter. (`:q!` quits without saving; `:wq` saves and quits.)
-  - **Open another file:** `Space` then `f` (file picker).
-- **Essential keys** (press `Esc` first to be in NORMAL mode):
-  | Key | Action | Key | Action |
-  |-----|--------|-----|--------|
-  | `Space` `f` | file picker | `gd` | go to definition |
-  | `Space` `b` | buffer picker | `gr` | find references |
-  | `Space` `/` | search in workspace | `Space` `k` | hover docs |
-  | `Space` `a` | code action | `Space` `r` | rename symbol |
-  | `:w` `:q` | save / quit | `:lsp-restart` | restart the LSP |
-  | `g` `g` / `G` | top / bottom | `Space` `s` | symbol picker |
-
-  **Long commands → Helix:** with `EDITOR=hx` set (the installer adds it), press
-  **`Ctrl-X Ctrl-E`** at the bash prompt to edit a long command in Helix, then save+quit to
-  run it.
-  **Enable types per project:** drop a `.helix/languages.toml` in the repo adding
-  `"basedpyright"` to the Python `language-servers` list.
-- **Theme — dark, always (matches the terminal policy):** Helix is configured to **`mahg-dark`
-  in every desktop mode**. A branded **`mahg-light`** theme (light chrome, dark text, same blue
-  accent) is still **vendored and symlinked** into Helix's runtime themes dir for reference, but
-  it is **not** used by default and nothing switches it by `color-scheme`. Helix has no
-  theme-by-mode key anyway. If you ever want light for a single session you can `:theme
-  mahg-light` at runtime, but the shipped policy keeps Helix dark like the terminal.
+### vim — the heavy editor · [📖 Docs](https://www.vim.org/docs.php)
+- **What:** the venerable modal editor, for complex/long editing sessions. Used as-is from the
+  system (the repo does **not** install or configure it — bring your own `~/.vimrc`). The default
+  editor is **micro** (above); vim is for the heavy lifting.
+- **Start it:** `vim file.py`. It's **modal**: press **`i`** to insert text, **`Esc`** to go
+  back to NORMAL mode.
+  - **Save & quit:** `Esc`, then `:wq`, Enter. **Quit without saving:** `Esc`, `:q!`, Enter.
+- **Long commands → editor:** with `EDITOR=micro` set (the installer adds it), press
+  **`Ctrl-X Ctrl-E`** at the bash prompt to edit a long command in your editor, then save+quit
+  to run it.
 
 ### micro — quick, modeless editor · [📖 Docs](https://micro-editor.github.io/)
 - **What:** a simple terminal editor that behaves like a GUI one — **no modes**. Installed by
   `modules/45-micro.sh` (official latest-stable binary into `~/.local/bin`, apt fallback).
-- **Advantage:** for *fast* edits with familiar keys, complementing Helix (still the main, powerful
-  editor): **`Ctrl+S`** save · **`Ctrl+Q`** quit · **`Ctrl+C`/`Ctrl+V`** copy/paste · **`Ctrl+Z`**
-  undo. A tiny QoL config (`dotfiles/micro/settings.json`) is linked to `~/.config/micro/`.
+- **Advantage:** the **default editor** (`EDITOR`/`VISUAL=micro`; yazi opens text with it too) —
+  *fast* edits with familiar keys: **`Ctrl+S`** save · **`Ctrl+Q`** quit · **`Ctrl+C`/`Ctrl+V`**
+  copy/paste · **`Ctrl+Z`** undo. vim handles the heavy lifting. A tiny QoL config
+  (`dotfiles/micro/settings.json`) is linked to `~/.config/micro/`.
 - **How:**
   ```bash
   micro file.py        # open (creates the file if missing)
@@ -354,10 +325,9 @@ use it** — including the exact command to start it.
 | ripgrep | `rg` | https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md |
 | fzf | `fzf` | https://github.com/junegunn/fzf#usage |
 | euporie | `euporie` | https://euporie.readthedocs.io/ |
-| Helix | `hx` | https://docs.helix-editor.com/ · [keymap](https://docs.helix-editor.com/keymap.html) |
-| ↳ vtsls (TS LSP) | — | https://github.com/yioneko/vtsls |
-| ↳ ruff (Py LSP) | `ruff` | https://docs.astral.sh/ruff/ |
-| ↳ basedpyright | `basedpyright` | https://docs.basedpyright.com/ |
+| micro | `micro` | https://micro-editor.github.io/ |
+| vim | `vim` | https://www.vim.org/docs.php |
+| ruff (Python lint/format) | `ruff` | https://docs.astral.sh/ruff/ |
 | lazygit | `lazygit` | https://github.com/jesseduffield/lazygit |
 | lazydocker | `lazydocker` | https://github.com/jesseduffield/lazydocker |
 | Starship | *(your prompt)* | https://starship.rs/config/ |
@@ -477,7 +447,7 @@ Every tool declares a **primary install method and ordered fallbacks**. The engi
 
 - **Terminal — the system GNOME Terminal** is used as-is (not installed/replaced); the module
   only adds the terminal fonts (Nerd Font, with a DejaVu glyph fallback).
-- **Release tools** (yazi, Helix, lazygit, lazydocker, Starship): the **latest stable**
+- **Release tools** (yazi, ruff, micro, lazygit, lazydocker, Starship): the **latest stable**
   release is resolved at runtime from GitHub — **no pinned versions** — with `apt`/`cargo`
   as fallbacks.
 - **Nerd Font:** installed if missing, skipped if present.
@@ -493,21 +463,20 @@ modules branch on them.
 - Dotfiles are **symlinked** from `dotfiles/` into `~/.config` (bash-only, no GNU Stow).
 - Any pre-existing real config at a target is **backed up** to `<file>.bak.<timestamp>`
   before linking — nothing is silently overwritten.
-- Edits to `~/.bashrc` (Starship activation, `EDITOR`/`VISUAL=hx`) live in clearly marked
+- Edits to `~/.bashrc` (Starship activation, `EDITOR`/`VISUAL=micro`) live in clearly marked
   `# >>> lnx-cli-tui-ide: … >>>` blocks and are written **once**.
 
 ---
 
 ## 9. Validation
 
-`tests/validate.sh` (also the last step of `install.sh`) checks the four motivating cases
+`tests/validate.sh` (also the last step of `install.sh`) checks the three motivating cases
 on the current machine and reports PASS/FAIL per case. It is fully non-interactive and
 timeout-guarded, so it can never hang an unattended run.
 
 1. Markdown renders with **glow**.
 2. Code shows syntax colors with **bat**.
 3. A sample notebook loads in **euporie** and the inline-plot stack works.
-4. **Helix** opens and its LSPs are available (vtsls + ruff).
 
 ```bash
 ./tests/validate.sh
@@ -517,9 +486,7 @@ timeout-guarded, so it can never hang an unattended run.
 
 ## 10. Troubleshooting
 
-- **`command not found` for a tool you just installed.** Two usual causes: (1) the command
-  name differs from the tool name — most notably **Helix is `hx`, not `helix`** (see the
-  cheat sheet in [§3](#3-daily-use--every-tool-explained)); (2) the new install dir isn't on
+- **`command not found` for a tool you just installed.** Usually the new install dir isn't on
   your `PATH` yet in this shell — **open a new terminal** (or run `exec bash`) and try again.
 - **The prompt looks wrong / broken after install.** Your previous `~/.bashrc` is backed up.
   Restore it with `cp ~/.bashrc.bak.<timestamp> ~/.bashrc` and open a new shell.
@@ -556,7 +523,7 @@ It runs:
   (the `files.pythonhosted.org` incident). Under a curated PATH and a `curl` shim that blocks
   the PyPI file host while answering the GitHub API, it asserts the closed path is detected
   **fast, before `uv` is ever invoked** (no multi-minute hang), **ruff falls back** to its
-  GitHub release binary, **euporie/basedpyright are DEFERRED** (not failed), and the final
+  GitHub release binary, **euporie is DEFERRED** (not failed), and the final
   summary is **honest** (exit 2, no false success line). Like `test_sete.sh`, it downloads
   and installs nothing.
 - **`tests/test_tab_title.sh`** (hard gate) — a hermetic, mutation-verified suite for the
@@ -602,9 +569,9 @@ It runs:
   on, `base-index 1`, the brand navy status background `#070b16`, and the `|` / `-` split
   bindings). When `tmux` is absent it prints `SKIP` and passes, so it never false-fails on a
   minimal box.
-- **`tests/validate.sh`** (soft) — the four motivating tool checks (glow, bat, euporie,
-  Helix+LSP); it reports skips on a bare machine that doesn't have the tools installed, so
-  it never gates the result.
+- **`tests/validate.sh`** (soft) — the three motivating tool checks (glow, bat, euporie);
+  it reports skips on a bare machine that doesn't have the tools installed, so it never gates
+  the result.
 
 The same shellcheck + `test_sete.sh` + `test_pypi.sh` + `test_tab_title.sh` +
 `test_gnome_profile.sh` + `test_statusline.sh` + `test_tmux.sh` run on every push via GitHub
@@ -620,12 +587,10 @@ lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 scripts/              publish-snapshot.sh (clean public snapshot; gitleaks-gated)
 modules/              00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers
-                      30-euporie 40-helix 45-micro 50-git-docker-tui 60-ssh-alias
+                      30-euporie 40-ruff 45-micro 50-git-docker-tui 60-ssh-alias
                       70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium
                       (gated) 95-mahg-help 96-mahg-wt
-dotfiles/             helix/ (config.toml languages.toml
-                      themes/mahg-{dark,light}.toml — branded dark/light pair)
-                      micro/ starship/ tmux/ yazi/ claude-code/
+dotfiles/             micro/ (settings.json) starship/ tmux/ yazi/ claude-code/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded
                       into fresh UUIDs; not symlinked; mahg-dark is the default) ·
                       windows-terminal/mahg-dark.json (WT scheme asset)
@@ -733,7 +698,7 @@ colours. To keep both ecosystems identical, the repo vendors the brand scheme at
   mahg-wt-apply               # apply (then restart Windows Terminal)
   ```
 
-The shell layer (Starship, tmux, Helix, the agents) is already identical in both ecosystems —
+The shell layer (Starship, tmux, micro/vim, the agents) is already identical in both ecosystems —
 this covers only the Windows Terminal host's colours.
 
 ## 17. Publishing: private workshop → clean public snapshot

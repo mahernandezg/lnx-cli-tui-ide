@@ -2,7 +2,7 @@
 # lib/github.sh — resolve the latest STABLE release tag for a GitHub repo at
 # runtime, so the repo never pins a version and never goes stale.
 #
-# Used by the release-binary install methods (yazi, helix, lazygit, lazydocker).
+# Used by the release-binary install methods (yazi, ruff, lazygit, lazydocker, micro).
 # Read-only (a single GET against the releases API), so it is safe to call even in
 # --dry-run to show the version that WOULD be installed.
 [[ -n "${_LIB_GITHUB_SOURCED:-}" ]] && return 0
