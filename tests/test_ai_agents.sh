@@ -103,5 +103,38 @@ else
   _fail "C: 'antigravity' leaked into the ledger"
 fi
 
+# ---- Case D: grok has a wired installer (missing -> NOTE, not no-installer) --
+_mk_bindir "$BIN" pi codex claude agy copilot
+_run "$BIN" "$LEDGER"
+grok_status="$(status_of "$LEDGER" grok)"
+if [[ "$grok_status" == "NOTE" ]]; then
+  _pass "D: grok wired (missing -> NOTE 'would restore' via x.ai)"
+else
+  _fail "D: grok not wired (got '$grok_status', expected NOTE)"
+fi
+
+# ---- Case E: copilot via npm with Node >= 22 -> NOTE (restorable) -----------
+_mk_bindir "$BIN" pi codex claude agy grok
+printf '#!/bin/sh\necho "v22.4.0"\n' >"$BIN/node"; chmod +x "$BIN/node"
+_run "$BIN" "$LEDGER"
+cope_status="$(status_of "$LEDGER" copilot)"
+if [[ "$cope_status" == "NOTE" ]]; then
+  _pass "E: copilot wired (Node>=22 -> NOTE 'would restore' via npm)"
+else
+  _fail "E: copilot with Node>=22 not NOTE (got '$cope_status')"
+fi
+
+# ---- Case F: copilot via npm with Node < 22 -> DEFERRED (honest Node guard) --
+_mk_bindir "$BIN" pi codex claude agy grok
+printf '#!/bin/sh\necho "v18.19.0"\n' >"$BIN/node"; chmod +x "$BIN/node"
+_run "$BIN" "$LEDGER"
+copf_status="$(status_of "$LEDGER" copilot)"
+copf_detail="$(awk -F '\t' '$2=="copilot"{print $3; exit}' "$LEDGER")"
+if [[ "$copf_status" == "DEFERRED" && "$copf_detail" == *"Node"* ]]; then
+  _pass "F: copilot with Node<22 -> DEFERRED with a Node note"
+else
+  _fail "F: copilot Node<22 guard wrong (status '$copf_status', detail '$copf_detail')"
+fi
+
 printf '\ntest_ai_agents: %d passed, %d failed\n' "$PASS" "$FAIL"
 [[ "$FAIL" -eq 0 ]]

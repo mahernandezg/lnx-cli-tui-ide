@@ -27,13 +27,14 @@ Use the **real binary name** — not an old alias. Google's **Gemini CLI was dis
 | OpenAI Codex | `codex` | `/usr/local/bin/codex` | `npm install -g @openai/codex` | `~/.codex/` |
 | Claude Code | `claude` | `~/.local/bin/claude` | `curl -fsSL https://claude.ai/install.sh \| bash` | `~/.local/share/claude`, `~/.claude/` |
 | Antigravity | `agy` | `~/.local/bin/agy` | `curl -fsSL https://antigravity.google/cli/install.sh \| bash` | system keyring + `~/.gemini/antigravity-cli/` |
-| xAI Grok | `grok` | `~/.local/bin/grok` → `~/.grok/bin/grok` | *(not wired — install from the official xAI source, then re-run)* | `~/.grok/` |
-| GitHub Copilot CLI | `copilot` | `~/.local/bin/copilot` | *(not wired — install from the official GitHub source, then re-run)* | `~/.config/` |
+| xAI Grok | `grok` | `~/.local/bin/grok` → `~/.grok/bin/grok` | `curl -fsSL https://x.ai/cli/install.sh \| bash` | `~/.grok/config.toml`; login: run `grok` → OAuth (needs SuperGrok / X Premium+) |
+| GitHub Copilot CLI | `copilot` | `~/.local/bin/copilot` | `npm install -g @github/copilot` (needs Node ≥ 22; alt: `curl -fsSL https://gh.io/copilot-install \| bash`) | `~/.copilot/`; login: `/login` inside copilot → GitHub OAuth |
 
-> **pi**, **codex**, **claude** and **agy** have a wired auto‑restore (pi & agy were verified
-> live; claude & codex use their documented official installers). **grok** and **copilot** are
-> verified but have **no auto‑installer wired yet** — the module DEFERs with a note rather than
-> guess an installer. Wire them here once their official installer is confirmed.
+> **All six agents now have a wired auto‑restore** (the documented official installers). `curl`‑based
+> ones (pi, claude, agy, grok) install the binary directly; `npm`‑based ones (codex, copilot) need
+> **Node.js ≥ 22** — if Node is missing or too old the module **DEFERs honestly** with a note to
+> install Node first (it never forces). Installing a binary doesn't log you in: **grok** needs a
+> SuperGrok / X Premium+ subscription to use, and **copilot** needs a GitHub OAuth `/login`.
 
 ## PATH
 

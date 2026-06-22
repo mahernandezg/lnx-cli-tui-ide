@@ -20,17 +20,17 @@
 # Parallel arrays (NOT a delimited string — the installer commands contain '|' pipes).
 # Index i across the three arrays describes one agent: real binary name, official
 # installer command (empty = no auto-restore -> DEFER), and data/login location.
-# Installers: pi & agy were verified live; claude & codex use their documented official
-# methods; grok & copilot have no wired installer yet — they DEFER with a note rather
-# than guess (never invent an installer).
+# Installers: all six are the documented official methods (pi & agy verified live; grok via
+# x.ai; copilot via npm, which needs Node >= 22 — guarded below). npm-based installers DEFER
+# honestly when Node is missing rather than fail. We never invent an installer.
 _AI_BIN=(pi codex claude agy grok copilot)
 _AI_INSTALL=(
   "curl -fsSL https://pi.dev/install.sh | sh"
   "npm install -g @openai/codex"
   "curl -fsSL https://claude.ai/install.sh | bash"
   "curl -fsSL https://antigravity.google/cli/install.sh | bash"
-  ""
-  ""
+  "curl -fsSL https://x.ai/cli/install.sh | bash"
+  "npm install -g @github/copilot"
 )
 # shellcheck disable=SC2088  # these are human-readable location labels; the '~' is shown verbatim, never expanded.
 _AI_DATA=(
@@ -38,8 +38,8 @@ _AI_DATA=(
   "~/.codex/ (config + auth)"
   "~/.local/share/claude + ~/.claude/ (config, sessions)"
   "system keyring + ~/.gemini/antigravity-cli/"
-  "~/.grok/ (binary ~/.grok/bin/grok, login under ~/.grok/) — wire the official xAI installer when known"
-  "GitHub Copilot CLI; data under ~/.config — wire the official installer when known"
+  "~/.grok/config.toml (binary ~/.grok/bin/grok; login: run 'grok' → OAuth, needs SuperGrok/X Premium+)"
+  "~/.copilot/ (login: '/login' inside copilot → GitHub OAuth); needs Node.js >= 22"
 )
 
 # Best-effort version string: non-interactive, never hangs (EOF on stdin + timeout).
@@ -48,6 +48,15 @@ _agent_version() {
   v="$(timeout 6 "$bin" --version </dev/null 2>/dev/null | head -1 || true)"
   [[ -z "$v" ]] && v="present (version n/a)"
   printf '%s' "$v"
+}
+
+# _node_ge <major> — true if Node.js (node or nodejs) is present at >= <major>.
+_node_ge() {
+  local want="$1" nodebin="" maj
+  if have node; then nodebin="node"; elif have nodejs; then nodebin="nodejs"; fi
+  [[ -z "$nodebin" ]] && return 1
+  maj="$("$nodebin" -v 2>/dev/null | sed 's/^v//; s/\..*//')"
+  [[ -n "$maj" && "$maj" =~ ^[0-9]+$ && "$maj" -ge "$want" ]]
 }
 
 _verify_or_restore_agent() {
@@ -60,6 +69,11 @@ _verify_or_restore_agent() {
   log_warn "ai-agents: '$bin' is MISSING — see docs/ai-agents.md to restore"
   if [[ -z "$installer" ]]; then
     record_outcome DEFERRED "$bin" "missing; no auto-installer wired — restore from the official source (docs/ai-agents.md), then re-run"
+    return 0
+  fi
+  # npm-based installers (codex, copilot) need Node.js >= 22 — DEFER honestly, never force.
+  if [[ "$installer" == *"npm "* ]] && ! _node_ge 22; then
+    record_outcome DEFERRED "$bin" "missing + needs Node.js >= 22 for 'npm install' — install Node first, then re-run ($installer)"
     return 0
   fi
   if [[ "${DRY_RUN:-0}" == "1" ]]; then
