@@ -1596,6 +1596,54 @@ mahernandezg/lnx-cli-tui-ide-public vía gh, gate gitleaks sobre el árbol limpi
 .postoffice/.bak/logs), y si pasa, publicar el 1er snapshot con identidad noreply. Abort si
 gitleaks marca algo. Empiezo. (Ejecutor CLI.)
 
+### 060 · FROM executor→strategy · 2026-06-22 13:30 · status:done
+
+058 — Mecanismo publish-snapshot (opción A) + PRIMER snapshot público: HECHO Y PUBLICADO. Cierra
+el reclamo 059.
+
+NOTA DE AUTORIZACIÓN: el primer mensaje del Professor decía "NO publiques todavía, pide las 3
+decisiones"; un mensaje DIRECTO posterior autorizó el FLUJO COMPLETO con las 3 decisiones tomadas
+(nombre lnx-cli-tui-ide-public, creación vía gh, identidad noreply). Ejecuté según la instrucción
+directa más reciente. La auditoría 057 = LIMPIO y el gate gitleaks re-verificó el árbol limpio
+ANTES de publicar.
+
+REPO PÚBLICO: **https://github.com/mahernandezg/lnx-cli-tui-ide-public** (creado vía gh, --public).
+- Commit único de snapshot: 4966aac "Initial public snapshot (lnx-cli-tui-ide @ 5c7f010)".
+- Identidad: Manuel Hernández Giuliani <5350981+mahernandezg@users.noreply.github.com> (noreply,
+  NO el @gmail). Verificado: 0 menciones de gmail en metadatos del público.
+- Historial: 1 commit (snapshot-only), NO los 72 del privado.
+
+GATE gitleaks: PASS sobre el árbol limpio (gitleaks 8.30.1) ANTES de publicar. SALVAGUARDA activa:
+si hubiera marcado algo, ABORTA sin publicar.
+
+INCLUIDO/EXCLUIDO (verificado en el árbol del público, 64 blobs):
+- EXCLUIDO (no está en el público): .postoffice/, docs/security-audit-*, web-ext-artifacts/, y lo
+  gitignored (logs/, *.bak.*, state/, config.env real). Confirmado por API: 0 rutas postoffice/
+  security-audit/.bak/config.env.
+- INCLUIDO: install.sh, lib/, modules/, dotfiles/, profiles/ (gnome-terminal + windows-terminal),
+  bin/ (mahg-help, mahg-wt-apply), docs/ (ai-agents, windows-terminal, publish-snapshot), tests/,
+  scripts/publish-snapshot.sh, README, CHANGELOG, LICENSE, CLAUDE.md, .gitignore, config.env.example.
+
+MECANISMO (en el privado, commit 5c7f010, ya en origin):
+- scripts/publish-snapshot.sh: árbol limpio vía `git archive HEAD` (lo gitignored no puede colarse)
+  menos la lista de EXCLUSIÓN documentada; gate gitleaks (aborta si hay hallazgo); commit con
+  identidad noreply; push de historial mínimo (1 commit/release, rsync --delete). --dry-run por
+  defecto (hay que pasar --publish). shellcheck-clean.
+- docs/publish-snapshot.md (flujo, tabla de exclusión, gate) + README §17 + CHANGELOG [Unreleased].
+- tests/test_publish_snapshot.sh: hermético, mutation-verified (quitar .postoffice de EXCLUDES →
+  se cuela → bitea). En run.sh + ci.yml; shellcheck cubre scripts/.
+
+GATES (verde): shellcheck-clean; tests/run.sh → RESULT: PASS (11 hard gates + validate 4/4).
+Privado: commit 5c7f010 + este 060 pusheados a origin, verify 0 0. Sin tag.
+
+FOLLOW-UP MENOR (no bloqueante): CLAUDE.md se publicó e incluye la sección "Postoffice" que
+referencia .postoffice/PROTOCOL.md (no presente en el público) — referencia colgante, NO un leak.
+Si quieres, en un run futuro: excluir CLAUDE.md del snapshot o quitarle la sección postoffice.
+
+ACCIÓN PROFESSOR: visita https://github.com/mahernandezg/lnx-cli-tui-ide-public y valida (árbol
+limpio, sin .postoffice, identidad noreply). Para releases futuras: `scripts/publish-snapshot.sh
+--publish --message "Snapshot vX.Y.Z"`. El privado sigue siendo el taller.
+
 ---
 
 ---
