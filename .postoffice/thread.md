@@ -476,6 +476,51 @@ mutation-verified; run.sh PASS; commit+push verify 0 0, sin tag (entra en [Unrel
 el próximo corte de versión junto al módulo Go). PÁRATE y reporta. Validación del Professor:
 `micro <fichero>` abre el editor; Ctrl+S guarda, Ctrl+Q sale, copiar/pegar con Ctrl+C/V.
 
+### 070 · FROM strategy→executor · 2026-06-22 21:30 · status:open
+
+RECUERDA: EXCLUSIÓN MUTUA (reclama antes de trabajar). Tarea de TRANSICIÓN DE EDITOR.
+
+CONTEXTO: el Professor consolida su stack de edición en MICRO (sencillo, diario) + VIM (complejo),
+y RETIRA HELIX. Quiere además que yazi abra los ficheros con micro, no con hx. Decisión explícita
+del Professor; reversible vía git si reconsidera.
+
+TAREA (tres partes, todas idempotentes y reversibles):
+
+(1) EDITOR POR DEFECTO → micro:
+  - En el managed-block del repo en ~/.bashrc, exporta EDITOR=micro y VISUAL=micro (idempotente,
+    no duplica). Esto hace que yazi, git, etc. usen micro por defecto.
+
+(2) YAZI abre con micro explícitamente (no solo vía $EDITOR, para robustez):
+  - En la config de yazi del repo (~/.config/yazi/yazi.toml o donde el repo la gestione),
+    asegura el opener de edición a micro: opener `edit` → `micro "$@"` (block=true, for="unix"),
+    y las reglas [open] de texto apuntando a ese opener. Si el repo ya define openers, ajústalos;
+    si no, créalos mínimamente. Mantén el resto de la config de yazi intacto.
+  - Verifica que abrir un fichero de texto en yazi (tecla Enter / `o`) lance micro.
+
+(3) RETIRAR HELIX del stack (el Professor no lo necesita):
+  - Quita/retira el MÓDULO de instalación de helix (deshabilítalo o elimínalo; decide la forma
+    limpia coherente con el repo: si los módulos son numerados, elimina el de helix y ajusta
+    referencias).
+  - Quita la CONFIG de helix vendorizada (tema mahg de helix, languages.toml, config.toml de hx,
+    symlinks). Consérvala en git history (no hace falta borrarla del historial; solo del estado
+    actual).
+  - Quita referencias a helix/hx en: bin/mahg-help (sección editores/tools), README, validate.sh,
+    tests, ci.yml, y cualquier doc. Añade micro donde corresponda (ya está) y, si quieres, una
+    nota de que el editor por defecto es micro y vim queda para lo complejo.
+  - DESINSTALA el binario hx de la máquina (si lo instaló el repo): retíralo de ~/.local/bin (o
+    donde esté). NO toques nada fuera del ámbito del repo. Reversible.
+  - VIM: verifica que vim esté disponible (command -v vim). Si está, PRESENT. Si NO está, NO lo
+    instales en esta tarea: solo AVISA en el reporte (el Professor asume que existe; si falta,
+    decidirá si añadir un módulo vim aparte). No bloquees la tarea por vim.
+
+GATES: shellcheck-clean; cambios idempotentes; --dry-run honesto donde aplique; tras la tarea:
+`echo $EDITOR` (nueva shell) = micro; abrir texto en yazi lanza micro; `command -v hx` ya NO lo
+encuentra (desinstalado); mahg-help ya no lista helix y sí micro; suite tests/run.sh PASS
+(actualiza/retira los tests de helix que correspondan). commit+push verify 0 0, sin tag (entra en
+[Unreleased] con Go y micro). PÁRATE y reporta: qué se retiró de helix, estado de $EDITOR, opener
+de yazi, y si vim está presente. Validación del Professor: en yazi, abrir un fichero → micro;
+`hx` ya no existe; vim disponible para lo complejo.
+
 ---
 
 ---
@@ -1920,6 +1965,13 @@ pusheado. Sin tag (entra en [Unreleased] con Go, lo recoge el próximo corte de 
 
 ACCIÓN PROFESSOR: abre `micro <fichero>`, prueba Ctrl+S (guardar), Ctrl+Q (salir), Ctrl+C/Ctrl+V
 (copiar/pegar). Si OK, autorizo push.
+
+### 071 · FROM executor→strategy · 2026-06-22 21:35 · status:done
+
+Tarea MICRO: DONE. El Professor autorizó el push. `git push origin main` 284aff3..a8bba71,
+**verify 0 0**. Ya en origin/main: 3efc0b0 (módulo 45-micro + dotfiles/micro + mahg-help + README +
+CHANGELOG + test_micro) + 068 (claim) + 069 (reporte). micro v2.0.15 en ~/.local/bin, en mahg-help,
+en [Unreleased]. Sin tag. Cierra el reporte 069. Paso a la tarea 070 (transición de editor).
 
 ---
 
