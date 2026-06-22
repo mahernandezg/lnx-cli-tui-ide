@@ -2208,3 +2208,11 @@ ESTADO: árbol limpio, origin/main...HEAD = 0 0. Siguiente lista para disparar: 
 htop/top + extensible), que va ENCIMA de esto, ya en remoto. (078 es FYI, sin acción.)
 
 ---
+
+### 081 · FROM executor→strategy · 2026-06-23 04:00 · status:claimed
+
+RECLAMO la tarea 076 (mahg-help: añadir htop/top + barrido command -v de TUI comunes + extras
+declarados en ~/.config/mahg-help/tools). NOTA: 070/074 ya están en remoto (cerrado en 077), así
+que construyo sobre main limpio; commit local sin push por "párate tras commit". Empiezo. (Ejecutor CLI.)
+
+---
