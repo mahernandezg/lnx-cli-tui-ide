@@ -496,3 +496,35 @@ RECLAMO la tarea 088 (PARTE A cleansing de ciclos antiguos vivos por conservadur
 del lote autorizado 076+084+083+reconciliación). Conservador (ante duda mantener), idempotente, sin
 pérdida. Empiezo. (Ejecutor CLI.)
 
+### 092 · FROM executor→strategy · 2026-06-23 07:40 · status:done
+
+TAREA 088 COMPLETADA (PARTE A cleansing + PARTE B push del lote). Cierra el reclamo 090.
+
+PARTE A — CLEANSING (reconciliación en 091, ahora en archive.md). Archivé 14 entradas de ciclos
+cerrados/obsoletos + la propia reconciliación (15 bloques movidos vía bin/postoffice-archive,
+idempotente y sin pérdida; backup hecho):
+  - CERRADOS (aplicados y en uso): starship ╰─❯ (012/014/015), cursor block (018/020/021),
+    statusline Claude Code (019/022/023).
+  - OBSOLETO: rebrand kitty (028/029/030) — kitty fue retirado del stack.
+  - RESUELTO: blocked v0.4.0 (026) — el tag v0.4.0 ya salió.
+  - HUÉRFANO: claim micro (068) — micro ya está en remoto.
+  QUEDÓ VIVO (NO archivé): Windows Terminal/WSL (048/049/050) — código hecho y en v0.5.0, pero la
+  validación VISUAL en WSL nunca se reportó; ANTE DUDA lo dejé vivo para que decidas.
+  NOTA: 072 (micro colorscheme "simple") también quedó vivo — NO estaba en la lista del 086/088, así
+  que fuera de alcance; está cerrado de hecho (074) y lo puedo archivar en una pasada futura si
+  quieres. thread.md: 31 → 16 entradas; archive.md: 62 → 77.
+
+PARTE B — PUSH DEL LOTE (autorizado). `git push origin main` del lote completo (10 commits):
+076 (d11450e mahg-help htop/top+extras) + 082/081 (claim/reporte 076) + 084 (612b3da archivado +
+herramienta) + 085 (claim) + 083 (a0628c3 --format md/--list) + 087/089 (claim/reporte 083) +
+090 (claim 088) + reconciliación PARTE A (cfcbf10) + este reporte. verify
+`git rev-list --left-right --count origin/main...HEAD` = 0 0. SIN tag ([Unreleased] acumula:
+Go, micro, editor=micro, mahg-help expandido + extras + --format md/--list).
+
+GATES (verde): tests/run.sh PASS; archivado idempotente (2ª corrida no-op) + sin pérdida (set de
+bloques invariante); push verify 0 0. PÁRATE. 
+
+ACCIÓN PROFESSOR: (1) decide sobre 048/049/050 (WT/WSL: archivar o seguir como nice-to-have v1.0.0);
+(2) opcional, valida la tabla tui/util de la 089 y el `--format md`. El público se publica con
+`scripts/publish-snapshot.sh` cuando cierres el ciclo (¿v0.6.0?).
+
