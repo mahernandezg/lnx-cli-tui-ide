@@ -16,9 +16,11 @@ command_timeout = 1000
 scan_timeout = 30
 add_newline = true
 
-# Line 1: directory + git + language/tooling versions for my stack.
-# Line 2: the ╰─❯ connector caret.
+# Line 1: a ╭── opening corner, then directory + git + language/tooling versions.
+# Line 2: the ╰─❯ connector caret. The ╭/╰ (U+256D/U+2570) are matching rounded
+# box-drawing arcs in the same brand blue, framing the prompt top and bottom.
 format = """
+[╭── ](#4c86ff)\
 $directory\
 $git_branch\
 $git_status\
