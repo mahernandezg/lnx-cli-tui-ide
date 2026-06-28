@@ -20,7 +20,11 @@ bump means fixes only.
   apply on Android — `80-gnome-terminal-profile`, `90-vscodium`, `96-mahg-wt`, and `lazydocker` in
   `50-git-docker-tui` — each with a logged reason and a NOTE; `lazygit` and the rest of the stack
   install normally. Termux's unprivileged `apt` (`pkg`) needs no `sudo`, so the shared apt helpers
-  work unchanged. See README §17.
+  work unchanged. On Termux the fallback engine (`lib/fallback.sh`) **prefers the apt/`pkg` method**
+  for each tool: Termux's apt installs the correct Android/bionic build into `$PREFIX/bin` (always
+  on `PATH`), whereas the default GitHub release binaries are glibc-linked (won't exec on Android)
+  and land in `~/.local/bin` (not on Termux's `PATH`). `00-uv.sh` also creates `~/.bashrc` when
+  absent so `~/.local/bin` (uv tools, AI agents) is persisted on `PATH`. See README §17.
 - **`mahg-help` — programmatic output modes** (the default ANSI mode is unchanged): `--format md`
   emits the cheatsheet as plain markdown (no ANSI, respects the section arg) for a renderer to
   style; `--list tools` / `--list agents` emit a parseable `<bin>\t<class>` line per present tool

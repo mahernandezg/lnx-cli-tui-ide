@@ -42,8 +42,13 @@ _uv_ensure_path_persisted() {
   # shellcheck disable=SC2016
   local line='export PATH="$HOME/.local/bin:$PATH"'
   local rc="$HOME/.bashrc"
-  [[ -f "$rc" ]] || return 0
-  if grep -qF "$line" "$rc" 2>/dev/null; then
+  # Create ~/.bashrc if absent: a fresh Termux/Android home often ships none, and
+  # without this line ~/.local/bin (uv tools, the AI agents) is never on PATH.
+  if [[ ! -f "$rc" && "$DRY_RUN" != "1" ]]; then
+    run mkdir -p "$(dirname "$rc")"
+    : >"$rc"
+  fi
+  if [[ -f "$rc" ]] && grep -qF "$line" "$rc" 2>/dev/null; then
     log_debug "uv: PATH already persisted in $rc"
     return 0
   fi

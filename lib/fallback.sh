@@ -26,11 +26,32 @@ LAST_METHOD=""
 # try_methods <label> <method1> [<method2> ...]
 try_methods() {
   local label="$1"; shift
+  local -a methods=("$@")
+
+  # Termux (Android) preference: try the apt/pkg method FIRST. Termux's apt
+  # installs the correct Android/bionic build into $PREFIX/bin — always on PATH —
+  # whereas the GitHub release binaries these modules default to are glibc-linked
+  # (won't exec on Android) and land in ~/.local/bin (not on Termux's PATH). Keep
+  # any "already present" probe ahead of everything (so a rerun short-circuits
+  # without touching the network), then apt, then the original release/cargo paths
+  # as last resort. On Debian/WSL the order is untouched.
+  if [[ "${DETECT_PLATFORM:-debian}" == "termux" ]]; then
+    local -a _present=() _apt=() _rest=() m
+    for m in "${methods[@]}"; do
+      case "$m" in
+        *present*) _present+=("$m") ;;
+        *_apt)     _apt+=("$m") ;;
+        *)         _rest+=("$m") ;;
+      esac
+    done
+    methods=("${_present[@]}" "${_apt[@]}" "${_rest[@]}")
+  fi
+
   local method rc total idx=0
-  total="$#"
+  total="${#methods[@]}"
   LAST_METHOD=""
 
-  for method in "$@"; do
+  for method in "${methods[@]}"; do
     idx=$((idx + 1))
     log_step "[$label] trying method $idx/$total: $method"
 
