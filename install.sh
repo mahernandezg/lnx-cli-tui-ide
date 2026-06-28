@@ -47,6 +47,11 @@ Modules (run in this order):
   00-uv  02-golang  05-ai-agents  10-terminal  15-tmux  20-viewers  30-euporie
   40-ruff  45-micro  50-git-docker-tui  60-ssh-alias  70-starship  75-tab-title
   80-gnome-terminal-profile  90-vscodium (gated)  95-mahg-help  96-mahg-wt
+  97-termux
+
+Platform note: on Termux/Android the terminal IS Termux, so 80 (GNOME Terminal
+profile), 90 (Electron VSCodium) and 96 (Windows Terminal helper) are skipped,
+and 97-termux runs the Android-only bootstrap.
 EOF
 }
 
@@ -120,6 +125,23 @@ module_selected() {
   return 0
 }
 
+# platform_skip <name> — true if a module simply does not apply on the current
+# platform. Android/Termux has no GNOME Terminal (80), can't run an Electron
+# VSCodium (90), and is not WSL/Windows Terminal (96), so those are skipped with a
+# logged reason and a NOTE rather than run-then-no-op — keeping the run output
+# honest about what applies on Android. An explicit --only is an escape hatch.
+platform_skip() {
+  local name="$1"
+  [[ "${DETECT_PLATFORM:-debian}" == "termux" ]] || return 1
+  if [[ ${#ONLY_MODULES[@]} -gt 0 ]] && matches_any "$name" "${ONLY_MODULES[@]}"; then
+    return 1
+  fi
+  case "$name" in
+    *gnome-terminal-profile*|*vscodium*|*mahg-wt*) return 0 ;;
+  esac
+  return 1
+}
+
 # ---- Dispatch ---------------------------------------------------------------
 FAILED_MODULES=()
 RAN_MODULES=()
@@ -127,6 +149,11 @@ RAN_MODULES=()
 for mod in "${ALL_MODULES[@]}"; do
   if ! module_selected "$mod"; then
     log_debug "skip module: $mod"
+    continue
+  fi
+  if platform_skip "$mod"; then
+    log_info "skip $mod — not applicable on $DETECT_PLATFORM (no GNOME Terminal / Electron / Windows Terminal on Android)"
+    record_outcome NOTE "$mod" "skipped on $DETECT_PLATFORM — not applicable on Android"
     continue
   fi
   printf '\n'

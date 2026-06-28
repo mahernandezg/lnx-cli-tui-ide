@@ -10,6 +10,17 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **Android / Termux support — a third platform alongside Debian and WSL.** `lib/detect.sh` now
+  classifies the host into `DETECT_PLATFORM` (`debian` | `wsl` | `termux`) — Termux via
+  `$TERMUX_VERSION` / `/data/data/com.termux`, forced headless — and every module branches on it.
+  On Termux the terminal **is** Termux: `modules/10-terminal.sh` installs the JetBrainsMono Nerd
+  Font to the single `~/.termux/font.ttf` and runs `termux-reload-settings` (idempotent,
+  offline-graceful), and a new `modules/97-termux.sh` handles the Android-only bootstrap
+  (shared-storage status + `termux-setup-storage` guidance). `install.sh` skips modules that can't
+  apply on Android — `80-gnome-terminal-profile`, `90-vscodium`, `96-mahg-wt`, and `lazydocker` in
+  `50-git-docker-tui` — each with a logged reason and a NOTE; `lazygit` and the rest of the stack
+  install normally. Termux's unprivileged `apt` (`pkg`) needs no `sudo`, so the shared apt helpers
+  work unchanged. See README §17.
 - **`mahg-help` — programmatic output modes** (the default ANSI mode is unchanged): `--format md`
   emits the cheatsheet as plain markdown (no ANSI, respects the section arg) for a renderer to
   style; `--list tools` / `--list agents` emit a parseable `<bin>\t<class>` line per present tool

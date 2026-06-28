@@ -79,7 +79,8 @@ case_euporie() {
   # euporie is a full-screen TUI; we cannot drive it interactively in an
   # unattended run. Instead we (a) confirm euporie loads the notebook model, and
   # (b) confirm the plotting stack can produce an image, which is what euporie
-  # would stream via the terminal's graphics protocol (sixel on GNOME Terminal).
+  # would stream via the terminal's graphics protocol (sixel on GNOME Terminal;
+  # the terminal's own image support on Termux). This probe is graphics-agnostic.
   local euporie_ok=0 ok_load=0 ok_plot=0
   # HANG-PROOF: never invoke euporie's renderer (TUI or preview) — attached to a
   # real terminal it can read stdin or hold the tty and block forever. Confirm
@@ -122,6 +123,10 @@ PY
 }
 
 log_step "Running validation (3 motivating cases)"
+# The three cases are tool-based (glow/bat/euporie) and platform-agnostic: they
+# hold on Debian, WSL, and Termux/Android alike. Surface which platform we ran on
+# so a failing case can be read in context (e.g. a tool not yet on PATH on Termux).
+log_info "Platform: ${DETECT_PLATFORM:-debian}"
 case_markdown
 case_bat
 case_euporie

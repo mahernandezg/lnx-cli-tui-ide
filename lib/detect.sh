@@ -4,6 +4,8 @@
 # run even in --dry-run.
 #
 # Exported facts:
+#   DETECT_PLATFORM         "debian" | "wsl" | "termux" — the one fact modules
+#                           branch on to adapt fonts, paths, and which apply
 #   DETECT_DEBIAN_VERSION   e.g. "12" (major) or "" if unknown
 #   DETECT_OS_PRETTY        pretty name string
 #   DETECT_OPENGL_MAJOR     integer, 0 if undetectable
@@ -14,7 +16,7 @@
 #   DETECT_ARCH             uname -m
 #   DETECT_HEADLESS         "1" if no DISPLAY/WAYLAND_DISPLAY, else "0"
 #
-# Helpers: have(), version_ge(), opengl_ge_33()
+# Helpers: have(), version_ge(), opengl_ge_33(), is_termux(), is_wsl()
 [[ -n "${_LIB_DETECT_SOURCED:-}" ]] && return 0
 _LIB_DETECT_SOURCED=1
 
@@ -29,6 +31,26 @@ version_ge() {
   [[ "$lower" == "$2" ]]
 }
 
+# is_termux / is_wsl — single source of truth for the two non-native platforms.
+# Termux (Android): the app sets TERMUX_VERSION and lives under /data/data/com.termux.
+# WSL: the kernel string carries "microsoft"/"WSL", or WSL_DISTRO_NAME is set.
+is_termux() { [[ -n "${TERMUX_VERSION:-}" || -d /data/data/com.termux ]]; }
+is_wsl()    { grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null || [[ -n "${WSL_DISTRO_NAME:-}" ]]; }
+
+# _detect_platform — classify the host into debian | wsl | termux. This is the
+# one fact modules branch on to adapt fonts, package paths, and which modules
+# even apply (e.g. no GNOME Terminal profile on Termux). Termux is checked first
+# because a Termux box is never WSL, and its detection is the most specific.
+_detect_platform() {
+  if is_termux; then
+    DETECT_PLATFORM="termux"
+  elif is_wsl; then
+    DETECT_PLATFORM="wsl"
+  else
+    DETECT_PLATFORM="debian"
+  fi
+}
+
 _detect_debian() {
   DETECT_OS_PRETTY=""
   DETECT_DEBIAN_VERSION=""
@@ -40,6 +62,9 @@ _detect_debian() {
   elif [[ -r /etc/debian_version ]]; then
     DETECT_OS_PRETTY="Debian $(cat /etc/debian_version)"
     DETECT_DEBIAN_VERSION="$(cut -d. -f1 </etc/debian_version)"
+  elif is_termux; then
+    # Termux ships no /etc/os-release; name it from the app version when present.
+    DETECT_OS_PRETTY="Termux${TERMUX_VERSION:+ $TERMUX_VERSION} (Android)"
   else
     DETECT_OS_PRETTY="unknown"
   fi
@@ -107,6 +132,7 @@ scrollback_lines_for_ram() {
 
 run_detection() {
   log_step "Detecting environment"
+  _detect_platform
   _detect_debian
   _detect_opengl
   _detect_network
@@ -114,11 +140,14 @@ run_detection() {
   DETECT_ARCH="$(uname -m)"
   DETECT_HEADLESS=0
   [[ -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]] && DETECT_HEADLESS=1
+  # Termux is a terminal app on Android: no X11/Wayland, always headless.
+  [[ "$DETECT_PLATFORM" == "termux" ]] && DETECT_HEADLESS=1
 
-  export DETECT_OS_PRETTY DETECT_DEBIAN_VERSION DETECT_OPENGL_STRING \
+  export DETECT_PLATFORM DETECT_OS_PRETTY DETECT_DEBIAN_VERSION DETECT_OPENGL_STRING \
          DETECT_OPENGL_MAJOR DETECT_OPENGL_MINOR DETECT_NETWORK DETECT_RAM_MB \
          DETECT_ARCH DETECT_HEADLESS
 
+  log_info "Platform:  ${DETECT_PLATFORM}"
   log_info "OS:        ${DETECT_OS_PRETTY:-unknown} (version_id=${DETECT_DEBIAN_VERSION:-?})"
   log_info "Arch:      ${DETECT_ARCH}"
   log_info "RAM:       ${DETECT_RAM_MB} MB  (scrollback budget -> $(scrollback_lines_for_ram) lines)"

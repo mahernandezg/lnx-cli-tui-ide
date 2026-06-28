@@ -31,7 +31,8 @@ The desktop is only a fallback.
 14. [AI coding agents (verified & protected)](#14-ai-coding-agents-verified--protected)
 15. [`mahg-help` — your environment at a glance](#15-mahg-help--your-environment-at-a-glance)
 16. [WSL: Windows Terminal mahg scheme](#16-wsl-windows-terminal-mahg-scheme)
-17. [Publishing: private workshop → clean public snapshot](#17-publishing-private-workshop--clean-public-snapshot)
+17. [Android: Termux (the terminal IS Termux)](#17-android-termux-the-terminal-is-termux)
+18. [Publishing: private workshop → clean public snapshot](#18-publishing-private-workshop--clean-public-snapshot)
 
 ---
 
@@ -452,8 +453,9 @@ Every tool declares a **primary install method and ordered fallbacks**. The engi
   as fallbacks.
 - **Nerd Font:** installed if missing, skipped if present.
 
-Detection facts (Debian version, OpenGL, RAM, network, headless) are gathered once up front;
-modules branch on them.
+Detection facts (platform `debian`/`wsl`/`termux`, OS version, OpenGL, RAM, network, headless) are
+gathered once up front; modules branch on them — `DETECT_PLATFORM` in particular decides which
+modules apply (see §16 WSL and §17 Android/Termux).
 
 ---
 
@@ -717,7 +719,39 @@ colours. To keep both ecosystems identical, the repo vendors the brand scheme at
 The shell layer (Starship, tmux, micro/vim, the agents) is already identical in both ecosystems —
 this covers only the Windows Terminal host's colours.
 
-## 17. Publishing: private workshop → clean public snapshot
+## 17. Android: Termux (the terminal IS Termux)
+
+On **Android** the host is **[Termux](https://termux.dev)** — and Termux *is* the terminal, the
+same way GNOME Terminal is on Debian and Windows Terminal is on WSL. So there is no emulator to
+install and no GNOME/Electron layer; the installer detects Termux and adapts.
+
+- **Detection:** `lib/detect.sh` sets `DETECT_PLATFORM=termux` (via `$TERMUX_VERSION` /
+  `/data/data/com.termux`) and marks the run headless. Every module branches on that one fact.
+- **Package manager:** Termux ships `apt` (its `pkg` is a thin wrapper) and runs **unprivileged** —
+  no `sudo`, a writable `$PREFIX` — so the shared `apt_*` helpers work as-is.
+- **The terminal font:** Termux has no fontconfig; it renders from a single `~/.termux/font.ttf`.
+  `modules/10-terminal.sh` takes a Termux branch that installs the **JetBrainsMono Nerd Font** to
+  that file and runs `termux-reload-settings` (idempotent, offline-graceful).
+- **What's skipped on Android** (logged, with a NOTE in the ledger): `80-gnome-terminal-profile`
+  (no GNOME Terminal), `90-vscodium` (no Electron), `96-mahg-wt` (not WSL), and `lazydocker` in
+  `50-git-docker-tui` (no Docker engine) — while `lazygit` and the rest of the CLI/TUI stack
+  install normally. An explicit `--only` overrides the skip.
+- **Android-only bootstrap:** `modules/97-termux.sh` reports shared-storage status and guides
+  `termux-setup-storage` when `~/storage` is absent (it pops an Android permission dialog, so it is
+  never run unprompted).
+
+```bash
+# In Termux:
+pkg install git
+git clone <repo> && cd lnx-cli-tui-ide
+./install.sh --dry-run   # preview the Termux-adapted plan first
+./install.sh
+```
+
+The shell layer (Starship, tmux, micro/vim, the agents) is the same here as everywhere; only the
+platform-specific pieces above differ.
+
+## 18. Publishing: private workshop → clean public snapshot
 
 This repo is the **private workshop** (full history, the internal `.postoffice/` log, personal
 email in commit metadata). It is published to a **separate public repo by snapshot** — only the

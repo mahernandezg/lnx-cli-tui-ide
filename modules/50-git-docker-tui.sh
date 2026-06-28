@@ -68,10 +68,17 @@ method_lazydocker_release() {
 # Both prefer the latest-resolved release binary; apt is the fallback (and is often
 # absent / behind for these tools on Debian stable).
 try_methods "lazygit"    method_lazygit_present    method_lazygit_release    method_lazygit_apt
-try_methods "lazydocker" method_lazydocker_present method_lazydocker_release method_lazydocker_apt
 
-if ! have docker; then
-  log_info "note: docker engine not detected — lazydocker installs fine but needs Docker to be useful"
+# lazydocker is only useful with a Docker engine. Android/Termux can't run one, so
+# skip it there rather than install a binary that has nothing to talk to. lazygit
+# above still installs — it's just as useful on Android.
+if [[ "${DETECT_PLATFORM:-debian}" == "termux" ]]; then
+  record_outcome NOTE lazydocker "skipped on Termux — no Docker engine on Android"
+else
+  try_methods "lazydocker" method_lazydocker_present method_lazydocker_release method_lazydocker_apt
+  if ! have docker; then
+    log_info "note: docker engine not detected — lazydocker installs fine but needs Docker to be useful"
+  fi
 fi
 
 log_ok "git/docker TUI module done"

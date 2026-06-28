@@ -528,3 +528,39 @@ ACCIÓN PROFESSOR: (1) decide sobre 048/049/050 (WT/WSL: archivar o seguir como 
 (2) opcional, valida la tabla tui/util de la 089 y el `--format md`. El público se publica con
 `scripts/publish-snapshot.sh` cuando cierres el ciclo (¿v0.6.0?).
 
+### 093 · FROM executor→strategy · 2026-06-28 10:00 · status:fyi
+
+NUEVA PLATAFORMA: **Android/Termux**, tercera plataforma junto a Debian y WSL (pedido directo del
+PROFESSOR, no vía postoffice). Rama `feat/termux-platform`, NO pusheada, SIN commit (a la espera de
+luz verde del PROFESSOR). 4 fases, todas verdes.
+
+QUÉ SE HIZO:
+- **Detección (`lib/detect.sh`):** nuevo `DETECT_PLATFORM` = `debian|wsl|termux` (única verdad que
+  ramifican los módulos). Termux vía `$TERMUX_VERSION`/`/data/data/com.termux`, forzado headless;
+  `DETECT_OS_PRETTY` razonable sin `/etc/os-release`. Helpers compartidos `is_termux()`/`is_wsl()`
+  (este último unifica el `_is_wsl` que estaba duplicado en 96).
+- **apt (`lib/apt.sh`):** confirmado/documentado que el path sin sudo/sin root de Termux ya es
+  correcto (`SUDO=""`, `$PREFIX` escribible, `apt_can_use` pasa porque Termux trae `apt`).
+- **La "nueva terminal" (`modules/10-terminal.sh`):** en Termux la terminal ES Termux (sin
+  fontconfig, una sola `~/.termux/font.ttf`). Rama nueva `_install_termux_font`: baja JetBrainsMono
+  Nerd Font → `font.ttf` + `termux-reload-settings`. Idempotente, dry-run honesto, offline-graceful.
+- **Bootstrap Android (`modules/97-termux.sh`, nuevo, espejo de 96-mahg-wt):** estado de
+  almacenamiento compartido + guía `termux-setup-storage` (no se auto-ejecuta: abre diálogo Android).
+- **Gating (`install.sh`):** `platform_skip()` salta en Termux `80-gnome-terminal-profile`,
+  `90-vscodium`, `96-mahg-wt` con motivo logueado + NOTE en el ledger; `--only` es escape hatch.
+  En `50-git-docker-tui`, `lazydocker` se salta en Termux (no hay motor Docker en Android) pero
+  `lazygit` y el resto se instalan. Usage de `install.sh` actualizado (lista + nota de plataforma).
+- **Tests/docs:** `validate.sh` loguea `Platform:` (los 3 casos glow/bat/euporie son
+  agnósticos y pasan en Termux); `test_gnome_profile.sh` YA auto-skipea sin dconf (caso Termux),
+  sin cambio. README nueva §17 (Android/Termux) + §18 Publishing renumerada + facts de detección.
+  CHANGELOG [Unreleased] entrada Added.
+
+GATES (verde): `shellcheck -x -S style` clean; `tests/run.sh` → RESULT: PASS. Dry-run forzado
+`TERMUX_VERSION=… ./install.sh --dry-run` muestra Platform: termux, skips correctos (80/96 + lazydocker),
+97-termux corriendo, 10-terminal en rama Termux. Dry-run nativo Debian: sin skips espurios, rama GNOME
+intacta. NOTA: validación VISUAL real en un teléfono Android la hace el PROFESSOR (mismo caso que la
+validación WSL pendiente de 048/049/050 — relacionado: ambos son adaptación por plataforma).
+
+ACCIÓN PROFESSOR: (1) valida en el teléfono y decide si commiteo/pusheo la rama `feat/termux-platform`;
+(2) ¿esto + WT/WSL cierran el ciclo de plataformas para un bump (¿v0.6.0?)?
+

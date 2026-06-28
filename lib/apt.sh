@@ -7,12 +7,16 @@ _LIB_APT_SOURCED=1
 _APT_UPDATED=0
 
 # SUDO is empty when already root, else "sudo". Set once.
+# Termux runs unprivileged with no sudo and a writable $PREFIX, so apt-get there
+# needs NO elevation: the `have sudo` check leaves SUDO empty and the apt_*
+# helpers below run `apt-get` directly, which is exactly right on Android.
 SUDO=""
 if [[ "$(id -u)" -ne 0 ]]; then
   if have sudo; then SUDO="sudo"; else SUDO=""; fi
 fi
 
-# apt_can_use — true if apt-get exists (Debian/Ubuntu family).
+# apt_can_use — true if apt-get exists. Debian/Ubuntu and Termux all ship it
+# (Termux's `pkg` is a thin apt wrapper), so this guard passes on every platform.
 apt_can_use() { have apt-get; }
 
 # apt_update_once — run apt-get update a single time per install run.
