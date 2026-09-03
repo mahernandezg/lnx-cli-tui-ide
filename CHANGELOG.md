@@ -34,6 +34,9 @@ bump means fixes only.
   line) so tools can be added without editing the script.
 
 ### Changed
+- **P53 dotfiles reconciled read-only:** Starship now shows the dynamic hostname and uses `≡` for
+  stashes; tmux sets `mouse off` and `set-clipboard on`, matching the live P53 override without
+  vendoring its absolute-home `99-local-final.conf` include. micro and yazi were already identical.
 - **Default editor is now micro.** `EDITOR`/`VISUAL=micro` (inside the unified managed `~/.bashrc` block),
   and yazi opens text/code files with micro (`Enter`/`o`); **`Shift+E`** opens with vim.
   micro uses the stock **`simple`** colorscheme so it inherits the terminal's navy background

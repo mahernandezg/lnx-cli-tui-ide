@@ -350,26 +350,25 @@ A **two-line** prompt: information on line 1, a clean caret on line 2 so your co
 always start at the same place.
 
 ```
-~/code/web-app  main !2 ?1   v20.11.0   3.12.2
-❯ 
+╭── [workstation] ~/code/web-app [ main ] !2 ?1   v20.11.0   3.12.2
+╰─❯
 ```
 
 Line 1 segments (each appears only when relevant):
-- **directory** — current path (truncated to the repo root).
+- **hostname** — dynamic machine identity, never a hard-coded P53 host name.
+- **directory** — full current path from `~` (no repo-root truncation).
 - **git branch** + **git status** — branch name and a compact change summary
-  (`!` modified, `+` staged, `?` untracked, `⇡`/`⇣` ahead/behind…).
+  (`!` modified, `+` staged, `?` untracked, `≡` stashed, `⇡`/`⇣` ahead/behind…).
 - **language versions** — Node/TypeScript, Python, Rust, and the Docker context, shown only
   in projects that use them.
 
-Line 2 is just the branded caret `⋿⋺` (green on success, red after a failed command; the git
-branch uses `⤳`). It's tuned for speed (`command_timeout`, an explicit module list) so it stays
+Line 2 is the branded `╰─❯` connector (blue on success, red after a failed command, green in
+vim command mode). It's tuned for speed (`command_timeout`, an explicit module list) so it stays
 responsive in large repos like a big TypeScript monorepo. Activation lives in the single managed
 `~/.bashrc` fragment, guarded so it never errors if Starship is absent and never duplicates.
 
-> **Fonts:** those caret/branch glyphs (`⤳` U+2933, `⋿⋺` U+22FF/U+22FA) are standard Unicode,
-> **not** Nerd-Font icons — the vendored JetBrainsMono Nerd Font doesn't cover them, so they
-> render via fontconfig **fallback to DejaVu**. `10-terminal` installs `fonts-dejavu-core` to
-> guarantee that coverage (no tofu on a minimal box); the Nerd Font still supplies the tool icons.
+> **Fonts:** the connector glyphs (`╭`, `╰`, `─`, `❯`) are standard Unicode. DejaVu remains
+> installed as a fontconfig fallback; the Nerd Font supplies tool/language icons.
 
 ---
 
@@ -408,8 +407,9 @@ The config (branded navy, dark only) changes the **prefix to `C-a`** (press `C-a
 | `C-a` `r` | reload the config |
 | `C-a` `C-a` | send a literal `C-a` to the shell |
 
-The **mouse is on** (click panes/windows, drag borders to resize), windows count from **1**, and
-new splits/windows inherit the current pane's directory. The status bar shows the session name in
+The **tmux mouse is off** on the P53 so GNOME Terminal owns selection/copy/paste; tmux keeps
+`set-clipboard on` for application clipboard updates. Windows count from **1**, and new
+splits/windows inherit the current pane's directory. The status bar shows the session name in
 brand amber on the left and a compact clock on the right.
 
 > `C-a 1`–`4` are remapped to **layouts** (above), replacing tmux's default "go to window 1–4".

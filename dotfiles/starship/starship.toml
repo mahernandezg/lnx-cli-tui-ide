@@ -20,7 +20,7 @@ add_newline = true
 # Line 2: the ╰─❯ connector caret. The ╭/╰ (U+256D/U+2570) are matching rounded
 # box-drawing arcs in the same brand blue, framing the prompt top and bottom.
 format = """
-[╭── ](#4c86ff)\
+[╭── $hostname ](#4c86ff)\
 $directory\
 $git_branch\
 $git_status\
@@ -53,7 +53,7 @@ ahead = "⇡${count}"
 behind = "⇣${count}"
 diverged = "⇕⇡${ahead_count}⇣${behind_count}"
 untracked = "?${count}"
-stashed = "$"
+stashed = "≡"
 modified = "!${count}"
 staged = "+${count}"
 renamed = "»${count}"
@@ -98,3 +98,11 @@ disabled = true
 disabled = true
 [kubernetes]
 disabled = true
+
+# >>> MAHG: hostname identity >>>
+[hostname]
+ssh_only = false
+trim_at = ""
+format = '[\[$hostname\]]($style)'
+style = "bold cyan"
+# <<< MAHG: hostname identity <<<

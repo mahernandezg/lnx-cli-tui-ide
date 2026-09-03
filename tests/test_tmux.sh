@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # tests/test_tmux.sh — validate the vendored tmux config loads and applies the
-# Professor's decisions (prefix C-a, mouse, base-index 1, brand navy, | / - split).
+# Professor's decisions (prefix C-a, mouse off, clipboard on, base-index 1,
+# brand navy, | / - split).
 # Self-skips when tmux is not installed (like test_gnome_profile self-skips
 # without dconf), so it never false-fails on a minimal box.
 set -uo pipefail
@@ -41,7 +42,10 @@ prefix="$(tmux -L "$SOCK" show -g prefix 2>/dev/null)"
 if [[ "$prefix" == *"C-a"* ]]; then pass "prefix = C-a"; else die "prefix not C-a ($prefix)"; fi
 
 mouse="$(tmux -L "$SOCK" show -g mouse 2>/dev/null)"
-if [[ "$mouse" == *"on"* ]]; then pass "mouse on"; else die "mouse not on ($mouse)"; fi
+if [[ "$mouse" == *"off"* ]]; then pass "mouse off (terminal owns selection)"; else die "mouse not off ($mouse)"; fi
+
+clipboard="$(tmux -L "$SOCK" show -g set-clipboard 2>/dev/null)"
+if [[ "$clipboard" == *"on"* ]]; then pass "set-clipboard on"; else die "set-clipboard not on ($clipboard)"; fi
 
 base="$(tmux -L "$SOCK" show -g base-index 2>/dev/null)"
 if [[ "$base" == *"1" ]]; then pass "base-index 1"; else die "base-index not 1 ($base)"; fi

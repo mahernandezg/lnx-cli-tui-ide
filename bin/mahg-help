@@ -205,7 +205,7 @@ sec_shortcuts() {
   _kv "C-a h/j/k/l" "move between panes (H/J/K/L resize)"
   _kv "C-a c / w"   "new window / list windows"
   _kv "C-a d / r"   "detach session / reload config"
-  _kv "mouse"       "on — click panes/windows, drag borders"
+  _kv "mouse"       "off — terminal owns selection/copy; tmux clipboard on"
   _note "(tmux is launched manually; GNOME Terminal tabs: Ctrl+Shift+T, Ctrl+PgUp/PgDn)"
   if [[ "$fmt" == md ]]; then printf -- '- **yazi open** — Enter / o → micro · Shift+E → vim\n'
   else printf '  %syazi open%s    %s%s%s\n' "$BLUE" "$RESET" "$TEXT" "Enter / o → micro · Shift+E → vim" "$RESET"; fi
