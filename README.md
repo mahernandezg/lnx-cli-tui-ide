@@ -69,7 +69,7 @@ If you skip this step, the SSH module is simply skipped — no prompt, no writes
 ./install.sh --dry-run --verbose
 ```
 Read the output: it shows the hardware it detected, which install method each tool will
-use, the dotfiles it will symlink, and the exact `~/.bashrc` line it would add.
+use, the dotfiles it will symlink, and the exact managed `~/.bashrc` fragment it would add.
 
 **Step 4 — Run the real install**
 ```bash
@@ -117,8 +117,8 @@ quit each one — for example, open the editor with **`micro`**.
 | `--verbose` | Verbose/debug logging. |
 | `-h`, `--help` | Usage. |
 
-Module names: `00-base-packages 00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers
-30-euporie 40-ruff 45-micro 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
+Module names: `00-base-packages 00-uv 02-golang 03-shell-env 05-ai-agents 10-terminal 15-tmux
+20-viewers 30-euporie 40-ruff 45-micro 50-git-docker-tui 60-ssh-alias 70-starship
 80-gnome-terminal-profile 90-vscodium 95-mahg-help 96-mahg-wt`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
@@ -173,8 +173,8 @@ use it** — including the exact command to start it.
   `modules/02-golang.sh` into **`/usr/local/go`**, with **`GOPATH=~/go`** (so `go install` lands
   in `~/go/bin`).
 - **Advantage:** a current toolchain for building/running Go projects, the same on native Debian
-  and WSL. The module **guarantees PATH**: a managed, idempotent block in `~/.bashrc` adds
-  `/usr/local/go/bin` and `~/go/bin` — no manual `export` needed.
+  and WSL. The shared `03-shell-env` module **guarantees PATH**: its managed, idempotent
+  `~/.bashrc` fragment adds `/usr/local/go/bin` and `~/go/bin` — no manual `export` needed.
 - **How:**
   ```bash
   go version                     # confirm (after a new shell / `source ~/.bashrc`)
@@ -354,8 +354,8 @@ Line 1 segments (each appears only when relevant):
 
 Line 2 is just the branded caret `⋿⋺` (green on success, red after a failed command; the git
 branch uses `⤳`). It's tuned for speed (`command_timeout`, an explicit module list) so it stays
-responsive in large repos like a big TypeScript monorepo. Activation is added to `~/.bashrc`
-**once**, guarded so it never errors if `starship` isn't installed and never duplicates on re-runs.
+responsive in large repos like a big TypeScript monorepo. Activation lives in the single managed
+`~/.bashrc` fragment, guarded so it never errors if Starship is absent and never duplicates.
 
 > **Fonts:** those caret/branch glyphs (`⤳` U+2933, `⋿⋺` U+22FF/U+22FA) are standard Unicode,
 > **not** Nerd-Font icons — the vendored JetBrainsMono Nerd Font doesn't cover them, so they
@@ -468,8 +468,11 @@ modules branch on them.
 - Dotfiles are **symlinked** from `dotfiles/` into `~/.config` (bash-only, no GNU Stow).
 - Any pre-existing real config at a target is **backed up** to `<file>.bak.<timestamp>`
   before linking — nothing is silently overwritten.
-- Edits to `~/.bashrc` (Starship activation, `EDITOR`/`VISUAL=micro`) live in clearly marked
-  `# >>> lnx-cli-tui-ide: … >>>` blocks and are written **once**.
+- `~/.bashrc` is never tracked wholesale. `03-shell-env` preserves Debian/personal content and
+  owns one fragment only: `# >>> lnx-cli managed >>>` … `# <<< lnx-cli managed <<<`. It backs up
+  before every changed write, replaces rather than duplicates the block, migrates older repo
+  fragments, and leaves the C.UTF-8 locale override commented for machine-local choice.
+- Full rollback is the timestamped backup: `cp ~/.bashrc.bak.<timestamp> ~/.bashrc`.
 
 ---
 
@@ -531,16 +534,11 @@ It runs:
   GitHub release binary, **euporie is DEFERRED** (not failed), and the final
   summary is **honest** (exit 2, no false success line). Like `test_sete.sh`, it downloads
   and installs nothing.
-- **`tests/test_tab_title.sh`** (hard gate) — a hermetic, mutation-verified suite for the
-  tab-title managed block (`modules/75-tab-title.sh`). The module writes a `PROMPT_COMMAND`
-  hook to `~/.bashrc` that sets the terminal tab title to the current directory (`~` in
-  `$HOME`) on every prompt, inside a marker-guarded block **guaranteed to sit after the
-  Starship activation** — otherwise Starship's `PROMPT_COMMAND` rewrite would clobber it.
-  Against a throwaway `$HOME` the suite asserts it **preserves foreign `.bashrc` content**
-  (one timestamped backup), is **idempotent** (a second run changes nothing and makes no
-  second backup), lands **after the Starship block**, **wraps a hand-rolled hook that had no
-  markers** (de-duplicated and relocated after Starship), and **reverts only its own block**;
-  `--dry-run` changes nothing. It writes to no real file and installs nothing.
+- **`tests/test_shell_env.sh`** (hard gate) — a hermetic, mutation-sensitive suite for the
+  unified `~/.bashrc` fragment (`modules/03-shell-env.sh`). Against throwaway homes it verifies
+  create/replace/migrate, exact pre-write backup, byte-idempotent second apply, no duplicate PATH
+  or `PROMPT_COMMAND` when sourced twice, dynamic latest pi-node selection, removal of the retired
+  `claude-*` routing helpers, managed-block revert, and a true no-op `--dry-run`.
 - **`tests/test_gnome_profile.sh`** (hard gate, **self-skipping**) — a hermetic,
   mutation-verified suite for the branded **GNOME Terminal "mahg-dark" / "mahg-light" profile
   pair** (`modules/80-gnome-terminal-profile.sh`). All dconf I/O runs inside `dbus-run-session`
@@ -578,7 +576,7 @@ It runs:
   it reports skips on a bare machine that doesn't have the tools installed, so it never gates
   the result.
 
-The same shellcheck + `test_sete.sh` + `test_pypi.sh` + `test_tab_title.sh` +
+The same shellcheck + `test_base_packages.sh` + `test_sete.sh` + `test_pypi.sh` + `test_shell_env.sh` +
 `test_gnome_profile.sh` + `test_statusline.sh` + `test_tmux.sh` run on every push via GitHub
 Actions (`.github/workflows/ci.yml`).
 
@@ -591,9 +589,9 @@ bin/                  mahg-help (environment cheatsheet) · mahg-wt-apply (WSL: 
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 scripts/              publish-snapshot.sh (clean public snapshot; gitleaks-gated)
-modules/              00-base-packages 00-uv 02-golang 05-ai-agents 10-terminal
-                      15-tmux 20-viewers 30-euporie 40-ruff 45-micro
-                      50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
+modules/              00-base-packages 00-uv 02-golang 03-shell-env 05-ai-agents
+                      10-terminal 15-tmux 20-viewers 30-euporie 40-ruff 45-micro
+                      50-git-docker-tui 60-ssh-alias 70-starship
                       80-gnome-terminal-profile 90-vscodium
                       (gated) 95-mahg-help 96-mahg-wt
 dotfiles/             micro/ (settings.json) starship/ tmux/ yazi/ claude-code/
@@ -601,13 +599,13 @@ profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, l
                       into fresh UUIDs; not symlinked; mahg-dark is the default) ·
                       windows-terminal/mahg-dark.json (WT scheme asset)
 docs/                 ai-agents.md · windows-terminal.md · publish-snapshot.md
-tests/                run.sh · test_sete.sh · test_ai_agents.sh · test_golang.sh ·
-                      test_micro.sh · test_pypi.sh · test_tab_title.sh ·
+tests/                run.sh · test_base_packages.sh · test_sete.sh · test_ai_agents.sh ·
+                      test_golang.sh · test_micro.sh · test_pypi.sh · test_shell_env.sh ·
                       test_gnome_profile.sh · test_statusline.sh · test_tmux.sh ·
                       test_mahg_help.sh · test_mahg_wt.sh · test_publish_snapshot.sh ·
                       validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_golang +
-                      test_micro + test_pypi + test_tab_title + test_gnome_profile +
+                      test_micro + test_pypi + test_shell_env + test_gnome_profile +
                       test_statusline + test_tmux + test_mahg_help + test_mahg_wt +
                       test_publish_snapshot)
 config.env.example    template for your (git-ignored) local config.env

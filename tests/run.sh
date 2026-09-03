@@ -66,11 +66,11 @@ else
   echo "  test_pypi: FAIL"; rc=1
 fi
 
-echo "== tests/test_tab_title.sh (HARD gate: tab-title managed block) =="
-if bash "$HERE/test_tab_title.sh"; then
-  echo "  test_tab_title: PASS"
+echo "== tests/test_shell_env.sh (HARD gate: managed ~/.bashrc fragment) =="
+if bash "$HERE/test_shell_env.sh"; then
+  echo "  test_shell_env: PASS"
 else
-  echo "  test_tab_title: FAIL"; rc=1
+  echo "  test_shell_env: FAIL"; rc=1
 fi
 
 echo "== tests/test_gnome_profile.sh (HARD gate: GNOME Terminal profile; self-skips w/o dconf) =="

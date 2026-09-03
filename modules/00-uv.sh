@@ -35,33 +35,13 @@ method_uv_apt() {
   verify _uv_present
 }
 
-# Ensure ~/.local/bin is on PATH in future shells (idempotent append).
-_uv_ensure_path_persisted() {
-  # Single quotes are intentional: we write the literal $HOME expansion into
-  # .bashrc so it resolves at shell-startup time, not now.
-  # shellcheck disable=SC2016
-  local line='export PATH="$HOME/.local/bin:$PATH"'
-  local rc="$HOME/.bashrc"
-  [[ -f "$rc" ]] || return 0
-  if grep -qF "$line" "$rc" 2>/dev/null; then
-    log_debug "uv: PATH already persisted in $rc"
-    return 0
-  fi
-  if [[ "$DRY_RUN" == "1" ]]; then
-    log_info "[DRY] would append ~/.local/bin to PATH in $rc"
-  else
-    printf '\n# Added by lnx-cli-tui-ide (uv tools)\n%s\n' "$line" >>"$rc"
-    log_ok "uv: ensured ~/.local/bin on PATH in $rc"
-  fi
-}
+# Persistent PATH ownership lives centrally in 03-shell-env.sh.
 
 try_methods "uv" \
   method_uv_present \
   method_uv_official \
   method_uv_apt
 
-if _uv_present; then
-  _uv_ensure_path_persisted
-else
+if ! _uv_present; then
   log_error "uv: not installed — Python-based modules (euporie) will be skipped"
 fi

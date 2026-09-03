@@ -13,6 +13,11 @@ bump means fixes only.
 - **Verified bootstrap dependencies** (`modules/00-base-packages.sh`): installs and then verifies
   `curl`, `wget`, `ca-certificates`, and `wl-clipboard` before any downloader runs. This closes the
   fresh-P53 failure where later modules silently deferred because they assumed curl existed.
+- **Unified managed shell fragment** (`modules/03-shell-env.sh`): injects one idempotent
+  `# >>> lnx-cli managed >>>` block into an existing `~/.bashrc`, with a timestamped pre-write
+  backup, legacy-block migration, dynamic pi-node path, guarded Go/local/grok/NVM/Claude/Starship
+  setup, micro editor defaults, codex-araya alias, and tab-title hook. Retired `claude-*` routing
+  functions and pinned models are not carried forward; C.UTF-8 remains an optional comment.
 - **`mahg-help` — programmatic output modes** (the default ANSI mode is unchanged): `--format md`
   emits the cheatsheet as plain markdown (no ANSI, respects the section arg) for a renderer to
   style; `--list tools` / `--list agents` emit a parseable `<bin>\t<class>` line per present tool
@@ -25,7 +30,7 @@ bump means fixes only.
   line) so tools can be added without editing the script.
 
 ### Changed
-- **Default editor is now micro.** `EDITOR`/`VISUAL=micro` (managed `~/.bashrc` block),
+- **Default editor is now micro.** `EDITOR`/`VISUAL=micro` (inside the unified managed `~/.bashrc` block),
   and yazi opens text/code files with micro (`Enter`/`o`); **`Shift+E`** opens with vim.
   micro uses the stock **`simple`** colorscheme so it inherits the terminal's navy background
   (no own background). vim handles the heavy lifting.
@@ -44,8 +49,8 @@ bump means fixes only.
   Hermetic, mutation-verified test (`tests/test_micro.sh`).
 - **Go toolchain module** (`modules/02-golang.sh`): installs the official stable Go
   (go.dev tarball, sha256-verified) into `/usr/local/go`, and a **persistent, idempotent
-  PATH guard** in `~/.bashrc` putting `/usr/local/go/bin` and `~/go/bin` (GOPATH bin) on
-  PATH for every shell — native Debian and WSL. VERIFY keeps an existing Go ≥ 1.26
+  PATH entries** supplied by the unified shell fragment for `/usr/local/go/bin` and `~/go/bin`
+  (GOPATH bin) on every shell — native Debian and WSL. VERIFY keeps an existing Go ≥ 1.26
   (PRESENT) and only (re)applies the PATH guard; honest `--dry-run`/DEFER (no sudo, curl,
   jq, or network). Hermetic, mutation-verified test (`tests/test_golang.sh`).
 

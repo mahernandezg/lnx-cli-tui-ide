@@ -5,8 +5,8 @@
 # Creates two GNOME Terminal legacy profiles from the vendored dconf dumps
 # (profiles/gnome-terminal/mahg-{dark,light}.dconf), each under a NEW, per-machine
 # UUID, adds them to the profiles list WITHOUT deleting any existing profile, and
-# sets mahg-dark as the default. Cosmetic sibling of 75-tab-title.sh (also
-# GNOME-Terminal-specific), numbered after it and before the gated 90-vscodium.
+# sets mahg-dark as the default. Separate from 03-shell-env.sh because this owns
+# GNOME Terminal dconf state rather than ~/.bashrc.
 #
 # dconf layout (legacy GNOME Terminal):
 #   /org/gnome/terminal/legacy/profiles:/list      -> array of profile UUIDs
@@ -170,7 +170,7 @@ _gnome_profile_apply() {
   run mkdir -p "$BACKUP_DIR"
   backup="$BACKUP_DIR/gnome-terminal-profiles.$ts.dconf"
   # Direct redirection (read-only on dconf): dump the whole tree so a revert can
-  # restore the prior list AND default. Past the dry-run guard, mirroring 75-tab-title.
+  # restore the prior list AND default. Past the dry-run guard.
   if dconf dump "$BASE/" >"$backup" 2>/dev/null; then
     log_info "gnome-terminal-profile: backed up profiles tree -> $backup"
   else
