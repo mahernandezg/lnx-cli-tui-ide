@@ -93,7 +93,7 @@ chk 'T1: exactly one end marker' "$(grep -cF "$END" "$H/.bashrc")" '1'
 chk 'T1: exactly one pre-write backup' "$(count_baks "$H")" '1'
 backup="$(find "$H" -maxdepth 1 -name '.bashrc.bak.*' -print -quit)"
 if cmp -s "$H/original" "$backup"; then _pass 'T1: backup is byte-identical to pre-write .bashrc'; else _fail 'T1: backup does not restore original'; fi
-lacks "$H/.bashrc" 'lnx-cli-tui-ide:|claude-(anthropic|hybrid|status|go|smart)|claude-3-|ARAYA CLAUDE NATIVE DEFAULT|node-v22\.23\.1' 'T1: old blocks, claude legacy, and pinned pi path removed'
+lacks "$H/.bashrc" 'lnx-cli-tui-ide:|starship: mantener|claude-(anthropic|hybrid|status|go|smart)|claude-3-|ARAYA CLAUDE NATIVE DEFAULT|node-v22\.23\.1' 'T1: old blocks, claude legacy, and pinned pi path removed'
 
 # Required portable payload.
 has "$H/.bashrc" "export PATH=\"/usr/local/go/bin:\$PATH\"" 'T1: guarded Go toolchain PATH present'
@@ -107,6 +107,7 @@ has "$H/.bashrc" "[ -f \"\$HOME/.claude/.env\" ] && source" 'T1: Claude env load
 has "$H/.bashrc" "alias codex-araya='codex --sandbox danger-full-access --ask-for-approval never --search'" 'T1: codex-araya alias present'
 has "$H/.bashrc" '# export LANG=C.UTF-8' 'T1: locale is optional/commented'
 has "$H/.bashrc" 'command -v starship >/dev/null 2>&1 && eval' 'T1: starship init is guarded'
+chk 'T1: Starship initializes exactly once' "$(grep -c 'starship init bash' "$H/.bashrc")" '1'
 has "$H/.bashrc" '__set_tab_title() {' 'T1: tab-title hook present'
 if bash -n "$H/.bashrc"; then _pass 'T1: resulting .bashrc parses'; else _fail 'T1: resulting .bashrc does not parse'; fi
 

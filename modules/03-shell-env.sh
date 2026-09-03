@@ -90,7 +90,7 @@ _shell_env_strip() {
       return line == "# >>> lnx-cli managed >>>" ||
              line ~ /^# >>> lnx-cli-tui-ide: .* >>>$/ ||
              line == "# >>> grok installer >>>" ||
-             line == "# >>> starship: mantener al final de ~\/.bashrc >>>" ||
+             line == "# >>> starship: mantener al final de ~/.bashrc >>>" ||
              line == "# >>> ARAYA CLAUDE NATIVE DEFAULT >>>" ||
              line == "# DESACTIVADO POR SCRIPT: # ===== Claude Code + DeepSeek ====="
     }
