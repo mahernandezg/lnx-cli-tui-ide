@@ -22,13 +22,14 @@ BIN="$TMP/bin"; mkdir -p "$BIN"
 _run() {  # <home> <ledger> <dry>
   local home="$1" out="$2" dry="$3"
   : >"$out"
-  PATH="$BIN:/usr/bin:/bin" DRY_RUN="$dry" REPO_ROOT="$ROOT" LOG_DIR="$TMP/logs" \
+  PATH="$BIN:/usr/bin:/bin" TEST_BIN="$BIN" DRY_RUN="$dry" REPO_ROOT="$ROOT" LOG_DIR="$TMP/logs" \
   OUTCOME_FILE="$out" HOME="$home" bash -c '
     set -uo pipefail
     # shellcheck disable=SC1090,SC1091
     . "$REPO_ROOT/lib/log.sh"; . "$REPO_ROOT/lib/detect.sh"; . "$REPO_ROOT/lib/fallback.sh"
     . "$REPO_ROOT/lib/github.sh"; . "$REPO_ROOT/lib/release.sh"; . "$REPO_ROOT/lib/apt.sh"
     . "$REPO_ROOT/lib/symlink.sh"; . "$REPO_ROOT/lib/outcome.sh"
+    have() { [[ -x "$TEST_BIN/$1" ]]; }
     log_init >/dev/null 2>&1 || true
     . "$REPO_ROOT/modules/45-micro.sh"
   ' >/dev/null 2>&1

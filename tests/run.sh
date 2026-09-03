@@ -24,6 +24,13 @@ else
   echo "  shellcheck not installed — skipped (install: sudo apt install shellcheck)"
 fi
 
+echo "== tests/test_base_packages.sh (HARD gate: bootstrap dependencies) =="
+if bash "$HERE/test_base_packages.sh"; then
+  echo "  test_base_packages: PASS"
+else
+  echo "  test_base_packages: FAIL"; rc=1
+fi
+
 echo "== tests/test_sete.sh (HARD gate: set -e regression) =="
 if bash "$HERE/test_sete.sh"; then
   echo "  test_sete: PASS"
@@ -52,6 +59,13 @@ else
   echo "  test_micro: FAIL"; rc=1
 fi
 
+echo "== tests/test_cli_tools.sh (HARD gate: P53 CLI/TUI package inventory) =="
+if bash "$HERE/test_cli_tools.sh"; then
+  echo "  test_cli_tools: PASS"
+else
+  echo "  test_cli_tools: FAIL"; rc=1
+fi
+
 echo "== tests/test_pypi.sh (HARD gate: PyPI-unreachable resilience) =="
 if bash "$HERE/test_pypi.sh"; then
   echo "  test_pypi: PASS"
@@ -59,11 +73,11 @@ else
   echo "  test_pypi: FAIL"; rc=1
 fi
 
-echo "== tests/test_tab_title.sh (HARD gate: tab-title managed block) =="
-if bash "$HERE/test_tab_title.sh"; then
-  echo "  test_tab_title: PASS"
+echo "== tests/test_shell_env.sh (HARD gate: managed ~/.bashrc fragment) =="
+if bash "$HERE/test_shell_env.sh"; then
+  echo "  test_shell_env: PASS"
 else
-  echo "  test_tab_title: FAIL"; rc=1
+  echo "  test_shell_env: FAIL"; rc=1
 fi
 
 echo "== tests/test_gnome_profile.sh (HARD gate: GNOME Terminal profile; self-skips w/o dconf) =="

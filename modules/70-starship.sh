@@ -8,8 +8,8 @@
 #   3. official installer -> sh.starship.rs script, only if the release path fails
 #
 # Config (dotfiles/starship/starship.toml) is symlinked to ~/.config/starship.toml
-# with the shared backup-then-link helper. Bash activation is written to ~/.bashrc
-# exactly once, guarded by a managed marker block so re-runs never duplicate it.
+# with the shared backup-then-link helper. Bash activation is owned centrally by
+# modules/03-shell-env.sh so this module never writes ~/.bashrc.
 
 _starship_present() { have starship; }
 
@@ -56,39 +56,6 @@ method_starship_official() {
   verify _starship_present
 }
 
-# ---- Bash activation (idempotent, marker-guarded) ---------------------------
-_starship_activate_bash() {
-  local rc="$HOME/.bashrc"
-  local begin="# >>> lnx-cli-tui-ide: starship >>>"
-  local end="# <<< lnx-cli-tui-ide: starship <<<"
-  # Written verbatim into .bashrc; it must resolve at shell startup, not here.
-  # Guarded so a machine without starship on PATH doesn't error on shell startup.
-  # shellcheck disable=SC2016
-  local init_line='command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"'
-
-  # Already activated? The unique marker is the single source of truth — never
-  # append twice on a re-run.
-  if [[ -f "$rc" ]] && grep -qF "$begin" "$rc" 2>/dev/null; then
-    log_info "starship: bash activation already present in $rc (skipping)"
-    return 0
-  fi
-
-  if [[ "$DRY_RUN" == "1" ]]; then
-    log_info "[DRY] would append the following managed block to $rc:"
-    log_info "[DRY]   $begin"
-    log_info "[DRY]   $init_line"
-    log_info "[DRY]   $end"
-    return 0
-  fi
-
-  {
-    printf '\n%s\n' "$begin"
-    printf '%s\n' "$init_line"
-    printf '%s\n' "$end"
-  } >>"$rc"
-  log_ok "starship: added bash activation to $rc"
-}
-
 # ---- Orchestrate ------------------------------------------------------------
 try_methods "starship" \
   method_starship_present \
@@ -98,12 +65,6 @@ try_methods "starship" \
 # Two-line prompt config (backed up then symlinked by the shared helper).
 link_dotfile "$REPO_ROOT/dotfiles/starship/starship.toml" "$HOME/.config/starship.toml"
 
-# Write bash activation to ~/.bashrc (the required target). Only ~/.bashrc is
-# managed; for a non-bash login shell we leave a clear TODO and never touch its rc.
-_starship_activate_bash
-case "${SHELL:-}" in
-  */zsh)  log_info "starship: login shell is zsh — TODO: add 'eval \"\$(starship init zsh)\"' to ~/.zshrc (not written automatically)." ;;
-  */fish) log_info "starship: login shell is fish — TODO: add 'starship init fish | source' to ~/.config/fish/config.fish (not written automatically)." ;;
-esac
+# Bash activation is already present in the shared 03-shell-env block.
 
 log_ok "starship module done"

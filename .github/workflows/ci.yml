@@ -14,6 +14,9 @@ jobs:
       - name: shellcheck
         run: shellcheck -x -S style install.sh lib/*.sh modules/*.sh tests/*.sh scripts/*.sh bin/mahg-help bin/mahg-wt-apply dotfiles/claude-code/statusline.sh
 
+      - name: base-package bootstrap suite
+        run: bash tests/test_base_packages.sh
+
       - name: set -e regression suite
         run: bash tests/test_sete.sh
 
@@ -26,11 +29,14 @@ jobs:
       - name: micro editor module suite
         run: bash tests/test_micro.sh
 
+      - name: P53 CLI/TUI package inventory suite
+        run: bash tests/test_cli_tools.sh
+
       - name: PyPI-unreachable resilience suite
         run: bash tests/test_pypi.sh
 
-      - name: tab-title managed-block suite
-        run: bash tests/test_tab_title.sh
+      - name: managed bashrc fragment suite
+        run: bash tests/test_shell_env.sh
 
       # dconf-cli so the GNOME Terminal profile suite runs for real (it self-skips
       # if dconf is absent or its D-Bus service cannot activate). dbus-run-session

@@ -36,7 +36,14 @@ _TOOLS=(
   "fzf|fzf|util"              "zoxide|zoxide|util"        "delta|delta|util"
   "eza|eza,exa|util"          "zellij|zellij|tui"         "nnn|nnn|tui"
   "ranger|ranger|tui"         "mc|mc|tui"                 "jq|jq|util"
-  "glow|glow|util"            "hyperfine|hyperfine|util"
+  "glow|glow|util"            "hyperfine|hyperfine|util"   "adb|adb|util"
+  "fastfetch|fastfetch|util"  "gh|gh|util"                 "git|git|util"
+  "git-lfs|git-lfs|util"      "hwinfo|hwinfo|util"         "iftop|iftop|tui"
+  "inxi|inxi|util"            "iotop|iotop|tui"            "lsof|lsof|util"
+  "nvme|nvme|util"            "nvtop|nvtop|tui"            "powertop|powertop|tui"
+  "shellcheck|shellcheck|util" "smartctl|smartctl|util"     "strace|strace|util"
+  "thefuck|thefuck|util"      "traceroute|traceroute|util" "tree|tree|util"
+  "yq|yq|util"
 )
 _AGENTS="pi codex claude agy grok copilot"
 
@@ -198,7 +205,7 @@ sec_shortcuts() {
   _kv "C-a h/j/k/l" "move between panes (H/J/K/L resize)"
   _kv "C-a c / w"   "new window / list windows"
   _kv "C-a d / r"   "detach session / reload config"
-  _kv "mouse"       "on — click panes/windows, drag borders"
+  _kv "mouse"       "off — terminal owns selection/copy; tmux clipboard on"
   _note "(tmux is launched manually; GNOME Terminal tabs: Ctrl+Shift+T, Ctrl+PgUp/PgDn)"
   if [[ "$fmt" == md ]]; then printf -- '- **yazi open** — Enter / o → micro · Shift+E → vim\n'
   else printf '  %syazi open%s    %s%s%s\n' "$BLUE" "$RESET" "$TEXT" "Enter / o → micro · Shift+E → vim" "$RESET"; fi
