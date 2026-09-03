@@ -13,6 +13,10 @@ bump means fixes only.
 - **Verified bootstrap dependencies** (`modules/00-base-packages.sh`): installs and then verifies
   `curl`, `wget`, `ca-certificates`, and `wl-clipboard` before any downloader runs. This closes the
   fresh-P53 failure where later modules silently deferred because they assumed curl existed.
+- **P53 apt-native CLI/TUI inventory** (`modules/25-cli-tools.sh`): declares and verifies the
+  workstation's manually installed terminal monitors, diagnostics, and development utilities
+  (`btop`, `nvtop`, `ncdu`, `gh`, `jq`, `shellcheck`, and the rest of the documented 25-package
+  set) without pulling GUI-only `gsmartcontrol` into the CLI repo.
 - **Unified managed shell fragment** (`modules/03-shell-env.sh`): injects one idempotent
   `# >>> lnx-cli managed >>>` block into an existing `~/.bashrc`, with a timestamped pre-write
   backup, legacy-block migration, dynamic pi-node path, guarded Go/local/grok/NVM/Claude/Starship

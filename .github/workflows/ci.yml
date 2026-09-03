@@ -29,6 +29,9 @@ jobs:
       - name: micro editor module suite
         run: bash tests/test_micro.sh
 
+      - name: P53 CLI/TUI package inventory suite
+        run: bash tests/test_cli_tools.sh
+
       - name: PyPI-unreachable resilience suite
         run: bash tests/test_pypi.sh
 

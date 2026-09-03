@@ -59,6 +59,13 @@ else
   echo "  test_micro: FAIL"; rc=1
 fi
 
+echo "== tests/test_cli_tools.sh (HARD gate: P53 CLI/TUI package inventory) =="
+if bash "$HERE/test_cli_tools.sh"; then
+  echo "  test_cli_tools: PASS"
+else
+  echo "  test_cli_tools: FAIL"; rc=1
+fi
+
 echo "== tests/test_pypi.sh (HARD gate: PyPI-unreachable resilience) =="
 if bash "$HERE/test_pypi.sh"; then
   echo "  test_pypi: PASS"

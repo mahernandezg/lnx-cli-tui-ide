@@ -118,7 +118,7 @@ quit each one — for example, open the editor with **`micro`**.
 | `-h`, `--help` | Usage. |
 
 Module names: `00-base-packages 00-uv 02-golang 03-shell-env 05-ai-agents 10-terminal 15-tmux
-20-viewers 30-euporie 40-ruff 45-micro 50-git-docker-tui 60-ssh-alias 70-starship
+20-viewers 25-cli-tools 30-euporie 40-ruff 45-micro 50-git-docker-tui 60-ssh-alias 70-starship
 80-gnome-terminal-profile 90-vscodium 95-mahg-help 96-mahg-wt`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
@@ -249,6 +249,15 @@ use it** — including the exact command to start it.
   ```
   To get the shell keybindings (`Ctrl-R` history, `Ctrl-T` files, `Alt-C` cd), add this to
   `~/.bashrc`: `eval "$(fzf --bash)"`.
+
+### P53 CLI/TUI toolkit
+
+`25-cli-tools` reproduces the apt-native command set that was manually installed on the P53:
+`adb`, `btop`, `fastfetch`, `gh`, `git`, `git-lfs`, `htop`, `hwinfo`, `iftop`, `inxi`, `iotop`,
+`jq`, `lsof`, `ncdu`, `nvme-cli`, `nvtop`, `powertop`, `procps` (for `top`), `shellcheck`,
+`smartmontools`, `strace`, `thefuck`, `traceroute`, `tree`, and `yq`. Each package is skipped when
+its command already exists and post-install verified when apt installs it. `bat` remains owned by
+`20-viewers`; `gsmartcontrol` is deliberately excluded because it is a GUI application.
 
 ### euporie — Jupyter notebooks in the terminal · [📖 Docs](https://euporie.readthedocs.io/)
 - **What:** a TUI for viewing and running `.ipynb` notebooks, with **inline plots** via the
@@ -590,7 +599,8 @@ lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 scripts/              publish-snapshot.sh (clean public snapshot; gitleaks-gated)
 modules/              00-base-packages 00-uv 02-golang 03-shell-env 05-ai-agents
-                      10-terminal 15-tmux 20-viewers 30-euporie 40-ruff 45-micro
+                      10-terminal 15-tmux 20-viewers 25-cli-tools 30-euporie
+                      40-ruff 45-micro
                       50-git-docker-tui 60-ssh-alias 70-starship
                       80-gnome-terminal-profile 90-vscodium
                       (gated) 95-mahg-help 96-mahg-wt
@@ -600,12 +610,13 @@ profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, l
                       windows-terminal/mahg-dark.json (WT scheme asset)
 docs/                 ai-agents.md · windows-terminal.md · publish-snapshot.md
 tests/                run.sh · test_base_packages.sh · test_sete.sh · test_ai_agents.sh ·
-                      test_golang.sh · test_micro.sh · test_pypi.sh · test_shell_env.sh ·
+                      test_golang.sh · test_micro.sh · test_cli_tools.sh · test_pypi.sh ·
+                      test_shell_env.sh ·
                       test_gnome_profile.sh · test_statusline.sh · test_tmux.sh ·
                       test_mahg_help.sh · test_mahg_wt.sh · test_publish_snapshot.sh ·
                       validate.sh + sample.md/py/ipynb
 .github/workflows/    ci.yml (shellcheck + test_sete + test_ai_agents + test_golang +
-                      test_micro + test_pypi + test_shell_env + test_gnome_profile +
+                      test_micro + test_cli_tools + test_pypi + test_shell_env + test_gnome_profile +
                       test_statusline + test_tmux + test_mahg_help + test_mahg_wt +
                       test_publish_snapshot)
 config.env.example    template for your (git-ignored) local config.env

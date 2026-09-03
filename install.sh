@@ -45,7 +45,7 @@ Options:
 
 Modules (run in this order):
   00-base-packages  00-uv  02-golang  03-shell-env  05-ai-agents  10-terminal
-  15-tmux  20-viewers  30-euporie  40-ruff  45-micro  50-git-docker-tui
+  15-tmux  20-viewers  25-cli-tools  30-euporie  40-ruff  45-micro  50-git-docker-tui
   60-ssh-alias  70-starship
   80-gnome-terminal-profile  90-vscodium (gated)  95-mahg-help  96-mahg-wt
 EOF
