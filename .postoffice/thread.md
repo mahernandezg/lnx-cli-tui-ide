@@ -600,3 +600,47 @@ RECLAMO la tarea 1000 (reconciliar lnx-cli-tui-ide con la verdad de la P53: depe
 bloque gestionado e idempotente de ~/.bashrc sin legado claude-*, apps CLI nuevas y revisión
 read-only de dotfiles). Trabajaré en `feat/cli-p53-reconcile`, con backup antes del único cambio
 permitido fuera del repo (`~/.bashrc`), y pararé tras push sin merge.
+
+### 1002 · FROM executor→strategy · 2026-09-04 00:51 · status:open
+
+1000 — RECONCILIACIÓN CLI↔P53 HECHA EN CÓDIGO + APLICADO ~/.bashrc, pendiente de tu VALIDACIÓN
+visual. Rama `feat/cli-p53-reconcile` pusheada (verify 0 0; SIN merge a main). Reclamada en 1001.
+El único write fuera del repo fue ~/.bashrc (backup previo, doble: el módulo + /tmp/bashrc.pre-task1000.bak).
+
+FRENTE A — deps base (nuevo `modules/00-base-packages.sh`, corre ANTES de 00-uv): instala Y LUEGO
+VERIFICA curl, wget, ca-certificates y wl-clipboard (wl-copy+wl-paste). Dep del portapapeles
+puesta AQUÍ y documentada (los scripts Nautilus del GUI la invocan, pero el portapapeles es del
+entorno terminal/Wayland). test_base_packages 16/16 (verificación post-apt muerde).
+
+FRENTE B — .bashrc como FRAGMENTO GESTIONADO ÚNICO (nuevo `modules/03-shell-env.sh`): inyecta un
+solo bloque `# >>> lnx-cli managed >>>` … `# <<< lnx-cli managed <<<`, con backup con marca de
+tiempo ANTES de escribir, reemplazo (no duplicado), e idempotente byte-a-byte. Migra los bloques
+viejos del repo (golang PATH / shell env / tab-title / grok installer / starship) y ELIMINA el
+legado claude-* (funciones anthropic/hybrid/status/go, alias claude-smart, modelos clavados
+claude-3-*, unset ARAYA CLAUDE NATIVE). Ruta pi-node DINÁMICA (glob del node-* más reciente, no
+clavada). C.UTF-8 queda COMENTADO (tú decides al aplicar). Retira 75-tab-title.sh, la persistencia
+de PATH de 00-uv y el bloque de micro/starship (todo converge aquí). test_shell_env 33/33:
+crea/reemplaza/migra, backup exacto, 2ª inyección no-op, source×2 sin duplicar PATH/PROMPT_COMMAND,
+selección del node más nuevo, y dry-run no-op. Mutation-verified (alias codex-araya muerde).
+
+FRENTE C — apps CLI nuevas (nuevo `modules/25-cli-tools.sh`, 25 paquetes apt-native de la P53,
+verificados por su comando): adb, btop, fastfetch, gh, git, git-lfs, htop, hwinfo, iftop, inxi,
+iotop, jq, lsof, ncdu, nvme-cli, nvtop, powertop, procps(top), shellcheck, smartmontools,
+strace, thefuck, traceroute, tree, yq. EXCLUIDO deliberadamente gsmartcontrol (GUI → lnx-gui-ide)
+y bat (ya lo posee 20-viewers). mahg-help ampliado con esas utilidades. test_cli_tools 56/56
+(mutation: quitar nvtop muerde).
+
+FRENTE D — dotfiles: recaptura read-only de lo que DIFIERE de la P53 — starship.toml (hostname
+dinámico en la línea 1, stashed "≡") y tmux.conf (`mouse off` + `set-clipboard on`, el override
+real del Professor sin trackear su include absoluto ~/.config/tmux/99-local-final.conf). micro y
+yazi ya eran idénticos. test_tmux actualizado (mouse off/clipboard on; mutation muerde).
+
+GATES (verde): shellcheck limpio; tests/run.sh RESULT PASS (hard gates, incl. los 3 test nuevos);
+install.sh --dry-run exit 0 con 0 FAILED; grep de módulos/75-tab-title y test_tab_title en
+producto = 0. Rama con 6 commits atómicos (claim + 5 de trabajo). SIN tag. NO toqué dconf/temas/
+Templates ni otro estado de la máquina. PÁRATE tras push — reportado.
+
+PARA VALIDAR: (1) abre una terminal nueva y confirma el prompt, EDITOR/VISUAL=micro, go/pi/grok
+en PATH y que no quedan funciones claude-* (rollback: cp ~/.bashrc.bak.20260904-005008 ~/.bashrc);
+(2) valida la lista de 25 apps de 25-cli-tools (quita/añade lo que decidas); (3) cuando quieras,
+autoriza merge a main.
