@@ -14,6 +14,9 @@ jobs:
       - name: shellcheck
         run: shellcheck -x -S style install.sh lib/*.sh modules/*.sh tests/*.sh scripts/*.sh bin/mahg-help bin/mahg-wt-apply dotfiles/claude-code/statusline.sh
 
+      - name: base-package bootstrap suite
+        run: bash tests/test_base_packages.sh
+
       - name: set -e regression suite
         run: bash tests/test_sete.sh
 

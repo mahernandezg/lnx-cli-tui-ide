@@ -24,6 +24,13 @@ else
   echo "  shellcheck not installed — skipped (install: sudo apt install shellcheck)"
 fi
 
+echo "== tests/test_base_packages.sh (HARD gate: bootstrap dependencies) =="
+if bash "$HERE/test_base_packages.sh"; then
+  echo "  test_base_packages: PASS"
+else
+  echo "  test_base_packages: FAIL"; rc=1
+fi
+
 echo "== tests/test_sete.sh (HARD gate: set -e regression) =="
 if bash "$HERE/test_sete.sh"; then
   echo "  test_sete: PASS"

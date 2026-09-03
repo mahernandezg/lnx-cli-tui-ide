@@ -117,9 +117,9 @@ quit each one — for example, open the editor with **`micro`**.
 | `--verbose` | Verbose/debug logging. |
 | `-h`, `--help` | Usage. |
 
-Module names: `00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers 30-euporie 40-ruff
-45-micro 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title 80-gnome-terminal-profile
-90-vscodium 95-mahg-help 96-mahg-wt`. Every run writes
+Module names: `00-base-packages 00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers
+30-euporie 40-ruff 45-micro 50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
+80-gnome-terminal-profile 90-vscodium 95-mahg-help 96-mahg-wt`. Every run writes
 a timestamped log to `logs/install-<timestamp>.log`.
 
 ---
@@ -445,6 +445,11 @@ Every tool declares a **primary install method and ordered fallbacks**. The engi
 (`lib/fallback.sh`) tries each in turn, in an isolated subshell, logs which path won, and
 **continues on failure** instead of aborting. Examples:
 
+- **Bootstrap dependencies:** `00-base-packages` runs before every downloader and verifies
+  `curl`, `wget`, `ca-certificates`, and `wl-clipboard` (`wl-copy` + `wl-paste`), installing any
+  missing package through apt before network-based modules run. `wl-clipboard` lives here because
+  clipboard interoperability is part of the terminal/Wayland environment even when a Nautilus
+  helper in `lnx-gui-ide` invokes it.
 - **Terminal — the system GNOME Terminal** is used as-is (not installed/replaced); the module
   only adds the terminal fonts (Nerd Font, with a DejaVu glyph fallback).
 - **Release tools** (yazi, ruff, micro, lazygit, lazydocker, Starship): the **latest stable**
@@ -586,9 +591,10 @@ bin/                  mahg-help (environment cheatsheet) · mahg-wt-apply (WSL: 
 lib/                  log.sh detect.sh fallback.sh symlink.sh apt.sh github.sh
                       release.sh (shared release-binary installer) outcome.sh (per-tool ledger)
 scripts/              publish-snapshot.sh (clean public snapshot; gitleaks-gated)
-modules/              00-uv 02-golang 05-ai-agents 10-terminal 15-tmux 20-viewers
-                      30-euporie 40-ruff 45-micro 50-git-docker-tui 60-ssh-alias
-                      70-starship 75-tab-title 80-gnome-terminal-profile 90-vscodium
+modules/              00-base-packages 00-uv 02-golang 05-ai-agents 10-terminal
+                      15-tmux 20-viewers 30-euporie 40-ruff 45-micro
+                      50-git-docker-tui 60-ssh-alias 70-starship 75-tab-title
+                      80-gnome-terminal-profile 90-vscodium
                       (gated) 95-mahg-help 96-mahg-wt
 dotfiles/             micro/ (settings.json) starship/ tmux/ yazi/ claude-code/
 profiles/             gnome-terminal/mahg-{dark,light}.dconf (dark/light pair, loaded

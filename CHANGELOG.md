@@ -10,6 +10,9 @@ bump means fixes only.
 ## [Unreleased]
 
 ### Added
+- **Verified bootstrap dependencies** (`modules/00-base-packages.sh`): installs and then verifies
+  `curl`, `wget`, `ca-certificates`, and `wl-clipboard` before any downloader runs. This closes the
+  fresh-P53 failure where later modules silently deferred because they assumed curl existed.
 - **`mahg-help` — programmatic output modes** (the default ANSI mode is unchanged): `--format md`
   emits the cheatsheet as plain markdown (no ANSI, respects the section arg) for a renderer to
   style; `--list tools` / `--list agents` emit a parseable `<bin>\t<class>` line per present tool
