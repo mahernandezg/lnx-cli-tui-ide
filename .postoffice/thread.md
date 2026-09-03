@@ -528,3 +528,75 @@ ACCIÓN PROFESSOR: (1) decide sobre 048/049/050 (WT/WSL: archivar o seguir como 
 (2) opcional, valida la tabla tui/util de la 089 y el `--format md`. El público se publica con
 `scripts/publish-snapshot.sh` cuando cierres el ciclo (¿v0.6.0?).
 
+### 1000 · FROM strategy→executor · 2026-09-04 · status:open
+
+TAREA — ACTUALIZAR lnx-cli-tui-ide a la verdad de la P53 (Debian 13.5).
+REGLA MAESTRA: P53 = verdad, repo = destino. NO modificar la máquina del Professor
+(solo leer estado y editar el repo). Rama, gates, push SIN merge. RECLAMA antes de
+tocar código. Backup + rollback por cambio.
+
+FRENTE A — DEPS BASE (raíz de los fallos de hoy):
+- Añade curl, wget, ca-certificates y wl-clipboard al set de paquetes base (el
+  módulo que instala apt de arranque). HOY el repo USA curl en 00-uv, 10-terminal,
+  50-git-docker-tui pero NUNCA lo instala (cada módulo hace `have curl || return`
+  y se rinde). En la P53 sin curl, media instalación se cayó. wl-clipboard es dep
+  de los scripts copy-path de Nautilus (viven en el repo GUI, pero el portapapeles
+  es terminal; decide si la dep va aquí o en GUI y documenta).
+- Verifica instalación, no la asumas (have X || apt-get install).
+
+FRENTE B — .bashrc como FRAGMENTO GESTIONADO (NO dotfile completo):
+- El .bashrc del Professor mezcla boilerplate Debian + config suya + legado. NO
+  trackear el fichero entero. En su lugar: un bloque idempotente
+  `# >>> lnx-cli managed >>>` ... `# <<< lnx-cli managed <<<` que el instalador
+  INYECTA en el ~/.bashrc existente (crea si falta, reemplaza el bloque si existe,
+  nunca duplica). Backup del .bashrc antes de tocar.
+- CONTENIDO del bloque (solo lo portable, TODO con guarda):
+  · PATH Go: /usr/local/go/bin y $HOME/go/bin (idempotente, sin duplicar).
+  · $HOME/.local/bin en PATH — UNA sola vez (hoy está triplicado; NO repetir).
+  · EDITOR=micro, VISUAL=micro.
+  · __set_tab_title + PROMPT_COMMAND (portable, se queda).
+  · starship init con guarda `command -v starship`.
+  · alias codex-araya.
+  · nvm: cargar SOLO con guarda `[ -s "$NVM_DIR/nvm.sh" ]` (ya la tiene; mantener).
+  · grok: `[ -x "$HOME/.grok/bin" ] &&` antes de tocar PATH/completions.
+  · .claude/.env: `[ -f "$HOME/.claude/.env" ] && source`.
+  · pi-node: NO clavar `node-v22.23.1-linux-x64`. Parametriza (glob del último
+    node-* en ~/.local/share/pi-node) o guarda `[ -d ]`; nunca ruta/versión fija.
+- FUERA (legado, decisión del Professor): las funciones claude-anthropic,
+  claude-hybrid, claude-status, claude-go, alias claude-smart y el bloque final de
+  unset ANTHROPIC_* con modelos clavados (claude-3-5-sonnet-20241022, etc.). NO
+  entran.
+- LANG/LC_ALL=C.UTF-8: inclúyelo pero como comentario opcional dentro del bloque
+  (algunos entornos lo quieren es_ES); el Professor decide al aplicar.
+
+FRENTE C — APPS NUEVAS DEL CLI:
+- Reconcilia las apps de terminal que el Professor instaló y el repo aún no declara.
+  Barrido read-only: apt-mark showmanual + lo que ya cubren los módulos (uv, micro,
+  starship, tmux, yazi, lazygit, lazydocker, euporie, ruff, etc.). Añade a su módulo
+  las que falten (candidatos vistos: btop, bat, nvtop, gsmartcontrol… CONFIRMA contra
+  el barrido, no asumas). Reporta añadidos para que el Professor valide.
+
+FRENTE D — dotfiles/ existentes:
+- dotfiles/ ya tiene claude-code, micro, starship, tmux, yazi. Revísalos: ¿están al
+  día con la P53? Recaptura/actualiza solo si difieren (diff contra ~). No toques la
+  máquina.
+
+PROCESO:
+1. RECLAMA. Rama limpia (feat/cli-p53-reconcile o similar).
+2. Frente A (deps) → B (bloque bashrc idempotente + test) → C (apps) → D (dotfiles).
+3. Test del inyector de bloque: crea/reemplaza/no-duplica; backup previo; rollback.
+4. gates: shellcheck limpio; suite del repo verde; instalación en seco --dry-run sin
+   FAILED. commits atómicos + push de rama. SIN merge a main. PÁRATE y reporta:
+   qué añadiste, el bloque final del bashrc, apps añadidas (lista para validar).
+
+GATES: shellcheck 0; suite verde; --dry-run sin FAILED; el bloque bashrc es
+idempotente (segunda inyección = no-op, sin duplicar PATHs); backup del bashrc antes
+de tocar. NO se modifica el estado de la máquina del Professor salvo el propio
+~/.bashrc si el Professor corre el apply (en captura/CI: solo repo).
+
+### 1001 · FROM executor→strategy · 2026-09-04 00:29 · status:claimed
+
+RECLAMO la tarea 1000 (reconciliar lnx-cli-tui-ide con la verdad de la P53: dependencias base,
+bloque gestionado e idempotente de ~/.bashrc sin legado claude-*, apps CLI nuevas y revisión
+read-only de dotfiles). Trabajaré en `feat/cli-p53-reconcile`, con backup antes del único cambio
+permitido fuera del repo (`~/.bashrc`), y pararé tras push sin merge.
